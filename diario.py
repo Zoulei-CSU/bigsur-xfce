@@ -1,23 +1,22 @@
-"""Diario do que as receitas mudaram na maquina.
+"""记录配方对机器所做更改的日志。
 
-Cada passo do motor que mexe em algo anota aqui uma linha JSON: arquivo criado
-ou alterado, bloco escrito, valor de antes do xfconf, gsettings ou dconf,
-pacotes instalados. O desfazer.py percorre o diario de tras para frente, entao,
-quando a mesma coisa mudou mais de uma vez, a ultima a ser desfeita e a mais
-antiga, e o que volta e o estado de antes do projeto.
+引擎中每个会改动内容的步骤都会在这里写入一行 JSON：创建或修改的文件、写入的
+块、xfconf、gsettings 或 dconf 之前的值、安装的软件包。desfazer.py 倒序遍历该
+日志，因此当同一内容被改动多次时，最后撤销的是最早的那次，恢复的是项目之前的
+状态。
 
-Script de receita nao passa pelo motor: ele anota pelas funcoes que o motor poe
-no comeco de todo script, antes de mexer em algo, e elas chamam este modulo:
+配方脚本不经过引擎：它通过引擎放在每个脚本开头、在任何改动之前的函数来记录，
+这些函数调用本模块：
 
-    d3_antes CAMINHO...          arquivo ou pasta: copia se existe, senao "criado"
-    d3_gsettings ESQUEMA CHAVE   guarda o valor de agora
-    d3_dconf /CAMINHO/CHAVE      guarda o valor de agora (vazio: estava no padrao)
-    d3_xfconf CANAL /CHAVE TIPO  guarda o valor de agora e se existia
-    d3_processo NOME             guarda se ja rodava antes de iniciar
-    d3_criado CAMINHO...         o que so se sabe depois de criado (um perfil novo)
-    d3_pacotes NOME...           pacotes que o script instalou e nao existiam antes
+    d3_antes 路径...             文件或目录：存在则备份，否则记为 "criado"
+    d3_gsettings 架构 键         保存当前值
+    d3_dconf /路径/键            保存当前值（为空：原本是默认值）
+    d3_xfconf 通道 /键 类型      保存当前值以及是否存在
+    d3_processo 名称             保存启动前是否已在运行
+    d3_criado 路径...            仅创建后才知道的内容（新的配置文件）
+    d3_pacotes 名称...           脚本安装且之前不存在的软件包
 
-A simulacao nao anota nada, e o proprio desfazer roda sem anotar.
+模拟不会记录任何内容，撤销本身也不记录。
 """
 
 from __future__ import annotations
@@ -43,7 +42,7 @@ def anotar(tipo: str, **dados) -> None:
         with arquivo().open("a", encoding="utf-8") as saida:
             saida.write(json.dumps(linha, ensure_ascii=False) + "\n")
     except OSError as erro:
-        estado.registrar(f"nao consegui anotar no diario: {erro}")
+        estado.registrar(f"无法写入更改日志：{erro}")
 
 
 def ler() -> list[dict]:
@@ -59,8 +58,8 @@ def ler() -> list[dict]:
             continue
         if not isinstance(item, dict):
             continue
-        # o diario fica numa pasta do usuario: caminho relativo ou com ".."
-        # (/usr/share/themes/../../etc) nao chega ao desfazer
+        # 更改日志位于用户目录中：相对路径或含 ".."（/usr/share/themes/../../etc）
+        # 不会到达撤销流程
         if "caminho" in item and not caminho_limpo(item["caminho"]):
             continue
         if "criados" in item:
@@ -70,7 +69,7 @@ def ler() -> list[dict]:
 
 
 def caminho_limpo(bruto) -> bool:
-    """Absoluto e ja normalizado (sem "..", "." ou barras repetidas)."""
+    """绝对且已规范化（不含 ".."、"." 或重复斜杠）。"""
     return (isinstance(bruto, str) and bruto.startswith("/")
             and os.path.normpath(bruto) == bruto)
 
@@ -79,11 +78,11 @@ def existe() -> bool:
     return arquivo().is_file()
 
 
-# ---- o valor de agora, antes de mudar -----------------------------------------
+# ---- 当前值，在更改之前 -----------------------------------------------
 
 def _saida(argumentos: list[str]) -> tuple[int, str]:
     try:
-        # em ingles: o desfazer reconhece "Value is an array" do xfconf-query
+        # 用英文：撤销流程识别 xfconf-query 的 "Value is an array"
         proc = subprocess.run(argumentos, capture_output=True, text=True, env={**os.environ, "LC_ALL": "C"})
     except OSError:
         return 127, ""
@@ -91,8 +90,8 @@ def _saida(argumentos: list[str]) -> tuple[int, str]:
 
 
 def _criado_pelo_projeto(caminho: Path) -> bool:
-    """Ja anotado como criado (ele ou uma pasta acima): um Aplicar depois da instalacao
-    nao pode guardar como "de antes" o que o proprio projeto pos ali."""
+    """已记录为创建（它本身或其上级目录）：安装后的“应用”不能把项目自己放在
+    那里的内容当作“之前的状态”保存。"""
     alvos = {str(caminho), *(str(p) for p in caminho.parents)}
     return any(i.get("tipo") == "criado" and i.get("caminho") in alvos for i in ler())
 
@@ -119,13 +118,12 @@ def antes_do_gsettings(esquema: str, chave: str, receita: str = "") -> None:
 
 
 def _gravado(esquema: str, chave: str) -> bool:
-    """A chave tem valor gravado pela pessoa (e nao o padrao do esquema)?
+    """该键是否有用户写入的值（而不是架构默认值）？
 
-    O gsettings get devolve o padrao quando a chave nunca foi gravada, e nao ha
-    como diferenciar por ele; quem sabe e o dconf, no caminho do esquema. Esquema
-    relocavel vem como ESQUEMA:/CAMINHO/ (o do plank, um por dock). Sem o
-    dconf-cli, pergunta ao proprio GSettings pelo python3-gi; sem os dois, conta
-    como gravado (o desfazer grava o valor de antes, em vez de zerar).
+    键从未写入时 gsettings get 会返回默认值，无法据此区分；只有 dconf 在架构路径
+    中知道。可重定位架构以 ESQUEMA:/CAMINHO/ 形式出现（plank 的每个 dock 一个）。
+    没有 dconf-cli 时，通过 python3-gi 询问 GSettings 本身；两者都没有时按已写入
+    处理（撤销会写入之前的值，而不是清零）。
     """
     nome, _, base = esquema.partition(":")
     caminho = (base.rstrip("/") if base else "/" + nome.replace(".", "/")) + "/" + chave
@@ -155,7 +153,7 @@ def antes_do_xfconf(canal: str, chave: str, tipo: str = "string", receita: str =
     if not shutil.which("xfconf-query"):
         return
     codigo, valor = _saida(["xfconf-query", "-c", canal, "-p", chave])
-    # canal sem nenhuma propriedade ainda: o desfazer apaga o arquivo que sobrar vazio
+    # 通道还没有任何属性：撤销会删除留下的空文件
     _, lista = _saida(["xfconf-query", "-c", canal, "-l"])
     anotar("xfconf", receita=receita, canal=canal, chave=chave, existia=codigo == 0,
            valor=valor, tipo_valor=tipo, canal_existia=any(l.startswith("/") for l in lista.splitlines()))
@@ -167,7 +165,7 @@ def antes_do_processo(nome: str, receita: str = "") -> None:
 
 
 def main(argumentos: list[str]) -> int:
-    """Chamado pelas funcoes d3_* dos scripts. Nunca falha o script por anotar."""
+    """由脚本的 d3_* 函数调用。绝不会因记录而让脚本失败。"""
     if os.environ.get("D3_SEM_DIARIO") or os.environ.get("CTX_SEM_DIARIO"):
         return 0
     receita = os.environ.get("D3_RECEITA") or os.environ.get("CTX_RECEITA", "")
@@ -195,13 +193,12 @@ def main(argumentos: list[str]) -> int:
         elif comando == "pacotes" and resto:
             anotar("pacotes", receita=receita, nomes=list(resto))
     except (ValueError, IndexError, OSError) as erro:
-        estado.registrar(f"diario: nao consegui anotar {argumentos}: {erro}")
+        estado.registrar(f"diario: 无法记录 {argumentos}：{erro}")
     return 0
 
 
-# roda como root numa copia que e do root: link que aponta para fora da propria
-# arvore (absoluto, ou com .. demais) sai, para nao levar ao sistema um atalho
-# para a pasta da pessoa
+# 以 root 在属于 root 的副本中运行：指向树外（绝对路径或过多 ..）的链接会
+# 被移除，以免把指向用户目录的快捷方式带进系统
 LINKS_PY = """import os, sys
 raiz = os.path.realpath(sys.argv[1])
 for pasta, dirs, arqs in os.walk(raiz):
@@ -213,7 +210,7 @@ for pasta, dirs, arqs in os.walk(raiz):
                 os.unlink(caminho)
 """
 
-# posto no comeco de todo script de receita pelo motor
+# 由引擎放在每个配方脚本的开头
 FUNCOES_SHELL = r'''
 _d3_diario() { PYTHONPATH="$D3_DIARIO_PAI${PYTHONPATH:+:$PYTHONPATH}" "$D3_DIARIO_PYTHON" -m "$D3_DIARIO_PACOTE.diario" "$@" || true; }
 d3_antes() { _d3_diario antes "$@"; }
@@ -222,10 +219,9 @@ d3_dconf() { _d3_diario dconf "$@"; }
 d3_xfconf() { _d3_diario xfconf "$@"; }
 d3_processo() { _d3_diario processo "$@"; }
 d3_criado() { _d3_diario criado "$@"; }
-# pasta comum (~/.themes, ~/.icons...) que ainda nao existe: o desfazer tira se ficar vazia
+# 尚不存在的公共目录（~/.themes、~/.icons……）：变空时撤销会将其删除
 d3_pasta() { _d3_diario pasta "$@"; }
-# antes e depois de um instalador de terceiros: o que o padrao (glob) casar e nao
-# existia antes entra no diario como criado
+# 第三方安装器之前和之后：匹配模式（glob）且之前不存在的内容会作为“创建”记入日志
 _D3_ANTES=""
 d3_antes_de() {
   _D3_ANTES="$(for g in "$@"; do compgen -G "$g" || true; done)"
@@ -244,20 +240,18 @@ d3_depois_de() {
   return 0
 }
 d3_pacotes() { _d3_diario pacotes "$@"; }
-# ORIGEM (arquivo ou pasta da pessoa) vai para DESTINO no sistema como root:root,
-# sem escrita para grupo e outros, e opcionalmente com MODO (arquivo). O root
-# copia antes para uma pasta nova dele (sudo mktemp -d) e instala de la: link
-# simbolico na raiz da origem e recusado, e o que aponta para fora da arvore sai.
-# Trecho que chama isto conta como trecho com sudo (motor.py): nada de codigo
-# de terceiros nele.
+# ORIGEM（用户文件或目录）以 root:root 身份进入系统中的 DESTINO，组和其他用户
+# 不可写，并可选设置 MODO（文件）。root 先复制到自己的新目录（sudo mktemp -d）
+# 再从那里安装：源根部的符号链接会被拒绝，指向树外的链接会被移除。
+# 调用此处的片段算作含 sudo 的片段（motor.py）：其中不放第三方代码。
 d3_raiz_instalar() {
   local origem=$1 destino=$2 modo=${3:-} r
   if [ -L "$origem" ] || [ ! -e "$origem" ]; then
-    echo "recusado (link simbolico ou ausente): $origem" >&2; return 1
+    echo "已拒绝（符号链接或不存在）：$origem" >&2; return 1
   fi
   r="$(sudo -n mktemp -d)" || return 1
   if ! sudo -n cp -R -P --no-preserve=all -- "$origem" "$r/c" || sudo -n test -L "$r/c"; then
-    sudo -n rm -rf -- "$r"; echo "recusado: $origem" >&2; return 1
+    sudo -n rm -rf -- "$r"; echo "已拒绝：$origem" >&2; return 1
   fi
   sudo -n python3 -I -c "$D3_LINKS_PY" "$r/c"
   sudo -n chown -R root:root "$r/c"
@@ -274,7 +268,7 @@ d3_raiz_instalar() {
 
 
 def ambiente_shell(receita: str, anotar_ligado: bool) -> dict[str, str]:
-    """Variaveis que as FUNCOES_SHELL usam para achar este modulo."""
+    """FUNCOES_SHELL 用于找到本模块的变量。"""
     return {
         "D3_DIARIO_PAI": str(caminhos.PACOTE.parent),
         "D3_DIARIO_PACOTE": caminhos.PACOTE.name,

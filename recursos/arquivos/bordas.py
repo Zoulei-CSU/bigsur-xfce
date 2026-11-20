@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-"""Copia o tema do xfwm4 com bordas mais largas, para agarrar e redimensionar.
+"""复制 xfwm4 主题，把边框加宽，便于抓取和调整大小。
 
-Os temas que usamos (WhiteSur, Orchis, Nordic, Gruvbox, Everforest) desenham
-a borda lateral e a de baixo com 1 ou 2 pixels, e so da para redimensionar
-acertando esse fio. O xfwm4 so aceita clique em pixel 100% opaco, entao uma
-borda invisivel nao funciona: a borda nova precisa ser pintada. Ela e pintada
-com a cor da barra de titulo, entre o contorno do tema e o conteudo, e a janela
-parece so ter uma moldura um pouco mais cheia.
+我们使用的主题（WhiteSur、Orchis、Nordic、Gruvbox、Everforest）把侧边和
+底部边框画成 1 到 2 像素，只能精准点中这条细线才能调整大小。xfwm4 只接受
+点击 100% 不透明的像素，因此看不见的边框无效：新边框必须被绘制出来。它用
+标题栏颜色绘制在主题轮廓与内容之间，窗口看起来只是多了一圈稍厚的边框。
 
-    d3bian-bordas                 usa o tema atual do xfwm4
-    d3bian-bordas TEMA [PIXELS]   o padrao e 4 pixels a mais
+    d3bian-bordas                 使用 xfwm4 当前主题
+    d3bian-bordas TEMA [PIXELS]   默认多出 4 像素
 
-Cria ~/.themes/TEMA-bordas/xfwm4 e escreve o nome dele na saida. Quem chama
-decide se aplica (xfconf-query -c xfwm4 -p /general/theme -s NOME).
+创建 ~/.themes/TEMA-bordas/xfwm4，并在输出中写出其名称。由调用方决定是否
+应用（xfconf-query -c xfwm4 -p /general/theme -s NOME）。
 """
 
 from __future__ import annotations
@@ -30,7 +28,7 @@ gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import GdkPixbuf, GLib  # noqa: E402
 
 SUFIXO = "-bordas"
-# ordem em que o xfwm4 procura o que vai por cima do xpm
+# xfwm4 查找覆盖 xpm 的图片的顺序
 IMAGENS = ("svg", "png", "gif", "jpg", "bmp")
 CHARS = ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
          "0123456789#$%&*+-=@;:,<>?!~^_|/()[]{}")
@@ -47,7 +45,7 @@ def pasta_do_tema(nome: str) -> Path | None:
 
 
 # --------------------------------------------------------------------------
-# imagem como grade de valores: tupla RGBA (png) ou definicao de cor (xpm)
+# 图像表示为数值网格：RGBA 元组（png）或颜色定义（xpm）
 # --------------------------------------------------------------------------
 
 class Grade:
@@ -127,11 +125,11 @@ def gravar_xpm(grade: Grade, caminho: Path, nome: str) -> None:
 
 
 # --------------------------------------------------------------------------
-# alargar
+# 加宽
 # --------------------------------------------------------------------------
 
 def carregar(origem: Path, peca: str) -> dict[str, tuple[Grade, str]]:
-    """Todas as imagens de uma peca, por formato: xpm e o que for por cima."""
+    """某一部分的全部图像，按格式：xpm 以及其上层的格式。"""
     achadas: dict[str, tuple[Grade, str]] = {}
     xpm = origem / f"{peca}.xpm"
     if xpm.is_file():
@@ -148,7 +146,7 @@ def carregar(origem: Path, peca: str) -> dict[str, tuple[Grade, str]]:
 
 
 def cor_do_titulo(origem: Path, estado: str) -> dict[str, object]:
-    """A cor do meio da barra de titulo, em cada formato."""
+    """标题栏中部的颜色，按各格式。"""
     cores: dict[str, object] = {}
     for peca in (f"title-3-{estado}", f"title-1-{estado}", f"top-left-{estado}"):
         for ext, (grade, _) in carregar(origem, peca).items():
@@ -172,10 +170,9 @@ def alargar(grade: Grade, peca: str, n: int, fundo, contorno: set) -> None:
     lado, _, _ = peca.rpartition("-")
     esquerda = lado != "bottom-right"
 
-    # o pixel novo copia o vizinho de dentro quando ele e contorno ou fica fora
-    # da curva do canto; no resto vira a cor da barra de titulo. Transparente
-    # com borda do lado de fora e a parte que ficava atras da janela, e essa
-    # agora aparece
+    # 新像素在内侧邻居是轮廓或落在拐角弧线之外时复制它；
+    # 其余情况则变为标题栏颜色。透明且外侧有边框的部分原本在窗口
+    # 背后，现在会显现出来
     def regra(x: int, y: int):
         ref = grade.px(x, y)
         if grade.opaco(ref):
@@ -198,7 +195,7 @@ def alargar(grade: Grade, peca: str, n: int, fundo, contorno: set) -> None:
 
 
 def contornos(origem: Path, estado: str) -> dict[str, set]:
-    """O pixel de fora das bordas lateral e de baixo, em cada formato."""
+    """侧边和底部边框的外侧像素，按各格式。"""
     saida: dict[str, set] = {"xpm": set(), "img": set()}
     for peca, onde in ((f"left-{estado}", lambda g: (0, g.h // 2)),
                        (f"right-{estado}", lambda g: (g.w - 1, g.h // 2)),
@@ -215,7 +212,7 @@ def gerar(tema: str, n: int) -> str:
     base = tema[:-len(SUFIXO)] if tema.endswith(SUFIXO) else tema
     origem = pasta_do_tema(base)
     if origem is None:
-        raise SystemExit(f"nao achei o tema {base} do xfwm4")
+        raise SystemExit(f"找不到 xfwm4 主题 {base}")
     nome = base + SUFIXO
     destino = Path.home() / ".themes" / nome / "xfwm4"
     if destino.parent.exists():
@@ -235,7 +232,7 @@ def gerar(tema: str, n: int) -> str:
                 if ext == "xpm":
                     gravar_xpm(grade, destino / f"{peca}.xpm", rotulo)
                 else:
-                    # svg, gif e afins viram png, que o xfwm4 le igual
+                    # svg、gif 等会转为 png，xfwm4 读取效果相同
                     for outro in IMAGENS:
                         (destino / f"{peca}.{outro}").unlink(missing_ok=True)
                     gravar_png(grade, destino / f"{peca}.png")
@@ -247,7 +244,7 @@ def tema_atual() -> str:
         return subprocess.run(["xfconf-query", "-c", "xfwm4", "-p", "/general/theme"],
                               capture_output=True, text=True, check=True).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
-        raise SystemExit("nao consegui ler o tema atual do xfwm4")
+        raise SystemExit("无法读取 xfwm4 当前主题")
 
 
 def main(args: list[str]) -> int:
@@ -257,7 +254,7 @@ def main(args: list[str]) -> int:
     tema = args[0] if args else tema_atual()
     n = int(args[1]) if len(args) > 1 else 4
     if not 1 <= n <= 12:
-        raise SystemExit("use de 1 a 12 pixels")
+        raise SystemExit("请使用 1 到 12 像素")
     print(gerar(tema, n))
     return 0
 

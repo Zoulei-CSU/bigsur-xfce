@@ -1,9 +1,8 @@
-"""Carrega as receitas e executa as que forem pedidas.
+"""加载配方并执行所请求的配方。
 
-Uma receita e um arquivo TOML em recursos/receitas. Ela se descreve: numero de
-ordem, titulo, de quais outras depende e quais preferencias a afetam. Esse
-ultimo campo e o que permite a pagina web decidir sozinha o que reexecutar
-quando o usuario muda uma opcao, sem nenhuma tabela em codigo.
+每条配方是 recursos/receitas 中的一个 TOML 文件。它自我描述：顺序编号、标题、
+依赖哪些其他配方以及哪些偏好会影响它。最后这个字段让网页能在用户更改选项时
+自行决定重新执行什么，无需任何代码中的表。
 """
 
 from __future__ import annotations
@@ -27,7 +26,7 @@ class Receita:
     requer: list[str] = field(default_factory=list)
     afetada_por: list[str] = field(default_factory=list)
     arquivo: Path | None = None
-    # [[desfazer]]: passos que o desfazer.py roda para o que o diario nao cobre
+    # [[desfazer]]：desfazer.py 为日志未覆盖的内容运行的步骤
     desfazer: list[dict] = field(default_factory=list)
 
     @property
@@ -41,13 +40,13 @@ class Receita:
 
 
 def carregar() -> list[Receita]:
-    """Todas as receitas, na ordem do numero no nome do arquivo."""
+    """所有配方，按文件名中的编号排序。"""
     saida: list[Receita] = []
     for arquivo in sorted(caminhos.RECEITAS.glob("*.toml")):
         try:
             dados = tomllib.loads(arquivo.read_text())
         except (OSError, tomllib.TOMLDecodeError) as erro:
-            estado.registrar(f"receita invalida {arquivo.name}: {erro}")
+            estado.registrar(f"配方无效 {arquivo.name}：{erro}")
             continue
         cabecalho = dados.get("modulo", {})
         ident = str(cabecalho.get("id") or arquivo.stem.split("-")[0])
@@ -72,23 +71,22 @@ NUCLEO = ("10", "30", "31")
 
 
 def instalado(lista: list[Receita] | None = None) -> bool:
-    """A maquina ja foi preparada? Basta o nucleo estar aplicado."""
+    """机器已经准备过了吗？只需核心已应用。"""
     feitas = {r.ident for r in (lista or carregar()) if r.aplicada}
     return all(n in feitas for n in NUCLEO)
 
 
 def afetadas_por(chaves: list[str]) -> list[str]:
-    """Quais receitas reexecutar quando essas preferencias mudam."""
+    """这些偏好改变时要重新执行哪些配方。"""
     alvos = {r.ident for r in carregar()
              if any(c in r.afetada_por for c in chaves)}
     return sorted(alvos, key=lambda x: (len(x), x))
 
 
 def desatualizadas(lista: list[Receita] | None = None) -> set[str]:
-    """Receitas nunca aplicadas, ou cujo arquivo mudou depois de aplicadas.
+    """从未应用过的配方，或应用后文件又发生变化的配方。
 
-    Sem isso, uma receita nova ou reescrita nunca chega ao sistema enquanto
-    ninguem mexer numa opcao que a afete.
+    否则，新写或重写的配方要等到有人改动影响它的选项时才会到达系统。
     """
     saida: set[str] = set()
     for r in lista or carregar():
@@ -118,26 +116,26 @@ def executar(apenas: list[str] | None = None, pular: list[str] | None = None,
              refazer: bool = False, simular: bool = False,
              saida: Callable[[str], None] | None = None,
              cfg: dict[str, str] | None = None) -> int:
-    """Roda as receitas escolhidas. Devolve quantas falharam."""
+    """运行选定的配方。返回失败数量。"""
     diz = saida or print
-    # outro tema Xfce da familia aplicado nesta conta: nada roda (ver familia.py)
+    # 本账户已应用同族的另一个 Xfce 主题：不运行任何内容（见 familia.py）
     recusa = familia.recusa()
     if recusa:
         if not simular:
             diz(f"  {recusa}")
             return 1
-        diz(f"  atencao: {recusa}; a simulacao segue, a instalacao de verdade seria recusada")
+        diz(f"  atencao: {recusa}；模拟继续进行，实际安装会被拒绝")
     try:
         with caminhos.trava():
-            # pasta de montagem da tela de login so desta execucao: nova, com
-            # nome imprevisivel e 0700 (mkdtemp), apagada no fim
+            # 仅本次执行使用的登录界面组装目录：新建、名称不可预测、
+            # 0700（mkdtemp），结束时删除
             montagem = tempfile.mkdtemp(prefix="d3bian-init-login-")
             try:
                 return _executar(apenas, pular, refazer, simular, diz, cfg, montagem)
             finally:
                 shutil.rmtree(montagem, ignore_errors=True)
     except caminhos.Ocupado as erro:
-        diz(f"{erro}; espere terminar")
+        diz(f"{erro}；请等待完成")
         return 1
 
 
@@ -147,7 +145,7 @@ def _executar(apenas, pular, refazer, simular, diz, cfg, montagem: str = "") -> 
     ctx = motor.montar_contexto(cfg)
     escolhidas = selecionar(carregar(), apenas, pular)
     if not escolhidas:
-        diz("nenhuma receita corresponde ao pedido")
+        diz("没有配方符合请求")
         return 0
 
     falhas = 0
@@ -158,13 +156,12 @@ def _executar(apenas, pular, refazer, simular, diz, cfg, montagem: str = "") -> 
         faltando = [x for x in receita.requer if not estado.aplicado(x)]
         if faltando and not simular:
             diz(f"  pulando {receita.ident} {receita.titulo}: "
-                f"depende de {', '.join(faltando)}")
+                f"依赖 {', '.join(faltando)}")
             falhas += 1
             continue
 
         diz(f"\n==> {receita.ident} {receita.titulo}")
-        # o contexto e refeito a cada receita: o papel de parede e o fundo do login
-        # so existem depois que a receita de papeis baixou as imagens
+        # 每条配方都重建上下文：壁纸和登录背景只有在壁纸配方下载图片后才存在
         ctx = motor.montar_contexto(cfg)
         ctx["login_dir"] = montagem
         maquina = motor.Motor(ctx, saida=diz, simular=simular, receita=receita.ident)
@@ -174,9 +171,9 @@ def _executar(apenas, pular, refazer, simular, diz, cfg, montagem: str = "") -> 
             diz(f"  ERRO: {erro}")
             falhas += 1
             continue
-        except Exception as erro:                      # nao derruba o resto
-            diz(f"  ERRO inesperado: {erro}")
-            estado.registrar(f"erro inesperado em {receita.ident}: {erro!r}")
+        except Exception as erro:                      # 不影响其余内容
+            diz(f"  ERRO 意外：{erro}")
+            estado.registrar(f"{receita.ident} 出现意外错误：{erro!r}")
             falhas += 1
             continue
         if not simular:

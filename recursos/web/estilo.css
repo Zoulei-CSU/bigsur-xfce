@@ -1,8 +1,7 @@
 /* ===========================================================================
-   d3bian-init-bigsur-xfce - estilo de terminal
-   Azul sobre preto, tudo monoespacado, botao entre colchetes.
-   O azul fica nos destaques; o texto corrido e cinza claro, porque cor
-   saturada em paragrafo inteiro cansa a vista depressa.
+   d3bian-init-bigsur-xfce - 终端风格
+   黑底蓝字，全部等宽，按钮带方括号。
+   蓝色仅用于突出显示；正文为浅灰色，因为整段饱和色很快会让眼睛疲劳。
    =========================================================================== */
 
 :root{
@@ -36,7 +35,7 @@ body{
   max-width:1180px;
   margin:0 auto;
   position:relative;
-  /* grade tenue ao fundo, como papel milimetrado de terminal */
+  /* 背景中的淡网格，像终端的方格纸 */
   background-image:
     radial-gradient(ellipse 70% 55% at 50% 40%, rgba(20,90,190,.22), transparent 70%),
     linear-gradient(rgba(61,169,255,.028) 1px, transparent 1px),
@@ -45,7 +44,7 @@ body{
   background-attachment:fixed, scroll, scroll;
 }
 
-/* varredura horizontal, bem discreta */
+/* 非常细微的横向扫描线 */
 body::after{
   content:"";position:fixed;inset:0;pointer-events:none;z-index:9;
   background:repeating-linear-gradient(
@@ -73,8 +72,7 @@ h3{margin:0 0 7px;font-size:16px;font-weight:700;letter-spacing:.03em;color:var(
 
 .sub{color:var(--fraco);margin:0 0 22px;font-size:13px}
 
-/* voltar e um botao de verdade, com texto em portugues: "cd /" so fazia
-   sentido para quem conhece terminal */
+/* 返回是真正的按钮，带文字：“cd /”只对熟悉终端的人有意义 */
 .voltar{
   display:inline-flex;align-items:center;gap:8px;
   color:var(--texto);text-decoration:none;font-size:13px;font-weight:700;
@@ -88,7 +86,7 @@ h3{margin:0 0 7px;font-size:16px;font-weight:700;letter-spacing:.03em;color:var(
   background:rgba(61,169,255,.1);box-shadow:0 0 14px rgba(61,169,255,.18);
 }
 
-/* --- estrutura -------------------------------------------------------- */
+/* --- 结构 -------------------------------------------------------- */
 .grade{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
 @media (max-width:880px){.grade{grid-template-columns:1fr}}
 
@@ -96,7 +94,7 @@ h3{margin:0 0 7px;font-size:16px;font-weight:700;letter-spacing:.03em;color:var(
   background:var(--painel);border:1px solid var(--borda);
   border-radius:var(--raio);padding:17px;position:relative;
 }
-/* cantos marcados, como moldura de terminal */
+/* 四角标记，如同终端边框 */
 .cartao::before,.cartao::after{
   content:"";position:absolute;width:9px;height:9px;border:1px solid var(--borda-forte);
 }
@@ -109,7 +107,7 @@ h3{margin:0 0 7px;font-size:16px;font-weight:700;letter-spacing:.03em;color:var(
 .legenda{color:var(--fraco);font-size:12px;margin:9px 2px 2px;display:flex;
          justify-content:space-between;gap:10px;flex-wrap:wrap;letter-spacing:.03em}
 
-/* --- linhas de opcao -------------------------------------------------- */
+/* --- 选项行 -------------------------------------------------- */
 .linha,.opcao{display:flex;justify-content:space-between;align-items:center;gap:14px;
        padding:10px 0;border-bottom:1px solid var(--borda)}
 .linha:last-child,.opcao:last-child{border-bottom:0}
@@ -128,7 +126,7 @@ select{background:var(--painel2);border:1px solid var(--borda);color:var(--texto
   font:inherit;font-size:12.5px;padding:6px 9px;border-radius:var(--raio)}
 select:focus{outline:none;border-color:var(--acento)}
 
-/* --- botoes, no formato [ TEXTO ] ------------------------------------- */
+/* --- 按钮，[ 文本 ] 格式 ------------------------------------- */
 .acoes{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 .bt{
   border:1px solid var(--borda-forte);border-radius:var(--raio);
@@ -145,7 +143,7 @@ select:focus{outline:none;border-color:var(--acento)}
 .bt.sec:hover{color:var(--acento);border-color:var(--borda-forte)}
 .bt[disabled]{opacity:.34;cursor:not-allowed;box-shadow:none;background:transparent;color:var(--fraco)}
 
-/* --- registro de execucao --------------------------------------------- */
+/* --- 执行日志 --------------------------------------------- */
 #log{background:#04070c;border:1px solid var(--borda);border-radius:var(--raio);
   padding:12px;font:12px/1.6 var(--mono);white-space:pre-wrap;word-break:break-word;
   max-height:280px;overflow:auto;margin-top:13px;color:#bcd8f2}
@@ -170,7 +168,7 @@ li::marker{color:var(--acento2)}
 code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
      border-radius:var(--raio);font-size:11.5px;color:var(--ciano)}
 
-/* --- verificacoes previas --------------------------------------------- */
+/* --- 预检查 --------------------------------------------- */
 .check{display:flex;gap:9px;align-items:flex-start;padding:7px 0;
        border-bottom:1px solid var(--borda);font-size:13px}
 .check:last-child{border-bottom:0}
@@ -191,7 +189,7 @@ code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
          border:1px dashed var(--borda-forte);color:var(--fraco);font-size:12.5px;
          text-align:center;padding:22px;line-height:1.7}
 
-/* --- inicio ------------------------------------------------------------ */
+/* --- 首页 ------------------------------------------------------------ */
 .cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:22px}
 .porta{display:block;text-decoration:none;color:inherit;background:var(--painel);
        border:1px solid var(--borda);border-radius:var(--raio);padding:24px;transition:.14s;
@@ -205,9 +203,9 @@ code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
 .porta .seta::before{content:"[ "}
 .porta .seta::after{content:" ]"}
 
-/* sem flex-wrap: com ele, a frase longa descia inteira para a linha de baixo
-   e a bolinha ficava sozinha em cima. O texto ocupa o resto e quebra por dentro,
-   e a bolinha acompanha a primeira linha */
+/* 不用 flex-wrap：用了之后长句会整句掉到下一行，
+   小圆点会孤零零留在上面。文本占据其余空间并在内部换行，
+   小圆点跟随第一行 */
 .faixa{display:flex;gap:11px;align-items:flex-start;background:var(--painel);
        border:1px solid var(--borda);border-left:3px solid var(--acento);
        border-radius:var(--raio);padding:12px 15px;margin-top:20px;
@@ -219,7 +217,7 @@ code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
 .faixa.atencao .pt{background:var(--alerta);box-shadow:0 0 8px var(--alerta)}
 .faixa a{color:var(--acento)}
 
-/* --- programas --------------------------------------------------------- */
+/* --- 程序 --------------------------------------------------------- */
 .busca{width:100%;background:var(--painel2);border:1px solid var(--borda);
        color:var(--texto);font:inherit;font-size:14px;padding:11px 13px;
        border-radius:var(--raio);margin-bottom:9px}
@@ -248,7 +246,7 @@ code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
        gap:11px;align-items:center;flex-wrap:wrap}
 .barra .conta{color:var(--fraco);font-size:12.5px;margin-right:auto;letter-spacing:.03em}
 
-/* --- galeria de papeis de parede --------------------------------------- */
+/* --- 壁纸图库 --------------------------------------- */
 .papeis{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:7px;margin-top:9px}
 .papel{position:relative;border:1px solid var(--borda);border-radius:var(--raio);
        overflow:hidden;cursor:pointer;background:var(--painel2);padding:0;aspect-ratio:16/10}
@@ -266,7 +264,7 @@ code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
 .escolher-imagem .bt{padding:7px 14px;font-size:12px}
 .escolher-imagem .dica.erro{color:var(--erro)}
 
-/* --- esquema ao vivo ---------------------------------------------------- */
+/* --- 实时示意图 ---------------------------------------------------- */
 .esquema{--e-fundo1:#e8556d;--e-fundo2:#3f7fd0;--e-barra:rgba(10,17,25,.72);
   --e-txt:#e4eef8;--e-jan:#101a26;--e-janb:#1b3348;--e-jant:#c6d6e6;
   --e-acento:#2e7cf6;--e-img:none;
@@ -317,13 +315,13 @@ code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
 .e-app{width:12px;height:12px;border-radius:3px}
 .e-nota{color:var(--fraco);font-size:11.5px;margin:8px 2px 0;text-align:center;letter-spacing:.02em}
 
-/* --- imagem de exemplo dentro de cada opcao ------------------------------ */
+/* --- 各选项内的示例图片 ------------------------------ */
 .opcao > div:first-child{flex:1;min-width:0}
 .exemplo{display:block;max-width:100%;max-height:130px;width:auto;margin-top:8px;
   object-fit:contain;border:1px solid var(--borda);
   border-radius:var(--raio);background:var(--painel2)}
 
-/* --- faixa de estado, no topo de toda pagina --- */
+/* --- 每个页面顶部的状态栏 --- */
 .estado{display:flex;gap:14px;flex-wrap:wrap;align-items:center;
         border-bottom:1px solid var(--borda);padding:0 2px 8px;margin-bottom:16px;
         font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--fraco)}
@@ -335,8 +333,8 @@ code{background:var(--painel2);border:1px solid var(--borda);padding:1px 5px;
 .estado.atencao .viva{background:var(--alerta);box-shadow:0 0 8px var(--alerta)}
 .estado.atencao #ePronto{color:var(--alerta)}
 
-/* --- terminal da tarefa, fixo no rodape --------------------------------- */
-/* --term-h e a altura do painel aberto; o comum.js atualiza */
+/* --- 任务终端，固定于底部 --------------------------------- */
+/* --term-h 是打开面板的高度；comum.js 会更新它 */
 :root{--term-h:0px}
 body{padding-bottom:calc(26px + var(--term-h))}
 
@@ -411,7 +409,7 @@ body{padding-bottom:calc(26px + var(--term-h))}
   .t-corpo{grid-template-columns:minmax(0,1fr)}
   .t-etapas{display:none}
   .t-tempo{display:none}
-  /* no celular o topo quebra em duas linhas: titulo e botoes, depois a etapa */
+  /* 在手机上顶部折成两行：标题和按钮，然后是步骤 */
   .t-topo{flex-wrap:wrap;row-gap:4px}
   .t-titulo{max-width:none;flex:1}
   .t-atual{order:9;flex-basis:100%;font-size:11.5px;color:var(--fraco)}
@@ -421,7 +419,7 @@ body{padding-bottom:calc(26px + var(--term-h))}
   .t-progresso.indefinido span{width:100%;opacity:.4}
 }
 
-/* --- quadro de conclusao ------------------------------------------------- */
+/* --- 结论框 ------------------------------------------------- */
 .t-quadro{background:var(--painel);color:var(--texto);border:1px solid var(--borda-forte);
   border-radius:var(--raio);padding:26px 24px 20px;width:min(520px,calc(100% - 32px));
   box-shadow:0 22px 60px rgba(0,0,0,.7);font:14px/1.6 var(--mono)}
@@ -438,10 +436,10 @@ body{padding-bottom:calc(26px + var(--term-h))}
 .t-quadro ul{margin:16px 0 0}
 .t-quadro .acoes{justify-content:center}
 
-/* --- aparencia: prévia fixa, abas e barra de acao ------------------------ */
+/* --- 外观：固定预览、标签页和操作栏 ------------------------ */
 .abas{margin-bottom:10px}
 @media (min-width:881px){
-  /* a coluna estica ate a altura da grade, para a prévia ter onde deslizar */
+  /* 列拉伸到网格高度，让预览有滑动空间 */
   .grade > .estica{align-self:stretch}
   .fixa-lado{position:sticky;top:14px}
 }
@@ -460,24 +458,23 @@ details.verif > summary .ok{color:var(--ok)}
 details.verif > summary .nao{color:var(--erro)}
 details.verif[open] > summary{border-bottom:1px solid var(--borda)}
 
-/* --- easter egg da pagina inicial: hello, friend -------------------------- */
+/* --- 首页彩蛋：hello, friend -------------------------- */
 .amigo{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:34px;
   color:var(--fraco);font-size:12px;letter-spacing:.08em;opacity:.5;transition:opacity .3s;
   user-select:none}
 .amigo:hover{opacity:1}
-/* largura da frase maior mais o cursor e o espacamento, para o texto nao
-   dancar enquanto digita ou troca de lingua */
+/* 最长句子的宽度加上光标和间距，让文本在输入或切换语言时不跳动 */
 .amigo-texto{min-width:18ch;white-space:pre}
 .amigo-texto::after{content:"▌";color:var(--erro);animation:piscar 1.1s step-end infinite}
 @media (prefers-reduced-motion:reduce){.amigo-texto::after{animation:none}}
 
-/* --- programas: confirmacao junto da barra e destaque do que mudou ------- */
+/* --- 程序：栏内确认和变更高亮 ------- */
 .barra{bottom:var(--term-h);z-index:5}
 .barra .aviso{flex-basis:100%;margin:0 0 4px}
 .item.mudou{border-color:var(--ok);animation:brilho 1.6s ease-out 3}
 @keyframes brilho{0%{box-shadow:0 0 0 0 rgba(61,220,132,.55)}100%{box-shadow:0 0 0 10px rgba(61,220,132,0)}}
 
-/* --- programas: hardware desta maquina ---------------------------------- */
+/* --- 程序：本机硬件 ---------------------------------- */
 .hw{margin-bottom:20px}
 .hw h3{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   color:var(--fraco);margin:18px 2px 9px}
@@ -490,7 +487,7 @@ details.verif[open] > summary{border-bottom:1px solid var(--borda)}
 .hw .acoes{margin-top:14px}
 .item input:disabled{opacity:.4}
 
-/* --- aparencia: voltar ao que era antes, com a opcao de remover --------------- */
+/* --- 外观：撤销回之前状态，带移除选项 --------------- */
 .opcao-apagar{display:flex;gap:10px;align-items:flex-start;margin:14px 0 4px;cursor:pointer;font-size:13px}
 .opcao-apagar input{margin:3px 0 0;flex-shrink:0;width:15px;height:15px;accent-color:var(--erro)}
 .opcao-apagar .dica{display:block;color:var(--fraco);font-size:12px;margin-top:2px;line-height:1.5}

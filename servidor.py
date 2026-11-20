@@ -1,7 +1,7 @@
-"""Painel web local.
+"""本地网页面板。
 
-Escuta so em 127.0.0.1. Ele executa coisas na maquina, entao nao deve ficar
-acessivel pela rede. Quem quiser usar de outro computador que faca tunel SSH.
+只监听 127.0.0.1。它会执行机器上的操作，因此不应通过网络访问。
+想从其他电脑使用的可以建立 SSH 隧道。
 """
 
 from __future__ import annotations
@@ -40,10 +40,9 @@ NOME = "d3bian-init-bigsur-xfce"
 tarefa = Tarefa()
 parar = threading.Event()
 
-# Acesso: so a pagina aberta pelo link do terminal fala com a API. O link traz
-# um codigo de uso unico (ENTRADA) que vira um cookie secreto (CHAVE); sem ele,
-# um site qualquer aberto no navegador (ou outro usuario da maquina) nao
-# consegue mandar o painel instalar, desfazer ou apagar nada.
+# 访问：只有通过终端链接打开的页面能与 API 通信。链接携带一次性代码（ENTRADA），
+# 它会变成一个秘密 cookie（CHAVE）；没有它，浏览器中任意打开的网站（或机器上的
+# 其他用户）都无法让面板安装、撤销或删除任何内容。
 CHAVE = secrets.token_urlsafe(32)
 _entrada = {"codigo": secrets.token_urlsafe(32)}
 _trava_entrada = threading.Lock()
@@ -54,19 +53,19 @@ def link_de_entrada(porta: int) -> str:
 
 
 def _arquivo_de_entrada(porta: int) -> Path:
-    """O link vai num arquivo so da pessoa, nao na linha de comando: a lista de
-    processos (/proc/*/cmdline) e visivel para as outras contas da maquina."""
+    """链接写入仅用户可读的文件，而不是命令行：
+    进程列表（/proc/*/cmdline）对机器上的其他账户可见。"""
     base = os.environ.get("XDG_RUNTIME_DIR") or str(caminhos.ESTADO_DIR)
     alvo = Path(base) / f"{NOME}-entrar.html"
     link = html.escape(link_de_entrada(porta))
     caminhos.escrever(alvo, f"<!doctype html><meta charset=utf-8>"
                             f"<meta http-equiv=refresh content='0;url={link}'>"
-                            f"<a href='{link}'>abrir o painel</a>\n", 0o600)
+                            f"<a href='{link}'>打开面板</a>\n", 0o600)
     return alvo
 
 
 def _uid_da_conexao(porta_cliente: int, porta_servidor: int) -> int | None:
-    """Dono da conexao, pela tabela do kernel; None se nao der para saber."""
+    """通过内核表获取连接的所有者；无法得知时为 None。"""
     try:
         linhas = Path("/proc/net/tcp").read_text().splitlines()[1:]
     except OSError:
@@ -80,7 +79,7 @@ def _uid_da_conexao(porta_cliente: int, porta_servidor: int) -> int | None:
         if (int(local.split(":")[1], 16) == porta_cliente
                 and int(remoto.split(":")[1], 16) == porta_servidor):
             return uid
-    return -1  # conexao que nao aparece: recusa
+    return -1  # 未出现的连接：拒绝
 
 
 def _no_wsl() -> bool:
@@ -94,15 +93,15 @@ NO_WSL = _no_wsl()
 
 
 def _nome_cookie(porta: int) -> str:
-    # cookies nao separam portas: cada painel usa o seu nome
+    # cookie 不区分端口：每个面板使用自己的名称
     return f"painel_{porta}"
 
 
 ACESSO_HTML = ("<!doctype html><meta charset=utf-8><title>" + html.escape(NOME) + "</title>"
                "<body style='font-family:sans-serif;max-width:36em;margin:4em auto;line-height:1.5'>"
-               "<h1>Abra pelo link do terminal</h1><p>Por segurança, este painel só aceita a janela "
-               "aberta pelo link que aparece no terminal onde ele está rodando (o link vale uma vez; "
-               "depois de usado, o terminal mostra outro).</p>").encode()
+               "<h1>通过终端中的链接打开</h1><p>出于安全考虑，本面板只接受通过其运行终端中"
+               "显示的链接打开的窗口（链接仅可使用一次；"
+               "使用后，终端会显示新的链接）。</p>").encode()
 
 
 class Painel(BaseHTTPRequestHandler):
@@ -111,19 +110,19 @@ class Painel(BaseHTTPRequestHandler):
     def log_message(self, *_a) -> None:
         pass
 
-    # ---- acesso ----------------------------------------------------------
+    # ---- 访问 ----------------------------------------------------------
     def _porta(self) -> int:
         return self.server.server_address[1]
 
     def _host_ok(self) -> bool:
-        # contra DNS rebinding: um site que aponta o proprio nome para
-        # 127.0.0.1 chega aqui com o Host dele
+        # 防止 DNS 重绑定：把自己的域名指向 127.0.0.1 的网站
+        # 会带着自己的 Host 来到这里
         porta = self._porta()
         return self.headers.get("Host", "") in (f"127.0.0.1:{porta}", f"localhost:{porta}")
 
     def _sessao_ok(self) -> bool:
-        # le o cabecalho a mao: um cookie malformado de outro programa em
-        # 127.0.0.1 (cookies nao separam portas) nao pode travar o painel
+        # 手动读取头：127.0.0.1 上其他程序的畸形 cookie
+        # （cookie 不区分端口）不能卡住面板
         nome = _nome_cookie(self._porta()) + "="
         for parte in self.headers.get("Cookie", "").split(";"):
             parte = parte.strip()
@@ -132,14 +131,14 @@ class Painel(BaseHTTPRequestHandler):
         return False
 
     def _mesmo_usuario(self) -> bool:
-        """So a conta que abriu o painel fala com ele: outra conta da maquina
-        tambem alcanca 127.0.0.1, entao a conexao e conferida pelo dono."""
+        """只有打开面板的账户能与它通信：机器上的其他账户也能访问 127.0.0.1，
+        因此通过所有者检查连接。"""
         uid = _uid_da_conexao(self.client_address[1], self._porta())
         if uid in (os.getuid(), None):
             return True
-        # no WSL o navegador roda no Windows e a conexao chega pelo repasse do
-        # WSL: do root ou sem ponta do lado Linux. Ai quem guarda e o link de
-        # uso unico e o cookie; outra conta do Linux continua recusada
+        # 在 WSL 中浏览器运行于 Windows，连接经 WSL 转发而来：
+        # 来自 root 或 Linux 侧无端点。此时由一次性链接和 cookie 把关；
+        # 其他 Linux 账户仍被拒绝
         return NO_WSL and uid in (0, -1)
 
     def _post_ok(self) -> bool:
@@ -147,13 +146,13 @@ class Painel(BaseHTTPRequestHandler):
         origem = self.headers.get("Origin")
         if origem is not None and origem not in (f"http://127.0.0.1:{porta}", f"http://localhost:{porta}"):
             return False
-        # JSON obriga o navegador a perguntar antes (preflight), que nao respondemos
+        # JSON 强制浏览器先询问（预检），我们不响应预检
         if not self.headers.get("Content-Type", "").startswith("application/json"):
             return False
         return self._sessao_ok()
 
     def _negado(self) -> None:
-        self.json({"motivo": "acesso", "detalhe": "abra o painel pelo link mostrado no terminal"}, 403)
+        self.json({"motivo": "acesso", "detalhe": "请通过终端中显示的链接打开面板"}, 403)
 
     def _entrar(self) -> None:
         recebido = self.path.split("k=", 1)[1].split("&")[0] if "k=" in self.path else ""
@@ -161,22 +160,21 @@ class Painel(BaseHTTPRequestHandler):
         with _trava_entrada:
             valido = bool(recebido) and hmac.compare_digest(recebido, _entrada["codigo"])
             if valido:
-                # uso unico: o link pode ter ficado no historico ou na lista de
-                # processos; o terminal mostra um novo para outra janela
+                # 一次性使用：链接可能留在历史记录或进程列表中；
+                # 终端会为另一个窗口显示新的链接
                 _entrada["codigo"] = secrets.token_urlsafe(32)
-                print(f"  uma janela entrou no painel ({time.strftime('%H:%M:%S')})")
-                print(f"  para abrir em outra janela: {link_de_entrada(porta)}")
+                print(f"  一个窗口进入了面板（{time.strftime('%H:%M:%S')}）")
+                print(f"  要在另一个窗口打开：{link_de_entrada(porta)}")
         if not valido:
             self._envia(403, ACESSO_HTML, "text/html; charset=utf-8")
             return
-        # a janela chega aqui pelo arquivo local que o xdg-open abriu, e o
-        # navegador trata essa navegacao como vinda de outro site: o cookie Strict
-        # nao iria num redirecionamento para "/" e a pagina pediria o link de
-        # novo. Daqui a ida para "/" ja sai do proprio painel, e o cookie vai junto
-        corpo = (b"<!doctype html><meta charset=utf-8>"
-                 b"<meta http-equiv=refresh content='0;url=/'>"
-                 b"<script>location.replace('/')</script>"
-                 b"<a href='/'>abrir o painel</a>\n")
+        # 窗口通过 xdg-open 打开的本地文件来到这里，浏览器把该导航视为来自其他
+        # 网站：Strict cookie 不会随重定向到 "/" 发送，页面会再次索要链接。
+        # 从这里前往 "/" 已属于面板本身，cookie 会一并发送
+        corpo = ("<!doctype html><meta charset=utf-8>"
+                 "<meta http-equiv=refresh content='0;url=/'>"
+                 "<script>location.replace('/')</script>"
+                 "<a href='/'>打开面板</a>\n").encode()
         self.send_response(200)
         self.send_header("Set-Cookie", f"{_nome_cookie(porta)}={CHAVE}; HttpOnly; SameSite=Strict; Path=/")
         self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -185,7 +183,7 @@ class Painel(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(corpo)
 
-    # ---- respostas -------------------------------------------------------
+    # ---- 响应 -------------------------------------------------------
     def _envia(self, codigo: int, corpo: bytes, tipo: str) -> None:
         self.send_response(codigo)
         self.send_header("Content-Type", tipo)
@@ -217,7 +215,7 @@ class Painel(BaseHTTPRequestHandler):
 
     def arquivo(self, alvo: Path) -> None:
         if not alvo.is_file():
-            self._envia(404, b"nao encontrado", "text/plain; charset=utf-8")
+            self._envia(404, "未找到".encode(), "text/plain; charset=utf-8")
             return
         self._envia(200, alvo.read_bytes(),
                     TIPOS.get(alvo.suffix.lower(), "application/octet-stream"))
@@ -225,10 +223,10 @@ class Painel(BaseHTTPRequestHandler):
     # ---- GET -------------------------------------------------------------
     def do_GET(self) -> None:
         if not self._mesmo_usuario():
-            self._envia(403, b"outra conta", "text/plain; charset=utf-8")
+            self._envia(403, "其他账户".encode(), "text/plain; charset=utf-8")
             return
         if not self._host_ok():
-            self._envia(403, b"host nao permitido", "text/plain; charset=utf-8")
+            self._envia(403, "不允许的主机".encode(), "text/plain; charset=utf-8")
             return
         rota = self.path.split("?")[0]
         if rota == "/entrar":
@@ -239,13 +237,13 @@ class Painel(BaseHTTPRequestHandler):
         if rota.startswith("/api/") and not self._sessao_ok():
             self._negado()
             return
-        # previas e papeis sao fotos desta maquina (e a miniatura roda o
-        # ImageMagick): so com a sessao. Livres ficam css, js e os logos do pacote
+        # 预览和壁纸是本机的照片（缩略图还会运行 ImageMagick）：仅限有会话时。
+        # css、js 和包内标志保持公开
         if rota.startswith(("/capturas/", "/papeis/")) and not self._sessao_ok():
-            self._envia(403, b"abra o painel pelo link do terminal", "text/plain; charset=utf-8")
+            self._envia(403, "请通过终端中的链接打开面板".encode(), "text/plain; charset=utf-8")
             return
         if rota.endswith(".html") and not self._sessao_ok():
-            # a pagina sem a sessao nao serviria para nada: explica o que fazer
+            # 没有会话的页面毫无用处：说明该怎么做
             self._envia(403, ACESSO_HTML, "text/html; charset=utf-8")
             return
 
@@ -258,7 +256,7 @@ class Painel(BaseHTTPRequestHandler):
                 "instalado": receitas.instalado(lista),
                 "outro_tema": familia.para_pagina(),
                 "previa": capturas.nome_do_momento(),
-                # fotos tiradas nesta maquina; as outras sao os exemplos do pacote
+                # 本机拍摄的照片；其余是包内示例
                 "proprias": sorted(p.stem for p in caminhos.CAPTURAS.glob("*.jpg")),
             })
             return
@@ -286,9 +284,9 @@ class Painel(BaseHTTPRequestHandler):
             return
 
         if rota == "/api/papeis":
-            # por nome: antes do download a galeria mostra as miniaturas do pacote
+            # 按名称：下载前图库显示包内缩略图
             atual = papeis.nome_escolhido(config.ler())
-            # o esquema da pagina precisa saber o que "do tema" escolheria
+            # 页面示意图需要知道“跟随主题”会选择什么
             do_tema = {t: papeis.nome_escolhido({"tema": t, "papel_de_parede": "do-tema"}) or ""
                        for t in ("escuro", "claro")}
             self.json({"papeis": papeis.disponiveis(), "doTema": do_tema,
@@ -296,12 +294,12 @@ class Painel(BaseHTTPRequestHandler):
             return
 
 
-        # miniatura da imagem propria do login, que fica fora da pasta web
+        # 登录自有图片的缩略图，它位于 web 目录之外
         if rota == "/api/login-propria.jpg":
             origem = papeis.LOGIN_PROPRIA
             alvo = papeis._miniatura(origem, "login-propria", 320) if origem.is_file() else None
             if alvo is None:
-                self._envia(404, b"sem imagem", "text/plain")
+                self._envia(404, "没有图片".encode(), "text/plain")
                 return
             self._envia(200, alvo.read_bytes(), "image/jpeg")
             return
@@ -309,52 +307,51 @@ class Painel(BaseHTTPRequestHandler):
         if rota.startswith("/papeis/"):
             alvo = papeis.miniatura(Path(rota).stem)
             if alvo is None:
-                self._envia(404, b"nao encontrado", "text/plain")
+                self._envia(404, "未找到".encode(), "text/plain")
                 return
             self.arquivo(alvo)
             return
 
-        # previas: a captura do usuario tem prioridade sobre a do pacote
+        # 预览：用户的截图优先于包内的
         if rota.startswith("/capturas/"):
             nome = Path(rota).stem
             if "/" in nome or ".." in nome:
-                self._envia(404, b"nao encontrado", "text/plain")
+                self._envia(404, "未找到".encode(), "text/plain")
                 return
             self.arquivo(caminhos.captura(nome))
             return
 
-        # os logos moram junto dos modelos, nao na pasta web
+        # 标志与模板放在一起，不在 web 目录中
         if rota.startswith("/logos/"):
             nome = Path(rota).name
             if "/" in nome or ".." in nome or not nome.endswith(".svg"):
-                self._envia(404, b"nao encontrado", "text/plain")
+                self._envia(404, "未找到".encode(), "text/plain")
                 return
             self.arquivo(caminhos.ARQUIVOS / "logos" / nome)
             return
 
         alvo = (caminhos.WEB / rota.lstrip("/")).resolve()
-        # "/index.html/" resolve para a pagina: a regra vale pelo arquivo, nao pelo texto
+        # "/index.html/" 会解析到页面：规则按文件而非文本判断
         if alvo.suffix == ".html" and not self._sessao_ok():
             self._envia(403, ACESSO_HTML, "text/html; charset=utf-8")
             return
         if not alvo.is_relative_to(caminhos.WEB.resolve()):
-            self._envia(404, b"nao encontrado", "text/plain; charset=utf-8")
+            self._envia(404, "未找到".encode(), "text/plain; charset=utf-8")
             return
         self.arquivo(alvo)
 
     # ---- POST ------------------------------------------------------------
     def do_POST(self) -> None:
-        # toda rota POST passa por aqui: acao so com a sessao, em JSON e da
-        # propria pagina
+        # 所有 POST 路由都经过这里：操作仅在会话中、以 JSON 且来自页面本身
         if not (self._mesmo_usuario() and self._host_ok() and self._post_ok()):
             self._negado()
             return
         rota = self.path.split("?")[0]
-        # a imagem do login vem inteira no JSON (ja reduzida pela pagina)
+        # 登录图片完整放在 JSON 中（页面已缩小）
         corpo = self.corpo(8_000_000 if rota == "/api/login-imagem" else 64_000)
 
         if rota == "/api/sair":
-            # sair no meio do apt deixaria o dpkg pela metade
+            # 在 apt 中途退出会让 dpkg 半途而废
             if tarefa.ocupada():
                 self.json({"tchau": False, "motivo": "ocupado", "detalhe": tarefa.rotulo}, 409)
                 return
@@ -382,7 +379,7 @@ class Painel(BaseHTTPRequestHandler):
         if rota == "/api/desfazer":
             from . import desfazer
             apagar = bool(corpo.get("apagar"))
-            iniciado = tarefa.funcao("Desfazendo" + (" e apagando" if apagar else ""),
+            iniciado = tarefa.funcao("正在撤销" + ("并删除" if apagar else ""),
                                      lambda diz: desfazer.executar(diz, apagar))
             self.json({"iniciado": iniciado, "motivo": "" if iniciado else "ocupado",
                        "etapas": [{"id": i, "nome": n} for i, n in desfazer.etapas(apagar)]},
@@ -401,36 +398,36 @@ class Painel(BaseHTTPRequestHandler):
             self._reiniciar_login(corpo)
             return
         if rota == "/api/previa-login":
-            # a previa usa as opcoes marcadas na pagina, mesmo antes de aplicar
+            # 预览使用页面上选中的选项，即使在应用之前
             pedido = config.filtrar(corpo)
-            iniciado = tarefa.funcao("Montando a previa da tela de login",
+            iniciado = tarefa.funcao("正在生成登录界面预览",
                                      lambda diz: capturas.previa_login(diz, pedido))
             self.json({"iniciado": iniciado}, 200 if iniciado else 409)
             return
 
-        self._envia(404, b"nao encontrado", "text/plain; charset=utf-8")
+        self._envia(404, "未找到".encode(), "text/plain; charset=utf-8")
 
-    # ---- acoes -----------------------------------------------------------
+    # ---- 操作 -----------------------------------------------------------
     def _recusa_da_familia(self) -> bool:
-        """Outro tema Xfce da familia aplicado: responde com o motivo, que a
-        pagina mostra como os outros erros (ver familia.py)."""
+        """已应用同族的另一个 Xfce 主题：回应原因，页面会像其他错误一样显示
+        （见 familia.py）。"""
         recusa = familia.recusa()
         if recusa:
             self.json({"iniciado": False, "motivo": "outro tema", "erro": recusa}, 409)
         return bool(recusa)
 
     def _trocar(self, corpo: dict) -> None:
-        """Volta o outro tema Xfce da familia (o restaurar dele, os pacotes
-        ficam) e instala este com as opcoes da pagina."""
+        """恢复同族的另一个 Xfce 主题（它的还原，软件包保留），
+        并用页面选项安装本主题。"""
         outro = familia.para_pagina()
         if not outro:
             self.json({"iniciado": False, "motivo": "nada a trocar",
-                       "erro": "nenhum outro tema Xfce da familia esta instalado nesta conta"}, 409)
+                       "erro": "本账户中未安装同族的其他 Xfce 主题"}, 409)
             return
         if not outro["achado"]:
             self.json({"iniciado": False, "motivo": "outro tema",
-                       "erro": f"nao achei o projeto {outro['modulo']}; volte o tema {outro['nome']} "
-                               f"no terminal: {outro['comando']}"}, 409)
+                       "erro": f"找不到项目 {outro['modulo']}；请在终端中恢复主题 {outro['nome']}："
+                               f"{outro['comando']}"}, 409)
             return
         impedem = sistema.impedimentos(sistema.verificacoes(usar_cache=False))
         if impedem:
@@ -440,7 +437,7 @@ class Painel(BaseHTTPRequestHandler):
         pedido = config.filtrar(corpo)
         if not caminhos.livre():
             self.json({"iniciado": False, "motivo": "ocupado",
-                       "detalhe": "a linha de comando esta rodando"}, 409)
+                       "detalhe": "命令行正在运行"}, 409)
             return
 
         def trocar_e_instalar(diz) -> int:
@@ -448,8 +445,8 @@ class Painel(BaseHTTPRequestHandler):
                 return 1
             return receitas.executar(saida=diz, cfg={**config.ler(), **pedido})
 
-        # o rotulo comeca como o da instalacao: a pagina recarregada acompanha igual
-        iniciado = tarefa.funcao(f"Instalacao completa, trocando o tema {outro['nome']}",
+        # 标签以安装的标签开头：重新加载的页面同样能跟上
+        iniciado = tarefa.funcao(f"完整安装，正在切换主题 {outro['nome']}",
                                  trocar_e_instalar)
         if not iniciado:
             self.json({"iniciado": False, "motivo": "ocupado"}, 409)
@@ -467,10 +464,10 @@ class Painel(BaseHTTPRequestHandler):
             return
         atual = config.ler()
         mudou = [c for c, v in pedido.items() if atual.get(c) != v]
-        # sem diferenca, reaplica o conjunto: o botao sempre faz alguma coisa
+        # 没有差异时重新应用整套：按钮总能做点什么
         chaves = mudou or list(pedido)
-        # receita que mudou depois de aplicada entra mesmo sem opcao alterada,
-        # senao a nova tela de login nunca sairia do codigo
+        # 应用后发生变化的配方即使选项未变也会加入，
+        # 否则新的登录界面永远不会离开代码
         pendentes = set(receitas.afetadas_por(list(pedido))) & receitas.desatualizadas()
         alvos = sorted(set(receitas.afetadas_por(chaves)) | pendentes,
                        key=lambda x: (len(x), x))
@@ -480,10 +477,10 @@ class Painel(BaseHTTPRequestHandler):
 
         if not caminhos.livre():
             self.json({"iniciado": False, "motivo": "ocupado",
-                       "detalhe": "a linha de comando esta rodando"}, 409)
+                       "detalhe": "命令行正在运行"}, 409)
             return
         novidade = bool(mudou or pendentes)
-        rotulo = ("Aplicando" if novidade else "Reaplicando") + ": " + ", ".join(alvos)
+        rotulo = ("正在应用" if novidade else "正在重新应用") + "： " + ", ".join(alvos)
         iniciado = tarefa.funcao(
             rotulo,
             lambda diz: receitas.executar(apenas=alvos, refazer=True, saida=diz,
@@ -492,22 +489,21 @@ class Painel(BaseHTTPRequestHandler):
         if not iniciado:
             self.json({"iniciado": False, "motivo": "ocupado"}, 409)
             return
-        # so grava depois que a execucao comecou, senao a config passaria a
-        # dizer que algo foi aplicado sem ter sido
+        # 只在执行开始后保存，否则配置会声称已应用某些实际未应用的内容
         config.gravar(pedido)
         self.json({"iniciado": True, "receitas": alvos, "mudou": mudou,
                    "reaplicou": not novidade})
 
     def _login_imagem(self, corpo: dict) -> None:
-        """Guarda a imagem escolhida na pagina para o fundo do login. A pagina
-        manda um JPEG ja reduzido; aqui ele e conferido e regravado pelo
-        ImageMagick, so como JPEG, no lugar que papeis.fundo_login procura."""
+        """保存页面上为登录背景选择的图片。页面发送已缩小的 JPEG；
+        这里校验后由 ImageMagick 仅以 JPEG 形式重写到 papeis.fundo_login
+        查找的位置。"""
         try:
             dados = base64.b64decode(str(corpo.get("imagem", "")), validate=True)
         except (ValueError, TypeError):
             dados = b""
         if not dados.startswith(b"\xff\xd8\xff") or len(dados) > 6_000_000:
-            self.json({"ok": False, "erro": "a imagem nao chegou como JPEG (ou passou de 6 MB)"}, 400)
+            self.json({"ok": False, "erro": "图片未以 JPEG 形式送达（或超过 6 MB）"}, 400)
             return
         destino = papeis.LOGIN_PROPRIA
         destino.parent.mkdir(parents=True, exist_ok=True)
@@ -518,14 +514,14 @@ class Painel(BaseHTTPRequestHandler):
                             "-strip", "-quality", "90", f"jpeg:{destino}"],
                            capture_output=True, timeout=60, check=True)
         except (OSError, subprocess.SubprocessError):
-            self.json({"ok": False, "erro": "nao consegui ler essa imagem"}, 400)
+            self.json({"ok": False, "erro": "无法读取该图片"}, 400)
             return
         finally:
             temp.unlink(missing_ok=True)
         self.json({"ok": True})
 
     def _reiniciar_login(self, corpo: dict) -> None:
-        """Reinicia o LightDM, o que encerra a sessao grafica. Nunca sem confirmacao."""
+        """重启 LightDM，这会结束图形会话。绝不在未确认时进行。"""
         if corpo.get("confirmar") is not True:
             self.json({"iniciado": False, "motivo": "sem_confirmacao"}, 400)
             return
@@ -535,17 +531,17 @@ class Painel(BaseHTTPRequestHandler):
         except OSError:
             instalada = False
         if not instalada:
-            # reiniciar antes de aplicar so fecharia a sessao para mostrar a tela antiga
+            # 在应用前重启只会关闭会话并显示旧界面
             self.json({"iniciado": False, "motivo": "login_nao_aplicado"}, 412)
             return
         if not sistema.sudo_liberado():
             self.json({"iniciado": False, "motivo": "sem_permissao"}, 412)
             return
         self.json({"iniciado": True})
-        estado.registrar("reiniciando o lightdm a pedido da pagina")
-        # a resposta sai antes, porque a sessao e o navegador fecham junto. Sem
-        # setsid: o sudo guarda a credencial por terminal, e o systemctl so
-        # enfileira o reinicio, que continua mesmo com este processo morto
+        estado.registrar("应页面请求重启 lightdm")
+        # 响应先发出，因为会话和浏览器会一起关闭。不用
+        # setsid：sudo 按终端保存凭据，systemctl 只将重启排队，即使本进程结束
+        # 也会继续
         threading.Timer(1.5, lambda: subprocess.Popen(
             ["sudo", "-n", "systemctl", "restart", "lightdm"],
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
@@ -562,10 +558,10 @@ class Painel(BaseHTTPRequestHandler):
         pedido = config.filtrar(corpo)
         if not caminhos.livre():
             self.json({"iniciado": False, "motivo": "ocupado",
-                       "detalhe": "a linha de comando esta rodando"}, 409)
+                       "detalhe": "命令行正在运行"}, 409)
             return
         iniciado = tarefa.funcao(
-            "Instalacao completa, pode levar de 15 a 25 minutos",
+            "完整安装，可能需要 15 到 25 分钟",
             lambda diz: receitas.executar(saida=diz, cfg={**config.ler(), **pedido}),
         )
         if not iniciado:
@@ -583,15 +579,15 @@ class Painel(BaseHTTPRequestHandler):
             return
         externas = [] if remover else programas.fontes_necessarias(escolhidos)
         if externas and not corpo.get("confirmar_externo"):
-            # nada e instalado antes de o usuario ver o que sera acrescentado
-            # ao sistema; esta pergunta e separada da confirmacao de remocao
+            # 在用户看到将向系统添加什么之前不安装任何内容；
+            # 这个问题与移除确认相互独立
             self.json({"iniciado": False, "motivo": "fonte_externa",
                        "externas": externas})
             return
 
         if not caminhos.livre():
             self.json({"iniciado": False, "motivo": "ocupado",
-                       "detalhe": "a linha de comando esta rodando"}, 409)
+                       "detalhe": "命令行正在运行"}, 409)
             return
         if remover:
             extras = programas.arrastaria(escolhidos)
@@ -599,11 +595,11 @@ class Painel(BaseHTTPRequestHandler):
                 self.json({"iniciado": False, "motivo": "arrasta_outros",
                            "extras": extras})
                 return
-            rotulo = "Removendo: " + ", ".join(escolhidos)
+            rotulo = "正在移除： " + ", ".join(escolhidos)
             iniciado = tarefa.funcao(
                 rotulo, lambda diz: programas.remover(escolhidos, diz))
         else:
-            rotulo = "Instalando: " + ", ".join(escolhidos)
+            rotulo = "正在安装： " + ", ".join(escolhidos)
             iniciado = tarefa.funcao(
                 rotulo, lambda diz: programas.instalar(escolhidos, diz))
         self.json({"iniciado": iniciado, "pacotes": escolhidos,
@@ -618,9 +614,9 @@ class Painel(BaseHTTPRequestHandler):
         elif modo == "todas":
             alvo = lambda diz: capturas.capturar_todas(diz, espera)
         else:
-            self.json({"iniciado": False, "erro": "modo invalido"}, 400)
+            self.json({"iniciado": False, "erro": "无效模式"}, 400)
             return
-        self.json({"iniciado": tarefa.funcao(f"Capturando previas ({modo})", alvo)})
+        self.json({"iniciado": tarefa.funcao(f"正在截图预览（{modo}）", alvo)})
 
 
 def subir(porta: int = PORTA_PADRAO, abrir: bool = True) -> int:
@@ -628,27 +624,27 @@ def subir(porta: int = PORTA_PADRAO, abrir: bool = True) -> int:
     try:
         httpd = ThreadingHTTPServer(("127.0.0.1", porta), Painel)
     except OSError as erro:
-        print(f"  nao consegui abrir a porta {porta}: {erro}")
+        print(f"  无法打开端口 {porta}：{erro}")
         return 1
     httpd.daemon_threads = True
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
 
     endereco = link_de_entrada(porta)
-    print(f"\n  {NOME} aberto em {endereco}")
-    print("  (o link vale uma vez; feche pelo botao na pagina, ou com Ctrl+C aqui)\n")
+    print(f"\n  {NOME} 已打开：{endereco}")
+    print("  （链接仅可使用一次；请用页面上的按钮关闭，或在此按 Ctrl+C）\n")
     if abrir:
         try:
             subprocess.Popen(["xdg-open", _arquivo_de_entrada(porta).as_uri()],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError:
-            print("  abra o endereco acima no seu navegador")
+            print("  请在浏览器中打开上面的地址")
 
     def encerrar(*_a) -> None:
-        # no meio de uma tarefa, o 1o Ctrl+C so avisa: o apt pela metade
-        # deixaria o dpkg quebrado; o 2o encerra assim mesmo
+        # 任务进行中，第一次 Ctrl+C 只提示：apt 半途而废会损坏 dpkg；
+        # 第二次则强制退出
         if tarefa.ocupada() and not encerrar.avisou:
             encerrar.avisou = True
-            print("\n  ainda instalando: espere terminar, ou Ctrl+C de novo para sair assim mesmo")
+            print("\n  仍在安装：请等待完成，或再次按 Ctrl+C 强制退出")
             return
         parar.set()
     encerrar.avisou = False
@@ -656,6 +652,6 @@ def subir(porta: int = PORTA_PADRAO, abrir: bool = True) -> int:
     signal.signal(signal.SIGTERM, encerrar)
     while not parar.is_set():
         time.sleep(0.3)
-    print("  encerrando o painel")
+    print("  正在关闭面板")
     httpd.shutdown()
     return 0

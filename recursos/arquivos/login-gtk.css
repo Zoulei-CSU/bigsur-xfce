@@ -1,18 +1,18 @@
-/* Tela de login do d3bian-init-bigsur-xfce.
-   Tema proprio por cima do WhiteSur escuro, no desenho do macOS: fundo da
-   foto, foto redonda no centro, campos de vidro e nada de caixa em volta.
-   A tela de bloqueio e o mesmo greeter, entao herda tudo daqui.
+/* d3bian-init-bigsur-xfce 的登录界面。
+   在深色 WhiteSur 之上使用自有主题，采用 macOS 的样式：照片作背景，
+   中央圆形照片，玻璃质感输入框，四周没有边框盒。
+   锁屏就是同一个 greeter，因此会继承这里的一切。
 
-   O lightdm-gtk-greeter poe a foto do usuario a esquerda dos campos, numa
-   grade que o CSS nao reorganiza. Por isso a imagem dele fica escondida na
-   configuracao, e a foto e desenhada como fundo do quadro, acima dos campos. */
+   lightdm-gtk-greeter 会把用户照片放在输入框左侧，位于 CSS 无法重排的
+   网格中。因此在该配置中隐藏它的图片，并把照片绘制为框的背景，位于输入框
+   上方。 */
 
 @import url("@@login_tema_base@@");
 
-/* o WhiteSur pinta o texto de exemplo com a cor de destaque */
+/* WhiteSur 用高亮色绘制示例文字 */
 @define-color placeholder_text_color rgba(255, 255, 255, 0.62);
 
-/* ---- barra do topo, transparente como no macOS ---- */
+/* ---- 顶部栏，像 macOS 一样透明 ---- */
 #panel_window {
   background-color: transparent;
   background-image: none;
@@ -24,7 +24,7 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
-/* ---- janela de login, sem caixa ---- */
+/* ---- 登录窗口，无边框盒 ---- */
 #login_window {
   background-color: transparent;
   box-shadow: none;
@@ -50,7 +50,7 @@
   padding-top: 4px;
 }
 
-/* ---- nome do usuario, quando aparece a lista ---- */
+/* ---- 用户名，出现列表时 ---- */
 #login_window #user_combobox,
 #login_window #user_combobox button {
   color: white;
@@ -62,7 +62,7 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* ---- campos em pilula ---- */
+/* ---- 胶囊形输入框 ---- */
 #login_window entry {
   min-width: 250px;
   min-height: 26px;
@@ -80,7 +80,7 @@
   border-color: rgba(255, 255, 255, 0.55);
 }
 
-/* ---- botoes ---- */
+/* ---- 按钮 ---- */
 #login_window button,
 #power_window button {
   border-radius: 999px;
@@ -94,7 +94,7 @@
 #login_window button:hover,
 #power_window button:hover { background-color: rgba(255, 255, 255, 0.24); }
 
-/* ---- senha errada ---- */
+/* ---- 密码错误 ---- */
 #greeter_infobar {
   border-radius: 12px;
   border: none;
@@ -103,7 +103,7 @@
 }
 #greeter_infobar box { background: transparent; border: none; }
 
-/* ---- pergunta de desligar e reiniciar ---- */
+/* ---- 关机与重启询问 ---- */
 #power_window {
   background-color: rgba(0, 0, 0, 0.35);
 }

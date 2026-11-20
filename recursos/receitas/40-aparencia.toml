@@ -1,13 +1,13 @@
 [modulo]
 id = "40"
 nome = "aparencia"
-titulo = "Tema, fontes, botoes e papel de parede"
+titulo = "主题、字体、按钮和壁纸"
 requer = ["30", "31"]
 afetada_por = ["tema", "destaque", "papel_de_parede"]
 
 [[passo]]
 tipo = "xfconf"
-dizer = "aplicando o tema @@gtk_tema@@ com a fonte @@fonte_ui@@"
+dizer = "使用字体 @@fonte_ui@@ 应用主题 @@gtk_tema@@"
 canal = "xsettings"
 chave = "/Net/ThemeName"
 valor = "@@gtk_tema@@"
@@ -43,7 +43,7 @@ canal = "xsettings"
 chave = "/Gtk/MonospaceFontName"
 valor = "@@fonte_mono@@ 10"
 
-# botoes da janela a direita, preferencia do usuario; no macOS ficam a esquerda
+# 窗口按钮在右侧，这是用户偏好；在 macOS 上它们在左侧
 [[passo]]
 tipo = "xfconf"
 canal = "xsettings"
@@ -64,13 +64,13 @@ valor = "rgb"
 
 [[passo]]
 tipo = "xfconf"
-dizer = "ajustando o gerenciador de janelas"
+dizer = "调整窗口管理器"
 canal = "xfwm4"
 chave = "/general/theme"
 valor = "@@gtk_tema@@"
 
-# com o encaixe ligado o 44 troca o tema acima pela copia de bordas largas;
-# se so esta receita rodar de novo, a copia e refeita aqui
+# 启用吸附后，44 会把上面的主题换成宽边框副本；
+# 如果只重新运行本配方，副本会在这里重建
 [[passo]]
 tipo = "script"
 se = "janelas == sim"
@@ -111,7 +111,7 @@ valor = "4"
 
 [[passo]]
 tipo = "arquivo"
-dizer = "arquivos de tema para programas que nao leem o xsettings"
+dizer = "给不读取 xsettings 的程序用的主题文件"
 destino = "~/.config/gtk-3.0/settings.ini"
 modelo = "gtk3-settings.ini"
 
@@ -120,7 +120,7 @@ tipo = "arquivo"
 destino = "~/.gtkrc-2.0"
 modelo = "gtkrc-2.0"
 
-# o valor de antes das tres chaves abaixo, para o desfazer
+# 下面三个键之前的值，供撤销使用
 [[passo]]
 tipo = "script"
 tolera_falha = true
@@ -128,11 +128,11 @@ corpo = '''
 for chave in color-scheme gtk-theme icon-theme; do d3_gsettings org.gnome.desktop.interface "$chave"; done
 '''
 
-# apps libadwaita, o seletor de arquivos do portal e o Firefox leem estas
-# chaves e nao o xsettings; sem elas abrem claros mesmo no tema escuro
+# libadwaita 应用、门户文件选择器和 Firefox 读取这些
+# 键而非 xsettings；没有它们，即使在深色主题下也会打开浅色界面
 [[passo]]
 tipo = "comando"
-dizer = "avisando os apps GTK4 e o portal que o tema e @@tema@@"
+dizer = "告知 GTK4 应用和门户，主题是 @@tema@@"
 tolera_falha = true
 argumentos = ["gsettings", "set", "org.gnome.desktop.interface", "color-scheme", "@@gtk_esquema@@"]
 
@@ -148,44 +148,44 @@ argumentos = ["gsettings", "set", "org.gnome.desktop.interface", "icon-theme", "
 
 [[passo]]
 tipo = "script"
-dizer = "ligando o tema ao GTK4, que so le ~/.config/gtk-4.0"
+dizer = "把主题接入 GTK4，它只读取 ~/.config/gtk-4.0"
 tolera_falha = true
 corpo = '''
-# a variante com a cor pode nao ter sido gerada; a base sempre existe
+# 带颜色的变体可能没有被生成；基础版本始终存在
 origem="$HOME/.themes/$D3_GTK_TEMA/gtk-4.0"
 [ -d "$origem" ] || origem="$HOME/.themes/$D3_GTK_TEMA_BASE/gtk-4.0"
 if [ ! -d "$origem" ]; then
-  echo "atencao: $origem nao existe, o GTK4 fica com o tema padrao"
+  echo "atencao: $origem 不存在，GTK4 将使用默认主题"
   exit 1
 fi
 mkdir -p "$HOME/.config/gtk-4.0"
 for f in assets gtk.css gtk-dark.css; do
   alvo="$HOME/.config/gtk-4.0/$f"
-  # so troca link ou arquivo; uma pasta de verdade ali e do usuario
+  # 只替换链接或文件；那里真正的文件夹属于用户
   if [ -d "$alvo" ] && [ ! -L "$alvo" ]; then
-    echo "mantendo $alvo, que nao e um link"
+    echo "保留 $alvo，它不是链接"
     continue
   fi
   d3_antes "$alvo"
   ln -sfn "$origem/$f" "$alvo"
 done
-echo "GTK4 usando $(dirname "$origem" | xargs basename)"
+echo "GTK4 正在使用 $(dirname "$origem" | xargs basename)"
 '''
 
 [[passo]]
 tipo = "script"
-dizer = "papel de parede"
+dizer = "壁纸"
 tolera_falha = true
 corpo = '''
-# o caminho ja vem resolvido pelo motor; vazio quer dizer "nao mexer"
+# 路径已由引擎解析好；为空表示"不要改动"
 if [ -z "$D3_PAPEL_ARQUIVO" ]; then
-  echo "mantendo o papel de parede que voce escolheu"
+  echo "保留你选择的壁纸"
 else
   for p in $(xfconf-query -c xfce4-desktop -l | grep -E 'last-image$'); do
     d3_xfconf xfce4-desktop "$p" string
     xfconf-query -c xfce4-desktop -p "$p" -s "$D3_PAPEL_ARQUIVO"
   done
-  # a chave do monitor atual pode ainda nao existir
+  # 当前显示器的键可能还不存在
   for mon in $(xrandr --query 2>/dev/null | awk '/ connected/{print $1}'); do
     chave="/backdrop/screen0/monitor$mon/workspace0/last-image"
     d3_xfconf xfce4-desktop "$chave" string
@@ -195,8 +195,8 @@ else
     xfconf-query -c xfce4-desktop -p "/backdrop/screen0/monitor$mon/workspace0/image-style" \
       -n -t int -s 5 2>/dev/null || true
   done
-  echo "papel de parede: $(basename "$D3_PAPEL_ARQUIVO")"
+  echo "壁纸：$(basename "$D3_PAPEL_ARQUIVO")"
 fi
-# o xfdesktop nao repinta sozinho quando a chave muda por fora da interface
+# 键从界面之外改变时，xfdesktop 不会自行重绘
 xfdesktop --reload >/dev/null 2>&1 || true
 '''

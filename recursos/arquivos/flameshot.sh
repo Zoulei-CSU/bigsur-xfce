@@ -1,28 +1,28 @@
 #!/usr/bin/env bash
-# Faz do Flameshot o capturador padrao: abre com a sessao e atende o Print Screen.
+# 让 Flameshot 成为默认截图工具：随会话启动，并占用 Print Screen。
 #
-# Roda como o usuario, depois do apt. Nada aqui aponta para a pasta do
-# programa: a instalacao vem de um pendrive, e o que a sessao le fica na maquina.
+# 以用户身份运行，在 apt 之后。这里不指向程序目录：安装来自 U 盘，
+# 而会话读取的内容留在本机。
 #
-# O Print Screen chama ~/.local/bin/d3bian-captura, e nao o flameshot direto.
-# Se o Flameshot for removido pela tela de Programas, a tecla volta sozinha ao
-# capturador do XFCE em vez de chamar um programa que nao existe mais.
+# Print Screen 调用 ~/.local/bin/d3bian-captura，而不是直接调用 flameshot。
+# 如果从“程序”界面移除 Flameshot，按键会自动回退到 XFCE 的截图工具，
+# 而不是去调用一个已不存在的程序。
 set -euo pipefail
 
 if [ "$(id -u)" -eq 0 ]; then
-  echo "rode como usuario comum, nao como root" >&2
+  echo "请以普通用户身份运行，而不是 root" >&2
   exit 1
 fi
 if ! command -v flameshot >/dev/null; then
-  echo "flameshot ausente: o apt nao o instalou" >&2
+  echo "缺少 flameshot：apt 未安装它" >&2
   exit 1
 fi
 
-echo "criando o atalho de captura"
+echo "正在创建截图快捷键"
 mkdir -p "$HOME/.local/bin"
 cat > "$HOME/.local/bin/d3bian-captura" <<'FIM'
 #!/bin/sh
-# Print Screen: o Flameshot quando instalado, senao o capturador do XFCE
+# Print Screen：已安装时用 Flameshot，否则用 XFCE 的截图工具
 if command -v flameshot >/dev/null 2>&1; then
   exec flameshot gui
 fi
@@ -30,15 +30,13 @@ exec xfce4-screenshooter "$@"
 FIM
 chmod +x "$HOME/.local/bin/d3bian-captura"
 
-echo "Print Screen passa a abrir o Flameshot"
+echo "Print Screen 现在会打开 Flameshot"
 xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/Print" \
   -n -t string -s "$HOME/.local/bin/d3bian-captura"
 
-# O mesmo nome e conteudo que o proprio Flameshot grava quando se marca
-# "Iniciar com o sistema" nas configuracoes dele; assim a caixinha de la
-# continua mandando neste arquivo. TryExec faz a sessao pular a entrada se o
-# programa for removido.
-echo "abrindo o Flameshot junto com a sessao"
+# 与 Flameshot 自身在勾选“随系统启动”时写入的名称和内容相同；
+# 这样那边的勾选框仍然作用于本文件。若程序被移除，TryExec 会让会话跳过该条目。
+echo "正在让 Flameshot 随会话启动"
 mkdir -p "$HOME/.config/autostart"
 cat > "$HOME/.config/autostart/Flameshot.desktop" <<'FIM'
 [Desktop Entry]
@@ -51,8 +49,8 @@ Type=Application
 X-GNOME-Autostart-enabled=true
 FIM
 
-# startupLaunch acompanha o autostart acima; o aviso de "ja esta rodando" a
-# cada inicio so atrapalha quando ele abre sozinho
+# startupLaunch 与上面的自启动项对应；自动启动时每次出现的
+# “已在运行”提示只会添乱
 ini="$HOME/.config/flameshot/flameshot.ini"
 mkdir -p "$(dirname "$ini")"
 [ -f "$ini" ] || printf '[General]\n' > "$ini"
@@ -67,9 +65,9 @@ ini_chave() {
 ini_chave startupLaunch true
 ini_chave showStartupLaunchMessage false
 
-# ja deixa rodando nesta sessao, sem esperar o proximo login
+# 就在本次会话中启动它，不必等下次登录
 if [ -n "${DISPLAY:-}" ] && ! pgrep -u "$(id -u)" -x flameshot >/dev/null; then
   setsid -f flameshot >/dev/null 2>&1 </dev/null || true
 fi
 
-echo "Flameshot pronto: Print Screen abre a selecao de area"
+echo "Flameshot 已就绪：Print Screen 会打开区域选择"

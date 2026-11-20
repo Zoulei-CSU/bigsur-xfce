@@ -1,8 +1,7 @@
-"""Preferencias do usuario.
+"""用户偏好。
 
-Um unico arquivo JSON, com valores validados contra uma tabela de opcoes. A
-validacao serve tanto para o terminal quanto para a pagina web: qualquer valor
-que nao esteja na tabela e recusado antes de chegar ao motor.
+单个 JSON 文件，值会对照选项表进行校验。该校验同时用于终端和网页：不在表中
+的任何值都会在到达引擎之前被拒绝。
 """
 
 from __future__ import annotations
@@ -15,7 +14,7 @@ from . import caminhos
 
 
 class Opcao:
-    """Uma preferencia: o que ela aceita, o padrao e para que serve."""
+    """一项偏好：它接受什么、默认值以及用途。"""
 
     def __init__(self, chave: str, padrao: str, valores: tuple[str, ...],
                  titulo: str, ajuda: str = "", livre: str = "") -> None:
@@ -24,8 +23,7 @@ class Opcao:
         self.valores = valores
         self.titulo = titulo
         self.ajuda = ajuda
-        # expressao que descreve os valores aceitos alem da lista; vazia
-        # significa que so a lista vale
+        # 描述列表之外可接受值的表达式；为空表示只有列表有效
         self.livre = livre
 
     def valida(self, valor: Any) -> bool:
@@ -45,50 +43,49 @@ SIM_NAO = ("sim", "nao")
 
 OPCOES: tuple[Opcao, ...] = (
     Opcao("tema", "escuro", ("claro", "escuro"),
-          "Tema", "Cor das janelas e da barra do topo"),
+          "主题", "窗口和顶栏的颜色"),
     Opcao("destaque", "padrao",
           ("padrao", "azul", "roxo", "rosa", "vermelho", "laranja", "amarelo", "verde", "cinza"),
-          "Cor de destaque", "Cor dos botoes e da selecao"),
+          "强调色", "按钮和选中项的颜色"),
     Opcao("logo", "debian",
           ("debian", "debian-cor", "tux", "tux-cor"),
-          "Logo do canto", "Botao que abre o menu de aplicativos"),
+          "角落标志", "打开应用菜单的按钮"),
     Opcao("menu_global", "sim", SIM_NAO,
-          "Barra de menus no topo", "Menu do programa ativo, como no macOS"),
+          "顶部菜单栏", "当前程序的菜单，如同 macOS"),
     Opcao("dock", "sim", SIM_NAO,
-          "Dock inferior", "Barra de atalhos com zoom. Botao do meio (ou Ctrl + clique) abre outra janela "
-          "do programa; no terminal, clique direito tem Nova janela e Nova aba"),
-    # "sim" e o widget simples e continua com esse nome para nao invalidar
-    # configuracoes ja salvas; "aneis" e o do setup Xfce Big Sur do lsteam
+          "底部 Dock", "带缩放的快捷栏。中键（或 Ctrl + 单击）打开程序的另一个窗口；"
+          "在终端中，右键有“新建窗口”和“新建标签页”"),
+    # "sim" 是简单组件，保留该名称以免让已保存的配置失效；
+    # "aneis" 来自 lsteam 的 Xfce Big Sur 设置
     Opcao("widget", "sim", ("sim", "aneis", "nao"),
-          "Widget na area de trabalho",
-          "Simples: relogio e barras. Aneis: relogio analogico, processos e rede"),
+          "桌面组件",
+          "简单：时钟和进度条。圆环：模拟时钟、进程和网络"),
     Opcao("efeitos", "sim", SIM_NAO,
-          "Sombras e cantos arredondados", "Pesa um pouco no processador de video"),
+          "阴影和圆角", "会略微增加显卡负担"),
     Opcao("janelas", "sim", SIM_NAO,
-          "Encaixe de janelas", "Bordas mais largas, atalhos e layouts no Super+Z. "
-          "Alt + arrastar move a janela e Alt + botao direito arrastado redimensiona"),
+          "窗口平铺", "更宽的边框、快捷键和 Super+Z 布局。"
+          "Alt + 拖动移动窗口，Alt + 右键拖动调整大小"),
     Opcao("titulo_no_painel", "nao", SIM_NAO,
-          "Titulo da janela no painel", "Janela maximizada mostra titulo e botoes na barra"),
-    # numa maquina recem instalada nao ha papel de parede a preservar, entao o
-    # padrao e o do tema; quem ja escolheu o seu troca para "manter"
-    # alem de manter e do-tema, aceita o nome de um arquivo da galeria
+          "面板中的窗口标题", "最大化窗口会在栏中显示标题和按钮"),
+    # 全新安装的机器没有需要保留的壁纸，因此默认跟随主题；
+    # 已经选好壁纸的人改为“保留”
+    # 除保留和跟随主题外，也接受图库中的文件名
     Opcao("papel_de_parede", "do-tema", ("do-tema", "manter"),
-          "Papel de parede", "Escolha um da galeria, ou mantenha o seu",
+          "壁纸", "从图库中选择一张，或保留你现有的",
           livre=r"[A-Za-z0-9][A-Za-z0-9._-]{0,80}"),
-    # tela de login: alem de desktop e do-tema, aceita um nome da galeria
+    # 登录界面：除桌面和跟随主题外，也接受图库中的名称
     Opcao("login_fundo", "desktop", ("desktop", "do-tema", "propria"),
-          "Fundo da tela de login", "O mesmo do desktop, um da galeria ou uma imagem sua",
+          "登录界面背景", "与桌面相同、来自图库，或你自己的图片",
           livre=r"[A-Za-z0-9][A-Za-z0-9._-]{0,80}"),
     Opcao("login_desfoque", "sim", SIM_NAO,
-          "Fundo desfocado", "A imagem fica embacada atras dos campos, como no macOS"),
+          "背景模糊", "输入框后的图片会变模糊，如同 macOS"),
     Opcao("login_escurecer", "10", ("0", "10", "20", "30", "40", "50", "60"),
-          "Escurecer o fundo", "Quanto o fundo fica mais escuro atras dos campos: 0 mostra a imagem como ela e"),
+          "背景变暗", "输入框后的背景变暗程度：0 显示原图"),
     Opcao("login_usuarios", "campos", ("campos", "lista"),
-          "Como entrar", "Digitar nome e senha, ou escolher o usuario numa lista"),
-    # o padrao repete o que o Debian ja faz com o light-locker: a tela apaga
-    # aos dez minutos e bloqueia logo depois
+          "登录方式", "输入用户名和密码，或从列表中选择用户"),
+    # 默认值与 Debian 用 light-locker 的现有行为一致：十分钟后熄屏并随即锁定
     Opcao("bloqueio", "10", ("nao", "5", "10", "15", "30"),
-          "Bloqueio de tela", "Pede a senha depois de minutos parado e ao suspender"),
+          "屏幕锁定", "闲置若干分钟及挂起后要求输入密码"),
 )
 
 POR_CHAVE = {o.chave: o for o in OPCOES}
@@ -99,7 +96,7 @@ def padroes() -> dict[str, str]:
 
 
 def ler() -> dict[str, str]:
-    """Config do usuario por cima dos padroes, ignorando lixo."""
+    """在默认值之上叠加用户配置，忽略无效内容。"""
     valores = padroes()
     try:
         salvo = json.loads(caminhos.CONFIG.read_text())
@@ -115,7 +112,7 @@ def ler() -> dict[str, str]:
 
 
 def gravar(novos: dict[str, Any]) -> list[str]:
-    """Grava so o que e valido e mudou. Devolve as chaves alteradas."""
+    """只保存有效且有变化的内容。返回被更改的键。"""
     atual = ler()
     mudou = []
     for chave, valor in novos.items():
@@ -130,6 +127,6 @@ def gravar(novos: dict[str, Any]) -> list[str]:
 
 
 def filtrar(bruto: dict[str, Any]) -> dict[str, str]:
-    """So as chaves conhecidas e com valor aceito."""
+    """只保留已知且值可接受的键。"""
     return {c: v for c, v in bruto.items()
             if c in POR_CHAVE and POR_CHAVE[c].valida(v)}

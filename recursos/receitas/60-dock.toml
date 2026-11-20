@@ -1,56 +1,56 @@
 [modulo]
 id = "60"
 nome = "dock"
-titulo = "Dock inferior"
+titulo = "底部程序坞"
 afetada_por = ["dock"]
 
 [[passo]]
 tipo = "script"
 se = "dock != sim"
-dizer = "desligando o dock"
+dizer = "关闭程序坞"
 tolera_falha = true
 corpo = '''
 d3_processo plank
-# o plank trata o TERM no laco principal: preso na subida, ele nao sai
+# plank 在主循环中处理 TERM：启动卡住时它不会退出
 pkill -x plank 2>/dev/null || true
 for _ in $(seq 50); do pgrep -x -u "$(id -u)" plank >/dev/null || break; sleep 0.1; done
 pkill -KILL -x -u "$(id -u)" plank 2>/dev/null && sleep 0.5
 if [ -e "$HOME/.config/autostart/plank.desktop" ]; then d3_antes "$HOME/.config/autostart/plank.desktop"; fi
 rm -f "$HOME/.config/autostart/plank.desktop"
-echo "dock desligado; o pacote continua instalado, religar e imediato"
+echo "程序坞已关闭；软件包仍然安装，重新启用立即可用"
 '''
 
 [[passo]]
 tipo = "script"
 se = "dock == sim"
-dizer = "instalando e configurando o dock"
+dizer = "安装并配置程序坞"
 corpo = '''
-# o xfwm4 tira a sombra de janelas do tipo dock quando o plank aparece; anotado
-# para o desfazer devolver
+# plank 出现时 xfwm4 会去掉 dock 类型窗口的阴影；记录下来
+# 供撤销还原
 d3_xfconf xfwm4 /general/show_dock_shadow bool
-# O plank-reloaded instala o executavel como /usr/bin/plank e declara conflito
-# com o pacote plank. Detectar pelo binario faria o instalador trocar o fork
-# pelo original. Por isso a deteccao e sempre pelo nome do pacote.
+# plank-reloaded 把可执行文件安装为 /usr/bin/plank，并声明与
+# plank 包冲突。通过二进制文件检测会让安装器用原版替换这个分支。
+# 因此检测总是依据包名。
 instalado(){ [ "$(dpkg-query -W -f='${db:Status-Status}' "$1" 2>/dev/null)" = installed ]; }
 
 pacote=""
 if instalado plank-reloaded; then
   pacote=plank-reloaded
 else
-  # versao fixa e SHA-256 conferido antes de o apt instalar como root
-  # (motor.py, PLANK_VERSAO e PLANK_SHA256); sem hash para esta arquitetura,
-  # fica o plank do Debian
+  # 在 apt 以 root 安装之前核对固定版本和 SHA-256
+  # （motor.py，PLANK_VERSAO 和 PLANK_SHA256）；此架构没有哈希时，
+  # 保留 Debian 的 plank
   if [ -n "$D3_PLANK_SHA256" ]; then
     url="https://github.com/zquestz/plank-reloaded/releases/download/$D3_PLANK_VERSAO/plank-reloaded-debian_${D3_PLANK_VERSAO}-1_$D3_PLANK_ARQUITETURA.deb"
     deb="$D3_FONTES/$(basename "$url")"
     [ -s "$deb" ] || curl -fsSL -o "$deb" "$url" || true
     if [ -s "$deb" ] && ! echo "$D3_PLANK_SHA256  $deb" | sha256sum -c --quiet - >/dev/null 2>&1; then
-      echo "o plank-reloaded baixado nao confere com o esperado; nao foi instalado"
+      echo "下载的 plank-reloaded 与预期不符；未安装"
       rm -f "$deb"
     fi
-    # o .deb esta numa pasta da pessoa: o root copia para uma pasta nova dele,
-    # confere o SHA-256 la e instala de la (trocar o arquivo depois da
-    # conferencia acima nao chega ao apt)
+    # .deb 在用户的文件夹里：root 复制到自己的新文件夹，
+    # 在那里核对 SHA-256 并从那里安装（上面的核对之后替换文件
+    # 不会到达 apt）
     if [ -s "$deb" ] && [ ! -L "$deb" ]; then
       r="$(sudo -n mktemp -d)"
       if sudo -n cp --no-preserve=all -- "$deb" "$r/plank-reloaded.deb" \
@@ -64,7 +64,7 @@ else
     fi
   fi
   if [ -z "$pacote" ]; then
-    echo "plank-reloaded indisponivel, usando o plank do Debian"
+    echo "plank-reloaded 不可用，使用 Debian 的 plank"
     if ! instalado plank; then
       sudo -n env DEBIAN_FRONTEND=noninteractive apt-get install -y \
         -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold plank >/dev/null 2>&1 || true
@@ -73,18 +73,18 @@ else
     instalado plank && pacote=plank
   fi
 fi
-[ -n "$pacote" ] || { echo "nenhum dock disponivel"; exit 1; }
-echo "dock: $pacote"
+[ -n "$pacote" ] || { echo "没有可用的程序坞"; exit 1; }
+echo "程序坞：$pacote"
 
-# O plank 0.11 (o do Debian e o Reloaded) le a configuracao do GSettings
-# (net.launchpad.plank.dock.settings, um caminho por dock) e os itens de
-# dock1/launchers; o antigo dock1/settings e os .dockitem soltos em dock1 sao
-# ignorados, e ele sobe com os lancadores padrao dele.
-# Parado antes de mexer: rodando, ele reescreve a lista de itens conforme a
-# pasta muda. Sobe de novo no fim deste passo.
-# O plank trata o TERM no laco principal, e um plank preso na subida nao sai
-# com ele: depois de 5 s vai o KILL. Senao o novo nao consegue o nome no
-# D-Bus, desiste, e fica o antigo, vivo e sem desenhar nada.
+# plank 0.11（Debian 的和 Reloaded 的都一样）从 GSettings 读取配置
+# （net.launchpad.plank.dock.settings，每个程序坞一个路径）以及
+# dock1/launchers 中的项目；旧的 dock1/settings 和散落在 dock1 的
+# .dockitem 会被忽略，它会带着自己的默认启动器启动。
+# 改动前先停掉：运行时，它会随着文件夹变化重写项目列表。在
+# 这一步末尾重新启动。
+# plank 在主循环中处理 TERM，启动卡住的 plank 不会随它退出：
+# 5 秒后发送 KILL。否则新的进程无法在 D-Bus 取得名字，放弃，
+# 留下旧的进程——活着却什么都不画。
 d3_processo plank
 pkill -x plank 2>/dev/null || true
 for _ in $(seq 50); do pgrep -x -u "$(id -u)" plank >/dev/null || break; sleep 0.1; done
@@ -99,7 +99,7 @@ for tema in "$HOME/.local/share/plank/themes" "$HOME/.local/share/plank-reloaded
   cp -f "$D3_ARQUIVOS/plank-dock.theme" "$tema/WhiteSur/dock.theme"
 done
 
-# a pasta inteira foi guardada acima: os lancadores de agora saem
+# 整个文件夹上面已保存：当前的启动器会被移除
 lanc="$cfg/launchers"
 rm -rf "$lanc"
 mkdir -p "$lanc"
@@ -122,12 +122,12 @@ add org.xfce.mousepad.desktop || add mousepad.desktop || true
 add xfce4-appfinder.desktop || true
 add xfce-settings-manager.desktop || add xfce4-settings-manager.desktop || true
 
-command -v gsettings >/dev/null || echo "gsettings ausente (libglib2.0-bin): o dock sobe com o tamanho e o tema padrao"
+command -v gsettings >/dev/null || echo "缺少 gsettings（libglib2.0-bin）：程序坞会以默认大小和主题启动"
 esq="net.launchpad.plank.dock.settings:/net/launchpad/plank/docks/dock1/"
 pref(){
   command -v gsettings >/dev/null || return 0
   d3_gsettings "$esq" "$1"
-  gsettings set "$esq" "$1" "$2" 2>/dev/null || echo "  o plank desta versao nao tem a chave $1"
+  gsettings set "$esq" "$1" "$2" 2>/dev/null || echo "  此版本的 plank 没有键 $1"
 }
 pref dock-items "[$itens]"
 pref position bottom
@@ -147,19 +147,19 @@ pref theme WhiteSur
 pref zoom-enabled true
 pref zoom-percent 145
 setsid plank >/dev/null 2>&1 < /dev/null &
-# so termina com ele de pe (dono do nome no D-Bus): a receita 61 pode
-# reinicia-lo logo em seguida, e matar o plank no meio da subida o deixa preso
+# 只有它起来（D-Bus 名字的持有者）才结束：配方 61 可能马上重启它，
+# 在启动过程中杀掉 plank 会让它卡住
 for _ in $(seq 100); do
   gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus \
     --method org.freedesktop.DBus.NameHasOwner net.launchpad.plank 2>/dev/null | grep -q true && break
   sleep 0.1
 done
-echo "dock configurado: $(echo "$itens" | tr -d "'")"
+echo "程序坞已配置：$(echo "$itens" | tr -d "'")"
 '''
 
 [[passo]]
 tipo = "autostart"
 se = "dock == sim"
 id = "plank"
-nome = "Dock"
+nome = "程序坞"
 comando = "plank"

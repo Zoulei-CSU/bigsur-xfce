@@ -1,7 +1,7 @@
 [modulo]
 id = "90"
 nome = "efeitos"
-titulo = "Sombras, cantos arredondados e transparencia"
+titulo = "阴影、圆角和透明度"
 afetada_por = ["efeitos"]
 
 [[passo]]
@@ -16,7 +16,7 @@ se = "efeitos != sim"
 id = "picom"
 remover = true
 
-# sem o picom, quem compoe volta a ser o proprio XFCE, senao nao ha sombra nenhuma
+# 没有 picom 时，合成重新交给 XFCE 自己，否则完全没有阴影
 [[passo]]
 tipo = "xfconf"
 se = "efeitos != sim"
@@ -30,15 +30,15 @@ tipo = "apt"
 se = "efeitos == sim"
 pacotes = ["picom"]
 
-# o modelo escolhe glx na maquina fisica e xrender sem vsync em maquina
-# virtual, onde o glx para de redesenhar as janelas
+# 模板在物理机上选择 glx，在没有 vsync 的虚拟机上选择 xrender，
+# 因为虚拟机里 glx 会停止重绘窗口
 [[passo]]
 tipo = "arquivo"
 se = "efeitos == sim"
 destino = "~/.config/picom.conf"
 modelo = "picom.conf"
 
-# os dois compositores juntos causam rasgos de tela
+# 两个合成器同时运行会导致屏幕撕裂
 [[passo]]
 tipo = "xfconf"
 se = "efeitos == sim"
@@ -51,7 +51,7 @@ valor = "false"
 tipo = "autostart"
 se = "efeitos == sim"
 id = "picom"
-nome = "Efeitos de janela"
+nome = "窗口特效"
 comando = "picom --config @@HOME@@/.config/picom.conf"
 
 [[passo]]

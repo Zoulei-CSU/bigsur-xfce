@@ -1,8 +1,7 @@
-"""Fotos da tela, usadas como previa na pagina.
+"""屏幕截图，用作页面上的预览。
 
-As que vem no pacote sao exemplos genericos, feitos por
-ferramentas/gerar_exemplos.py numa sessao separada; valem ate o usuario
-fotografar a propria tela.
+包内自带的是通用示例，由 ferramentas/gerar_exemplos.py 在单独的会话中生成；
+在用户拍摄自己的屏幕之前使用。
 """
 
 from __future__ import annotations
@@ -19,7 +18,7 @@ LARGURA = 1280
 
 
 def nome_do_momento(cfg: dict[str, str] | None = None) -> str:
-    """Qual previa corresponde as preferencias que estao valendo agora."""
+    """哪张预览对应当前生效的偏好。"""
     cfg = cfg or config.ler()
     tema = "escuro" if cfg.get("tema") == "escuro" else "claro"
     widget = "sem" if cfg.get("widget") == "nao" else "com"
@@ -34,7 +33,7 @@ def _redimensionar(origem: Path, destino: Path) -> bool:
              str(destino)], capture_output=True, timeout=60).returncode == 0
     except (OSError, subprocess.TimeoutExpired):
         pronto = False
-    if not pronto:                      # sem ImageMagick, guarda o png cru
+    if not pronto:                      # 没有 ImageMagick，就保存原始 png
         try:
             destino.with_suffix(".png").write_bytes(origem.read_bytes())
             return True
@@ -50,16 +49,16 @@ def tirar(nome: str, diz: Callable[[str], None]) -> bool:
         ok = subprocess.run(["xfce4-screenshooter", "-f", "-s", str(bruto)],
                             capture_output=True, timeout=60).returncode == 0
         if not ok or bruto.stat().st_size == 0:
-            diz("  nao consegui fotografar a tela")
+            diz("  无法拍摄屏幕")
             return False
         destino = caminhos.CAPTURAS / f"{nome}.jpg"
         if _redimensionar(bruto, destino):
-            diz(f"  previa salva: {nome}")
+            diz(f"  预览已保存：{nome}")
             return True
-        diz("  nao consegui gravar a previa")
+        diz("  无法保存预览")
         return False
     except (OSError, subprocess.TimeoutExpired) as erro:
-        diz(f"  falhou a captura: {erro}")
+        diz(f"  截图失败：{erro}")
         return False
     finally:
         bruto.unlink(missing_ok=True)
@@ -67,7 +66,7 @@ def tirar(nome: str, diz: Callable[[str], None]) -> bool:
 
 def contar(segundos: int, diz: Callable[[str], None]) -> None:
     if segundos > 0:
-        diz(f"  fotografando em {segundos}s, deixe a tela como quer mostrar")
+        diz(f"  {segundos} 秒后截图，请把屏幕保持成你想展示的样子")
         time.sleep(segundos)
 
 
@@ -77,29 +76,29 @@ def capturar_atual(diz: Callable[[str], None], espera: int = 5) -> int:
 
 
 def capturar_todas(diz: Callable[[str], None], espera: int = 5) -> int:
-    """Percorre as quatro combinacoes e devolve o estado original no fim."""
-    from . import receitas                      # import tardio, evita ciclo
+    """依次遍历四种组合，最后恢复原始状态。"""
+    from . import receitas                      # 延迟导入，避免循环
 
     original = config.ler()
     contar(espera, diz)
     falhas = 0
     for tema in ("escuro", "claro"):
         for widget in ("sim", "nao"):
-            diz(f"  preparando: tema {tema}, widget {widget}")
+            diz(f"  准备中：主题 {tema}，组件 {widget}")
             cfg = {**original, "tema": tema, "widget": widget}
             receitas.executar(apenas=["38", "40", "80"], refazer=True,
                               saida=lambda _t: None, cfg=cfg)
             time.sleep(4)
             if not tirar(f"{tema}-{'com' if widget == 'sim' else 'sem'}-widget", diz):
                 falhas += 1
-    diz("  devolvendo o estado anterior")
+    diz("  正在恢复之前的状态")
     receitas.executar(apenas=["38", "40", "80"], refazer=True,
                       saida=lambda _t: None, cfg=original)
     return 1 if falhas else 0
 
 
 def _tela() -> tuple[int, int]:
-    """Largura e altura da tela inteira."""
+    """整个屏幕的宽度和高度。"""
     try:
         linha = subprocess.run(["xrandr", "--current"], capture_output=True,
                                text=True, timeout=10).stdout.splitlines()[0]
@@ -113,22 +112,22 @@ def _tela() -> tuple[int, int]:
 
 
 def _tamanho_da_tela() -> str:
-    """O formato do monitor, reduzido para caber numa janela."""
+    """显示器的宽高比，按窗口大小缩小。"""
     largura, altura = _tela()
     return f"{LARGURA}x{round(altura * LARGURA / largura)}"
 
 
 def previa_login(diz: Callable[[str], None], cfg: dict[str, str] | None = None,
                  destino: Path | None = None) -> int:
-    """Monta a tela de login com as opcoes pedidas e a fotografa numa janela.
+    """按请求的选项组装登录界面，并在窗口中将其拍摄下来。
 
-    Usa o modo de teste do LightDM, que roda sem root um daemon separado e
-    le a configuracao na hora. O `dm-tool add-nested-seat` nao serve: quem
-    cria o seat e o daemon ja em execucao, que mostra o greeter antigo.
+    使用 LightDM 的测试模式，它无需 root 即可启动单独的守护进程并即时读取配置。
+    `dm-tool add-nested-seat` 不可用：创建 seat 的是已在运行的守护进程，会显示
+    旧的 greeter。
     """
     import os
     import shutil
-    from . import receitas                      # import tardio, evita ciclo
+    from . import receitas                      # 延迟导入，避免循环
 
     lightdm = shutil.which("lightdm") or "/usr/sbin/lightdm"
     faltam = [nome for nome, ok in (
@@ -138,14 +137,14 @@ def previa_login(diz: Callable[[str], None], cfg: dict[str, str] | None = None,
         ("imagemagick", shutil.which("convert")),
     ) if not ok]
     if faltam:
-        diz("  para a previa falta instalar: " + ", ".join(faltam))
+        diz("  生成预览还需安装：" + ", ".join(faltam))
         return 1
 
     receita = receitas.por_id().get("97")
     if receita is None:
-        diz("  nao achei a receita da tela de login")
+        diz("  找不到登录界面的配方")
         return 1
-    # pasta temporaria, apagada no fim; so a foto fica, junto das outras previas
+    # 临时目录，结束时删除；只留下照片，与其他预览放在一起
     pasta = Path(tempfile.mkdtemp(prefix="d3bian-init-previa-login-"))
     try:
         return _previa_login(diz, {**config.ler(), **(cfg or {})}, receita, pasta, lightdm,
@@ -159,18 +158,18 @@ def _previa_login(diz: Callable[[str], None], cfg: dict[str, str], receita,
     import os
     import shutil
 
-    # os mesmos passos da instalacao, montados na pasta da previa e sem ir ao sistema
+    # 与安装相同的步骤，组装到预览目录中，不写入系统
     ctx = motor.montar_contexto(cfg)
     ctx.update(login_dir=str(pasta), login_raiz=str(pasta), login_instalar="nao")
     try:
         motor.Motor(ctx, saida=diz).rodar(receita.passos)
     except motor.ErroDePasso as erro:
-        diz(f"  nao consegui montar a previa: {erro}")
+        diz(f"  无法生成预览：{erro}")
         return 1
     for sub in ("run", "log", "cache", "bin"):
         (pasta / sub).mkdir(parents=True, exist_ok=True)
 
-    # o greeter procura a configuracao e o tema nas pastas XDG do sistema
+    # greeter 在系统的 XDG 目录中查找配置和主题
     envelope = pasta / "greeter.sh"
     envelope.write_text(
         "#!/bin/sh\n"
@@ -178,7 +177,7 @@ def _previa_login(diz: Callable[[str], None], cfg: dict[str, str], receita,
         f"export XDG_DATA_DIRS='{pasta}/share:/usr/local/share:/usr/share'\n"
         'exec "$@"\n')
     envelope.chmod(0o755)
-    # no modo de teste o LightDM chama o Xephyr pelo PATH, sem opcao de tamanho
+    # 在测试模式下，LightDM 通过 PATH 调用 Xephyr，无法指定尺寸
     xephyr = pasta / "bin" / "Xephyr"
     xephyr.write_text("#!/bin/sh\n"
                       f"exec {shutil.which('Xephyr')} -screen {_tamanho_da_tela()} \"$@\"\n")
@@ -191,7 +190,7 @@ def _previa_login(diz: Callable[[str], None], cfg: dict[str, str], receita,
         f"greeter-hide-users={ctx['login_esconder_usuarios']}\n"
         "greeter-show-manual-login=true\n")
 
-    diz("  abrindo a tela de login em uma janela")
+    diz("  正在窗口中打开登录界面")
     try:
         daemon = subprocess.Popen(
             [lightdm, "--test-mode", "-c", str(ajustes), f"--run-dir={pasta}/run",
@@ -199,7 +198,7 @@ def _previa_login(diz: Callable[[str], None], cfg: dict[str, str], receita,
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL,
             env={**os.environ, "PATH": f"{pasta}/bin:{os.environ.get('PATH', '')}"})
     except OSError as erro:
-        diz(f"  nao consegui iniciar o lightdm em modo de teste: {erro}")
+        diz(f"  无法以测试模式启动 lightdm：{erro}")
         return 1
 
     try:
@@ -213,26 +212,26 @@ def _previa_login(diz: Callable[[str], None], cfg: dict[str, str], receita,
                                           text=True, timeout=10).stdout
             except (OSError, subprocess.TimeoutExpired):
                 listagem = ""
-            # so o Xephyr desta previa, reconhecido pela pasta de autorizacao
+            # 只要本次预览的 Xephyr，通过授权目录识别
             for linha in listagem.splitlines():
                 if str(pasta) in linha:
                     partes = linha.split()
                     tela = next((p for p in partes if p.startswith(":") and p[1:].isdigit()), "")
-                    # o Xephyr do modo de teste exige o cookie que o LightDM
-                    # gravou; sem ele, o import so conecta por sorte do ambiente
+                    # 测试模式下的 Xephyr 需要 LightDM 写入的 cookie；
+                    # 没有它，import 只能靠环境碰巧连接
                     if "-auth" in partes and partes.index("-auth") + 1 < len(partes):
                         autorizacao = partes[partes.index("-auth") + 1]
             if tela and (pasta / "log" / "seat0-greeter.log").exists():
                 break
         if not tela:
-            diz("  a tela de login nao abriu; ultimas linhas do registro do lightdm:")
+            diz("  登录界面没有打开；lightdm 日志的最后几行：")
             try:
                 for linha in (pasta / "log" / "lightdm.log").read_text().splitlines()[-8:]:
                     diz("    " + linha)
             except OSError:
                 pass
             return 1
-        time.sleep(5)                    # o greeter carrega o tema e o fundo
+        time.sleep(5)                    # greeter 加载主题和背景
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
             bruto = Path(tmp.name)
         try:
@@ -242,12 +241,12 @@ def _previa_login(diz: Callable[[str], None], cfg: dict[str, str], receita,
             subprocess.run(["import", "-window", "root", str(bruto)],
                            env=ambiente, capture_output=True, timeout=40)
             if bruto.stat().st_size and _redimensionar(bruto, destino):
-                diz("  previa da tela de login salva")
+                diz("  登录界面预览已保存")
             else:
-                diz("  a janela abriu, mas nao consegui fotografar")
+                diz("  窗口已打开，但无法拍摄")
                 return 1
         except (OSError, subprocess.TimeoutExpired):
-            diz("  a janela abriu, mas nao consegui fotografar")
+            diz("  窗口已打开，但无法拍摄")
             return 1
         finally:
             bruto.unlink(missing_ok=True)
@@ -257,9 +256,9 @@ def _previa_login(diz: Callable[[str], None], cfg: dict[str, str], receita,
             daemon.wait(timeout=15)
         except subprocess.TimeoutExpired:
             daemon.kill()
-    diz("  esta e a tela com as opcoes marcadas; a de verdade muda ao aplicar e reiniciar")
+    diz("  这是选中选项后的界面；真正的界面会在应用并重启后改变")
     return 0
 
 
-# usado pelo servidor para montar o contexto sem reimportar motor
+# 供服务器组装上下文使用，无需重新导入 motor
 montar_contexto = motor.montar_contexto

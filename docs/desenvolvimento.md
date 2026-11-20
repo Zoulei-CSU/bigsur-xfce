@@ -1,51 +1,48 @@
-# Desenvolvimento
+# 开发
 
-[← voltar ao README](../README.md)
+[← 返回 README](../README.md)
 
-Painel em Python puro (só a biblioteca padrão) com HTML/JS sem dependências.
-O motor, o servidor e as telas comuns vêm do modelo;
-os detalhes deles e as armadilhas conhecidas estão no `LEIAME.md` de lá.
+纯 Python 面板（只用标准库），HTML/JS 无依赖。
+引擎、服务器和通用界面来自模板；
+它们的细节和已知陷阱在模板的 `LEIAME.md` 中。
 
-## Receitas
+## 配方
 
-| id | nome | afetada por |
+| id | 名称 | 受影响于 |
 |---|---|---|
-| 00 | backup (cópia de segurança do que existe hoje) | |
-| 10 | pacotes do repositório Debian | |
-| 20 | fontes de interface e monospace |  |
-| 30 | tema WhiteSur das janelas | `destaque` |
-| 31 | ícones WhiteSur | |
-| 32 | cursores WhiteSur | |
-| 33 | papéis de parede Big Sur | |
-| 34 | tema WhiteSur nos programas Qt | `tema` |
-| 38 | barra do topo, estilo macOS | `tema`, `logo`, `menu_global`, `titulo_no_painel` |
-| 40 | tema, fontes, botões e papel de parede | `tema`, `destaque`, `papel_de_parede` |
-| 42 | cores e transparência do terminal |  |
-| 43 | atalhos de teclado | |
-| 44 | encaixe, bordas e atalhos de janela | `janelas`, `tema`, `destaque` |
-| 50 | barra de menus do programa ativo | `menu_global` |
-| 60 | dock inferior | `dock` |
-| 61 | novo terminal no clique direito | `dock` |
-| 70 | lançador de programas, estilo Spotlight | |
-| 80 | widget de relógio e status na área de trabalho | `widget`, `destaque` |
-| 90 | sombras, cantos arredondados e transparência | `efeitos` |
-| 95 | tema WhiteSur no Firefox | |
-| 97 | tela de login e de bloqueio | `destaque`, `papel_de_parede`, `login_fundo`, `login_desfoque`, `login_usuarios` |
-| 98 | bloqueio de tela | `bloqueio` |
+| 00 | backup（备份当前已有的内容） | |
+| 10 | Debian 仓库软件包 | |
+| 20 | 界面和等宽字体 |  |
+| 30 | WhiteSur 窗口主题 | `destaque` |
+| 31 | WhiteSur 图标 | |
+| 32 | WhiteSur 光标 | |
+| 33 | Big Sur 壁纸 | |
+| 34 | Qt 程序中的 WhiteSur 主题 | `tema` |
+| 38 | macOS 风格的顶栏 | `tema`、`logo`、`menu_global`、`titulo_no_painel` |
+| 40 | 主题、字体、按钮和壁纸 | `tema`、`destaque`、`papel_de_parede` |
+| 42 | 终端的颜色和透明度 |  |
+| 43 | 键盘快捷键 | |
+| 44 | 吸附、边框和窗口快捷键 | `janelas`、`tema`、`destaque` |
+| 50 | 当前程序的菜单栏 | `menu_global` |
+| 60 | 底部 Dock | `dock` |
+| 61 | 右键新建终端 | `dock` |
+| 70 | Spotlight 风格的程序启动器 | |
+| 80 | 桌面上的时钟和状态小组件 | `widget`、`destaque` |
+| 90 | 阴影、圆角和透明度 | `efeitos` |
+| 95 | Firefox 中的 WhiteSur 主题 | |
+| 97 | 登录和锁屏界面 | `destaque`、`papel_de_parede`、`login_fundo`、`login_desfoque`、`login_usuarios` |
+| 98 | 屏幕锁定 | `bloqueio` |
 
-As opções e os valores aceitos ficam no `config.py`; o contexto que as receitas
-usam é montado no `motor.py`.
+选项和接受的值在 `config.py` 中；配方使用的上下文在 `motor.py` 中组装。
 
-## Imagens
+## 图像
 
-As imagens de `docs/imagens` saem de um teste num Debian 13 e são refeitas, não
-editadas à mão (o trecho entre `<!-- imagens -->` e `<!-- fim imagens -->` do
-README também). As prévias da página (`recursos/web/capturas` e
-`recursos/web/exemplos`) são exemplos genéricos; `capturar` troca pelas fotos da
-sua própria tela.
+`docs/imagens` 中的图像来自在 Debian 13 上的测试，是重新生成而非手动编辑的
+（README 中 `<!-- imagens -->` 和 `<!-- fim imagens -->` 之间的部分也是如此）。
+页面预览（`recursos/web/capturas` 和 `recursos/web/exemplos`）是通用示例；
+`capturar` 会用你自己屏幕的照片替换它们。
 
-As miniaturas dos papéis de parede em `recursos/web/papeis` aparecem antes do
-download. Para refazer depois de baixar uma versão nova do repositório:
+`recursos/web/papeis` 中的壁纸缩略图会在下载前显示。在从仓库下载新版本后要重新生成：
 
 ```sh
 for f in ~/.local/share/backgrounds/WhiteSur/*; do

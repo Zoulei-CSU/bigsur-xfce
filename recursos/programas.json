@@ -1,346 +1,346 @@
 {
-  "aviso": "Somente pacotes do repositorio oficial do Debian. Nada de terceiros, nada de PPA, nada de .deb avulso. O servidor so aceita instalar pacotes que estao nesta lista.",
+  "aviso": "仅限 Debian 官方仓库中的软件包。不用第三方、不用 PPA、不用独立的 .deb。服务器只接受安装此列表中的软件包。",
   "categorias": [
     {
-      "nome": "Terminal e sistema",
+      "nome": "终端与系统",
       "itens": [
         {
           "pkg": "htop",
           "nome": "htop",
-          "desc": "Monitor de processos interativo, o classico"
+          "desc": "交互式进程监视器，经典之作"
         },
         {
           "pkg": "btop",
           "nome": "btop",
-          "desc": "Monitor de recursos com graficos, sucessor bonito do htop"
+          "desc": "带图表的资源监视器，htop 的漂亮后继"
         },
         {
           "pkg": "ncdu",
           "nome": "ncdu",
-          "desc": "Descobre o que ocupa espaco no disco, navegando por pastas"
+          "desc": "通过浏览文件夹找出什么占用了磁盘空间"
         },
         {
           "pkg": "duf",
           "nome": "duf",
-          "desc": "Mostra o uso dos discos em tabela colorida"
+          "desc": "以彩色表格显示磁盘使用情况"
         },
         {
           "pkg": "iotop",
           "nome": "iotop",
-          "desc": "Mostra qual processo esta usando o disco"
+          "desc": "显示哪个进程正在使用磁盘"
         },
         {
           "pkg": "nmon",
           "nome": "nmon",
-          "desc": "Painel de desempenho com processador, memoria, rede e disco"
+          "desc": "包含处理器、内存、网络和磁盘的性能面板"
         },
         {
           "pkg": "tmux",
           "nome": "tmux",
-          "desc": "Divide o terminal em paineis e mantem sessoes vivas"
+          "desc": "把终端分成面板并保持会话存活"
         },
         {
           "pkg": "fastfetch",
           "nome": "fastfetch",
-          "desc": "Resumo do sistema com o logo da distribuicao"
+          "desc": "带发行版标志的系统摘要"
         },
         {
           "pkg": "tree",
           "nome": "tree",
-          "desc": "Desenha a arvore de pastas"
+          "desc": "绘制文件夹树"
         }
       ]
     },
     {
-      "nome": "Busca e arquivos no terminal",
+      "nome": "终端中的搜索与文件",
       "itens": [
         {
           "pkg": "ripgrep",
           "nome": "ripgrep",
-          "desc": "Busca texto dentro de arquivos, muito rapido"
+          "desc": "在文件中搜索文本，非常快"
         },
         {
           "pkg": "fd-find",
           "nome": "fd",
-          "desc": "Procura arquivos por nome, mais simples que o find"
+          "desc": "按名称查找文件，比 find 更简单"
         },
         {
           "pkg": "fzf",
           "nome": "fzf",
-          "desc": "Busca interativa para filtrar qualquer lista"
+          "desc": "用于筛选任何列表的交互式搜索"
         },
         {
           "pkg": "bat",
           "nome": "bat",
-          "desc": "Mostra arquivos com cor e numero de linha, substitui o cat"
+          "desc": "带颜色和行号显示文件，替代 cat"
         },
         {
           "pkg": "p7zip-full",
           "nome": "7-Zip",
-          "desc": "Abre e cria arquivos 7z, zip e outros"
+          "desc": "打开和创建 7z、zip 及其他文件"
         },
         {
           "pkg": "unrar-free",
           "nome": "unrar",
-          "desc": "Abre arquivos .rar"
+          "desc": "打开 .rar 文件"
         },
         {
           "pkg": "rsync",
           "nome": "rsync",
-          "desc": "Copia e sincroniza pastas, local ou pela rede"
+          "desc": "在本地或通过网络复制和同步文件夹"
         },
         {
           "pkg": "rclone",
           "nome": "rclone",
-          "desc": "Sincroniza com armazenamento na nuvem"
+          "desc": "与云存储同步"
         }
       ]
     },
     {
-      "nome": "Rede",
+      "nome": "网络",
       "itens": [
         {
           "pkg": "nmap",
           "nome": "nmap",
-          "desc": "Descobre maquinas e portas abertas na rede"
+          "desc": "发现网络中的机器和开放端口"
         },
         {
           "pkg": "mtr-tiny",
           "nome": "mtr",
-          "desc": "Traceroute continuo, bom para achar onde a conexao cai"
+          "desc": "连续 traceroute，适合找出连接在哪里断开"
         },
         {
           "pkg": "iperf3",
           "nome": "iperf3",
-          "desc": "Mede a velocidade real entre duas maquinas"
+          "desc": "测量两台机器之间的真实速度"
         },
         {
           "pkg": "speedtest-cli",
           "nome": "speedtest",
-          "desc": "Testa a velocidade da internet pelo terminal"
+          "desc": "通过终端测试网速"
         },
         {
           "pkg": "traceroute",
           "nome": "traceroute",
-          "desc": "Mostra o caminho ate um servidor"
+          "desc": "显示到服务器的路径"
         },
         {
           "pkg": "whois",
           "nome": "whois",
-          "desc": "Consulta dados de dominios e faixas de IP"
+          "desc": "查询域名和 IP 段数据"
         },
         {
           "pkg": "filezilla",
           "nome": "FileZilla",
-          "desc": "Cliente grafico de FTP e SFTP"
+          "desc": "FTP 和 SFTP 图形客户端"
         }
       ]
     },
     {
-      "nome": "Area de trabalho",
+      "nome": "桌面",
       "itens": [
         {
           "pkg": "flameshot",
           "nome": "Flameshot",
-          "desc": "Captura de tela com anotacoes, seta e destaque. Vira o Print Screen e abre com o sistema",
+          "desc": "带标注、箭头和高亮的截图。会替换 Print Screen 并随系统启动",
           "depois": "flameshot.sh"
         },
         {
           "pkg": "copyq",
           "nome": "CopyQ",
-          "desc": "Historico da area de transferencia"
+          "desc": "剪贴板历史"
         },
         {
           "pkg": "redshift",
           "nome": "Redshift",
-          "desc": "Deixa a tela mais quente a noite"
+          "desc": "夜间让屏幕更暖"
         },
         {
           "pkg": "catfish",
           "nome": "Catfish",
-          "desc": "Busca de arquivos com janela, integra com o Thunar"
+          "desc": "带窗口的文件搜索，与 Thunar 集成"
         },
         {
           "pkg": "keepassxc",
           "nome": "KeePassXC",
-          "desc": "Cofre de senhas local, sem nuvem"
+          "desc": "本地密码库，不依赖云端"
         },
         {
           "pkg": "gnome-disk-utility",
-          "nome": "Discos",
-          "desc": "Formata pendrive, checa saude do disco"
+          "nome": "磁盘",
+          "desc": "格式化 U 盘，检查磁盘健康"
         },
         {
           "pkg": "baobab",
-          "nome": "Analisador de disco",
-          "desc": "Versao grafica do ncdu"
+          "nome": "磁盘分析器",
+          "desc": "ncdu 的图形版"
         },
         {
           "pkg": "gparted",
           "nome": "GParted",
-          "desc": "Particionador de disco"
+          "desc": "磁盘分区工具"
         },
         {
           "pkg": "synaptic",
           "nome": "Synaptic",
-          "desc": "Gerenciador grafico de pacotes"
+          "desc": "图形软件包管理器"
         },
         {
           "pkg": "timeshift",
           "nome": "Timeshift",
-          "desc": "Pontos de restauracao do sistema"
+          "desc": "系统还原点"
         }
       ]
     },
     {
-      "nome": "Multimidia",
+      "nome": "多媒体",
       "itens": [
         {
           "pkg": "vlc",
           "nome": "VLC",
-          "desc": "Toca praticamente qualquer video ou audio"
+          "desc": "几乎能播放任何视频或音频"
         },
         {
           "pkg": "mpv",
           "nome": "mpv",
-          "desc": "Reprodutor leve, bom para maquina modesta"
+          "desc": "轻量播放器，适合性能有限的机器"
         },
         {
           "pkg": "ffmpeg",
           "nome": "FFmpeg",
-          "desc": "Converte e corta video e audio pelo terminal"
+          "desc": "通过终端转换和裁剪视频、音频"
         },
         {
           "pkg": "audacity",
           "nome": "Audacity",
-          "desc": "Editor de audio"
+          "desc": "音频编辑器"
         },
         {
           "pkg": "obs-studio",
           "nome": "OBS Studio",
-          "desc": "Grava a tela e transmite ao vivo"
+          "desc": "录屏和直播"
         }
       ]
     },
     {
-      "nome": "Graficos e documentos",
+      "nome": "图形与文档",
       "itens": [
         {
           "pkg": "gimp",
           "nome": "GIMP",
-          "desc": "Editor de imagens"
+          "desc": "图像编辑器"
         },
         {
           "pkg": "inkscape",
           "nome": "Inkscape",
-          "desc": "Desenho vetorial"
+          "desc": "矢量绘图"
         },
         {
           "pkg": "libreoffice",
           "nome": "LibreOffice",
-          "desc": "Textos, planilhas e apresentacoes"
+          "desc": "文档、表格和演示"
         },
         {
           "pkg": "evince",
           "nome": "Evince",
-          "desc": "Leitor de PDF leve"
+          "desc": "轻量 PDF 阅读器"
         },
         {
           "pkg": "okular",
           "nome": "Okular",
-          "desc": "Leitor de PDF com anotacoes"
+          "desc": "带标注的 PDF 阅读器"
         }
       ]
     },
     {
-      "nome": "Internet",
+      "nome": "互联网",
       "itens": [
         {
           "pkg": "chromium",
           "nome": "Chromium",
-          "desc": "Navegador, a base livre do Chrome"
+          "desc": "浏览器，Chrome 的自由基础"
         },
         {
           "pkg": "thunderbird",
           "nome": "Thunderbird",
-          "desc": "Cliente de email"
+          "desc": "电子邮件客户端"
         },
         {
           "pkg": "deluge",
           "nome": "Deluge",
-          "desc": "Cliente de torrent com interface e servico em segundo plano"
+          "desc": "带界面和后台服务的 BT 客户端"
         },
         {
           "pkg": "qbittorrent",
           "nome": "qBittorrent",
-          "desc": "Cliente de torrent"
+          "desc": "BT 客户端"
         },
         {
           "pkg": "transmission-gtk",
           "nome": "Transmission",
-          "desc": "Cliente de torrent, mais leve"
+          "desc": "BT 客户端，更轻量"
         }
       ]
     },
     {
-      "nome": "Desenvolvimento",
+      "nome": "开发",
       "itens": [
         {
           "pkg": "geany",
           "nome": "Geany",
-          "desc": "Editor de codigo leve, com abas, realce de sintaxe e projetos. Em GTK, sem trazer KDE nem GNOME junto"
+          "desc": "轻量代码编辑器，带标签页、语法高亮和项目。基于 GTK，不会连带引入 KDE 或 GNOME"
         },
         {
           "pkg": "mousepad",
           "nome": "Mousepad",
-          "desc": "Editor de texto do proprio XFCE, com realce de sintaxe. Costuma ja vir instalado"
+          "desc": "XFCE 自带的文本编辑器，带语法高亮。通常已安装"
         },
         {
           "pkg": "build-essential",
           "nome": "build-essential",
-          "desc": "Compilador C e ferramentas para compilar programas"
+          "desc": "C 编译器和编译程序的工具"
         },
         {
           "pkg": "git-gui",
           "nome": "git gui",
-          "desc": "Interface grafica para o git"
+          "desc": "git 的图形界面"
         },
         {
           "pkg": "meld",
           "nome": "Meld",
-          "desc": "Compara arquivos e pastas lado a lado"
+          "desc": "并排比较文件和文件夹"
         },
         {
           "pkg": "sqlitebrowser",
           "nome": "DB Browser for SQLite",
-          "desc": "Abre e edita bancos SQLite"
+          "desc": "打开和编辑 SQLite 数据库"
         },
         {
           "pkg": "nodejs",
           "nome": "Node.js",
-          "desc": "Ambiente JavaScript"
+          "desc": "JavaScript 环境"
         },
         {
           "pkg": "npm",
           "nome": "npm",
-          "desc": "Gerenciador de pacotes do Node.js"
+          "desc": "Node.js 的包管理器"
         }
       ]
     },
     {
-      "nome": "Hardware desta maquina",
+      "nome": "本机硬件",
       "itens": [
         {
           "pkg": "blueman",
-          "nome": "Bluetooth",
-          "desc": "Parear e gerenciar dispositivos Bluetooth; o XFCE nao tem tela propria",
+          "nome": "蓝牙",
+          "desc": "配对和管理蓝牙设备；XFCE 没有自己的界面",
           "hardware": "bluetooth",
           "papel": "necessario"
         },
         {
           "pkg": "pulseaudio-module-bluetooth",
-          "nome": "Audio Bluetooth",
-          "desc": "Fone e caixa de som Bluetooth no PulseAudio",
+          "nome": "蓝牙音频",
+          "desc": "PulseAudio 中的蓝牙耳机和音箱",
           "hardware": [
             "bluetooth",
             "som-pulseaudio"
@@ -349,8 +349,8 @@
         },
         {
           "pkg": "libspa-0.2-bluetooth",
-          "nome": "Audio Bluetooth",
-          "desc": "Fone e caixa de som Bluetooth no PipeWire",
+          "nome": "蓝牙音频",
+          "desc": "PipeWire 中的蓝牙耳机和音箱",
           "hardware": [
             "bluetooth",
             "som-pipewire"
@@ -359,113 +359,113 @@
         },
         {
           "pkg": "intel-microcode",
-          "nome": "Microcode Intel",
-          "desc": "Correcoes de seguranca e estabilidade do processador, carregadas no boot",
+          "nome": "Intel 微码",
+          "desc": "处理器的安全和稳定性修复，在启动时加载",
           "hardware": "cpu-intel",
           "papel": "necessario"
         },
         {
           "pkg": "amd64-microcode",
-          "nome": "Microcode AMD",
-          "desc": "Correcoes de seguranca e estabilidade do processador, carregadas no boot",
+          "nome": "AMD 微码",
+          "desc": "处理器的安全和稳定性修复，在启动时加载",
           "hardware": "cpu-amd",
           "papel": "necessario"
         },
         {
           "pkg": "intel-media-va-driver",
-          "nome": "Video Intel acelerado",
-          "desc": "Decodifica video pela placa, poupa processador e bateria",
+          "nome": "Intel 硬件加速视频",
+          "desc": "通过显卡解码视频，节省处理器和电池",
           "hardware": "video-intel",
           "papel": "necessario"
         },
         {
           "pkg": "fprintd",
-          "nome": "Leitor de digital",
-          "desc": "Servico que reconhece o leitor de impressao digital",
+          "nome": "指纹读取器",
+          "desc": "识别指纹读取器的服务",
           "hardware": "leitor-digital",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-realtek",
-          "nome": "Firmware Realtek",
-          "desc": "Wi-Fi, Bluetooth e placa de rede Realtek",
+          "nome": "Realtek 固件",
+          "desc": "Realtek 的 Wi-Fi、蓝牙和网卡",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-iwlwifi",
-          "nome": "Firmware Intel Wi-Fi",
-          "desc": "Wi-Fi e Bluetooth Intel",
+          "nome": "Intel Wi-Fi 固件",
+          "desc": "Intel 的 Wi-Fi 和蓝牙",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-atheros",
-          "nome": "Firmware Atheros",
-          "desc": "Wi-Fi e Bluetooth Qualcomm Atheros",
+          "nome": "Atheros 固件",
+          "desc": "Qualcomm Atheros 的 Wi-Fi 和蓝牙",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-brcm80211",
-          "nome": "Firmware Broadcom",
-          "desc": "Wi-Fi Broadcom",
+          "nome": "Broadcom 固件",
+          "desc": "Broadcom 的 Wi-Fi",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-mediatek",
-          "nome": "Firmware MediaTek",
-          "desc": "Wi-Fi e Bluetooth MediaTek",
+          "nome": "MediaTek 固件",
+          "desc": "MediaTek 的 Wi-Fi 和蓝牙",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-amd-graphics",
-          "nome": "Firmware de video AMD",
-          "desc": "Placas de video AMD e Radeon",
+          "nome": "AMD 视频固件",
+          "desc": "AMD 和 Radeon 显卡",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-intel-graphics",
-          "nome": "Firmware de video Intel",
-          "desc": "Economia de energia e decodificacao no video Intel",
+          "nome": "Intel 视频固件",
+          "desc": "Intel 视频的节能和解码",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-nvidia-graphics",
-          "nome": "Firmware NVIDIA",
-          "desc": "Placa NVIDIA com o driver livre nouveau",
+          "nome": "NVIDIA 固件",
+          "desc": "使用自由驱动 nouveau 的 NVIDIA 显卡",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-sof-signed",
-          "nome": "Firmware de som Intel",
-          "desc": "Audio Intel SOF, comum em notebooks recentes",
+          "nome": "Intel 音频固件",
+          "desc": "Intel SOF 音频，常见于较新的笔记本",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "firmware-libertas",
-          "nome": "Firmware Marvell",
-          "desc": "Wi-Fi Marvell",
+          "nome": "Marvell 固件",
+          "desc": "Marvell 的 Wi-Fi",
           "hardware": "firmware",
           "papel": "necessario"
         },
         {
           "pkg": "thermald",
-          "nome": "Controle termico Intel",
-          "desc": "Segura a temperatura do processador antes que ele perca desempenho",
+          "nome": "Intel 温度控制",
+          "desc": "在处理器降频之前控制温度",
           "hardware": "termico-intel",
           "papel": "extra"
         },
         {
           "pkg": "tlp",
           "nome": "TLP",
-          "desc": "Economia de bateria automatica, sem precisar configurar",
+          "desc": "自动省电，无需配置",
           "hardware": [
             "bateria",
             "sem-power-profiles"
@@ -475,41 +475,41 @@
         {
           "pkg": "guvcview",
           "nome": "Guvcview",
-          "desc": "Abre a camera, tira foto e grava video",
+          "desc": "打开摄像头、拍照和录制视频",
           "hardware": "webcam",
           "papel": "extra"
         },
         {
           "pkg": "libpam-fprintd",
-          "nome": "Entrar com a digital",
-          "desc": "Usa o leitor de digital no login e no sudo",
+          "nome": "用指纹登录",
+          "desc": "在登录和 sudo 中使用指纹读取器",
           "hardware": "leitor-digital",
           "papel": "extra"
         },
         {
           "pkg": "fwupd",
           "nome": "fwupd",
-          "desc": "Atualiza firmware de BIOS, SSD e perifericos quando o fabricante publica",
+          "desc": "在厂商发布时更新 BIOS、SSD 和外设固件",
           "hardware": "uefi",
           "papel": "extra"
         }
       ]
     },
     {
-      "nome": "Fora do repositório oficial",
-      "aviso": "Estes não vêm do Debian. Instalar acrescenta um repositório de terceiro ao seu sistema, que passa a poder enviar atualizações para esta máquina.",
+      "nome": "官方仓库之外",
+      "aviso": "这些不来自 Debian。安装会向你的系统添加第三方仓库，此后它便可以向这台机器发送更新。",
       "itens": [
         {
           "pkg": "code",
           "nome": "Visual Studio Code",
-          "desc": "Editor da Microsoft, com extensões e depurador",
+          "desc": "微软的编辑器，带扩展和调试器",
           "fonte": "microsoft-vscode",
-          "aviso": "Acrescenta o repositório da Microsoft ao apt e instala a chave de assinatura dele em /usr/share/keyrings/microsoft-vscode.gpg. A chave fica amarrada só a esse repositório, e não valida mais nada no sistema. A partir daí a Microsoft pode enviar atualizações do pacote code para esta máquina."
+          "aviso": "向 apt 添加微软仓库，并把其签名密钥安装到 /usr/share/keyrings/microsoft-vscode.gpg。密钥只绑定该仓库，不再验证系统中的其他内容。此后微软可以向这台机器发送 code 包的更新。"
         },
         {
           "pkg": "docker-ce",
-          "nome": "Docker (rootless)",
-          "desc": "Containers sem root, com Compose e Buildx, prontos para o seu usuario",
+          "nome": "Docker（rootless）",
+          "desc": "无 root 的容器，带 Compose 和 Buildx，为你的用户准备好",
           "fonte": "docker",
           "junto": [
             "docker-ce-cli",
@@ -522,7 +522,7 @@
             "slirp4netns"
           ],
           "depois": "docker-rootless.sh",
-          "aviso": "Acrescenta o repositório oficial da Docker ao apt e instala a chave dele em /usr/share/keyrings/docker.gpg, amarrada só a esse repositório. A partir daí a Docker pode enviar atualizações para esta máquina. Depois configura o modo rootless para o seu usuário: o daemon roda com o seu usuário e o daemon de root fica desligado. Seu usuário não entra no grupo docker, que daria a ele o mesmo poder de root. Se o docker.io do Debian estiver instalado, o apt o substitui."
+          "aviso": "向 apt 添加 Docker 官方仓库，并把其密钥安装到 /usr/share/keyrings/docker.gpg，仅绑定该仓库。此后 Docker 可以向这台机器发送更新。之后会为你的用户配置 rootless 模式：守护进程以你的用户运行，root 守护进程被关闭。你的用户不会加入 docker 组，该组会赋予其等同 root 的权限。如果已安装 Debian 的 docker.io，apt 会替换它。"
         }
       ]
     }

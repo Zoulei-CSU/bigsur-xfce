@@ -1,11 +1,11 @@
 [modulo]
 id = "70"
 nome = "lancador"
-titulo = "Lancador de programas, estilo Spotlight"
+titulo = "程序启动器，Spotlight 风格"
 requer = ["10"]
 
-# commit fixo (o master de 2026-10-06): o que roda e o que foi conferido. Para
-# atualizar: git ls-remote https://github.com/adi1090x/rofi.git master
+# 固定提交（2026-10-06 的 master）：实际运行且已核对过的版本。要
+# 更新：git ls-remote https://github.com/adi1090x/rofi.git master
 [[passo]]
 tipo = "git"
 url = "https://github.com/adi1090x/rofi.git"
@@ -14,9 +14,9 @@ destino = "@@fontes@@/rofi-temas"
 
 [[passo]]
 tipo = "script"
-dizer = "instalando os temas do lancador"
+dizer = "安装启动器主题"
 corpo = '''
-# antes de anotar as fontes la dentro: o desfazer anda de tras para frente
+# 在记录其中的字体之前：撤销是倒序进行的
 d3_pasta "$HOME/.local/share/fonts" "$HOME/.local/bin"
 origem="$D3_FONTES/rofi-temas"
 d3_antes "$HOME/.config/rofi" "$HOME/.local/bin/d3bian-lancador"
@@ -46,11 +46,11 @@ done
 
 if [ -n "$escolhido" ]; then
   sed -i "s/^theme=.*/theme='style-1'/" "$escolhido" 2>/dev/null || true
-  printf '#!/bin/sh\n# lancador de programas (Super+Espaco)\nexec "%s" "$@"\n' "$escolhido" \
+  printf '#!/bin/sh\n# 程序启动器（Super+空格）\nexec "%s" "$@"\n' "$escolhido" \
     > "$HOME/.local/bin/d3bian-lancador"
 else
   printf '#!/bin/sh\nexec rofi -show drun -show-icons\n' > "$HOME/.local/bin/d3bian-lancador"
 fi
 chmod 755 "$HOME/.local/bin/d3bian-lancador"
-echo "lancador pronto: Super+Espaco"
+echo "启动器已就绪：Super+空格"
 '''

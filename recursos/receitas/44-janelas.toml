@@ -1,14 +1,14 @@
 [modulo]
 id = "44"
 nome = "janelas"
-titulo = "Encaixe, bordas e atalhos de janela"
-# o 40 e o 30 trocam o tema do xfwm4, e a copia com bordas largas sai dele
+titulo = "窗口吸附、边框和快捷键"
+# 40 和 30 会切换 xfwm4 主题，宽边框副本来自它
 afetada_por = ["janelas", "tema", "destaque"]
 
 [[passo]]
 tipo = "script"
 se = "janelas != sim"
-dizer = "removendo os atalhos de encaixe"
+dizer = "移除吸附快捷键"
 tolera_falha = true
 corpo = '''
 for k in '<Super>Left' '<Super>Right' '<Super>Up' '<Super>Down' \
@@ -24,7 +24,7 @@ for f in d3bian-janelas d3bian-layouts d3bian-bordas; do
   if [ -e "$HOME/.local/bin/$f" ]; then d3_antes "$HOME/.local/bin/$f"; fi
   rm -f "$HOME/.local/bin/$f"
 done
-# volta ao tema sem as bordas largas
+# 回到不含宽边框的主题
 tema=$(xfconf-query -c xfwm4 -p /general/theme 2>/dev/null || true)
 if [ "${tema%-bordas}" != "$tema" ]; then
   d3_xfconf xfwm4 /general/theme string
@@ -35,7 +35,7 @@ for d in "$HOME"/.themes/*-bordas; do
   d3_antes "$d"
   rm -rf "$d"
 done
-echo "atalhos de janela removidos"
+echo "窗口快捷键已移除"
 '''
 
 [[passo]]
@@ -68,12 +68,12 @@ tolera_falha = true
 argumentos = ["chmod", "755", "@@HOME@@/.local/bin/d3bian-janelas",
               "@@HOME@@/.local/bin/d3bian-layouts", "@@HOME@@/.local/bin/d3bian-bordas"]
 
-# a borda dos temas tem 1 ou 2 pixels e quase nao da para agarrar; o
-# d3bian-bordas faz uma copia do tema com 4 pixels a mais, na cor da barra
+# 主题的边框只有 1 或 2 像素，几乎抓不住；d3bian-bordas 会用
+# 顶栏的颜色做一个多出 4 像素的主题副本
 [[passo]]
 tipo = "script"
 se = "janelas == sim"
-dizer = "alargando as bordas das janelas para redimensionar"
+dizer = "加宽窗口边框以便调整大小"
 tolera_falha = true
 corpo = '''
 tema=$(xfconf-query -c xfwm4 -p /general/theme)
@@ -83,14 +83,14 @@ d3_antes "$HOME/.themes/$tema-bordas"
 novo=$("$HOME/.local/bin/d3bian-bordas" "$tema" 4)
 d3_xfconf xfwm4 /general/theme string
 xfconf-query -c xfwm4 -p /general/theme -s "$novo"
-echo "tema das janelas: $novo"
+echo "窗口主题：$novo"
 '''
 
-# metades e quartos sao do proprio xfwm4; o script cobre so o que ele nao faz
+# 一半和四分之一由 xfwm4 自身处理；脚本只补它做不到的部分
 [[passo]]
 tipo = "script"
 se = "janelas == sim"
-dizer = "afinando o encaixe e definindo os atalhos"
+dizer = "微调吸附并设置快捷键"
 corpo = '''
 set_wm(){ d3_xfconf xfwm4 "$1" "$2"; xfconf-query -c xfwm4 -p "$1" -n -t "$2" -s "$3" 2>/dev/null \
           || xfconf-query -c xfwm4 -p "$1" -s "$3"; }
@@ -118,5 +118,5 @@ atalho '/commands/custom/<Super>x'            "$j quase-cheia"
 atalho '/commands/custom/<Super>z'            "$HOME/.local/bin/d3bian-layouts"
 atalho '/commands/custom/<Super><Shift>Left'  "$j 2-3-esquerda"
 atalho '/commands/custom/<Super><Shift>Right' "$j 1-3-direita"
-echo "Super e setas para metades, Super e 1 a 4 para quartos, Super+C centraliza, Super+Z abre os layouts"
+echo "Super 加方向键分半，Super 加 1 到 4 分四份，Super+C 居中，Super+Z 打开布局"
 '''

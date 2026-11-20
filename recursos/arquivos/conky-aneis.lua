@@ -1,35 +1,34 @@
 --[[
-Aneis do widget da area de trabalho, na versao "aneis" do d3bian-init-bigsur-xfce.
+d3bian-init-bigsur-xfce 的“圆环”版本中桌面小组件的圆环。
 
-Adaptado do MX-CoreBlue (MX Linux, mx-conky-data), que parte do Clock Rings de
-londonali1010, reeditado por despot77 e Altin, e foi usado no setup Xfce Big
-Sur do lsteam. Mudancas: carrega o cairo_xlib do conky novo, libera a
-superficie a cada quadro, segue a cor de destaque e descobre a interface de
-rede pela rota padrao, em vez de eth0 e wlan0.
+改编自 MX-CoreBlue（MX Linux，mx-conky-data），后者源自 londonali1010 的
+Clock Rings，由 despot77 和 Altin 重新编辑，并被 lsteam 的 Xfce Big Sur
+配置采用。改动：加载新 conky 的 cairo_xlib，每帧释放 surface，跟随高亮
+颜色，并依据默认路由发现网络接口，而不是 eth0 和 wlan0。
 
-Licenca: este arquivo, por derivar do Clock Rings, fica sob a GNU GPL versao 3
-(https://www.gnu.org/licenses/gpl-3.0.html), e nao sob a MIT do resto do projeto.
+许可证：本文件因派生自 Clock Rings，采用 GNU GPL 第 3 版
+（https://www.gnu.org/licenses/gpl-3.0.html），而非本项目其余部分的 MIT。
 ]]
 
 require 'cairo'
--- desde o conky 1.11 a ponte com o X fica num modulo separado
+-- 从 conky 1.11 起，与 X 的桥接放在单独模块中
 pcall(require, 'cairo_xlib')
 
 local COR = 0x@@widget_cor@@
 
--- x e y contam do canto superior esquerdo da janela do conky
+-- x 和 y 从 conky 窗口左上角起算
 local aneis = {
-    -- relogio: horas, minutos, segundos, dia e mes
+    -- 时钟：时、分、秒、日和月
     {nome='time', arg='%I.%M', max=12, fundo=0.15, frente=0.30, x=100, y=168, raio=50, inicio=0, fim=360},
     {nome='time', arg='%M.%S', max=60, fundo=0.10, frente=0.40, x=100, y=168, raio=66, inicio=0, fim=360},
     {nome='time', arg='%S',    max=60, fundo=0.10, frente=0.60, x=100, y=168, raio=72, inicio=0, fim=360},
     {nome='time', arg='%d',    max=31, fundo=0.10, frente=0.80, x=100, y=168, raio=80, inicio=-90, fim=90},
     {nome='time', arg='%m',    max=12, fundo=0.10, frente=1.00, x=100, y=168, raio=86, inicio=-90, fim=90},
     {nome='bateria', arg='',   max=100, fundo=0.20, frente=0.80, x=232, y=110, raio=27, inicio=-90, fim=270},
-    -- processador, um anel por nucleo (os dois primeiros)
+    -- 处理器，每个核心一个环（前两个）
     {nome='cpu', arg='cpu1',   max=100, fundo=0.30, frente=0.80, x=165, y=320, raio=25, inicio=-90, fim=180},
     {nome='cpu', arg='cpu2',   max=100, fundo=0.30, frente=0.80, x=240, y=320, raio=25, inicio=-90, fim=180},
-    -- disco, memoria e troca
+    -- 磁盘、内存和交换
     {nome='fs_used_perc', arg='/', max=100, fundo=0.20, frente=0.80, x=40,  y=525, raio=25, inicio=-90, fim=180},
     {nome='memperc', arg='',   max=100, fundo=0.20, frente=0.80, x=140, y=525, raio=25, inicio=-90, fim=180},
     {nome='swapperc', arg='',  max=100, fundo=0.20, frente=0.80, x=240, y=525, raio=25, inicio=-90, fim=180},
@@ -97,7 +96,7 @@ function conky_aneis()
         conky_window.visual, conky_window.width, conky_window.height)
     local cr = cairo_create(superficie)
 
-    -- o 'cpu' devolve lixo nas primeiras leituras, entao os aneis esperam
+    -- 'cpu' 在最初几次读取时返回垃圾值，因此圆环先等待
     if tonumber(conky_parse('${updates}')) > 3 then
         for _, a in ipairs(aneis) do
             local v = valor(a)
@@ -110,7 +109,7 @@ function conky_aneis()
     cairo_surface_destroy(superficie)
 end
 
--- interface da rota padrao, lida a cada chamada: o notebook troca de rede
+-- 默认路由的接口，每次调用时读取：笔记本会切换网络
 local function interface()
     local f = io.open('/proc/net/route')
     if not f then return nil end
@@ -125,13 +124,13 @@ end
 function conky_rede()
     local i = interface()
     if not i then
-        return '${color1}Rede:$color${alignr}sem conexão'
+        return '${color1}网络:$color${alignr}无连接'
     end
     return table.concat({
-        '${color1}Rede:$color${alignr}' .. i,
-        '${color1}Endereço:$color${alignr}${addr ' .. i .. '}',
-        '${color1}Baixando:$color ${downspeed ' .. i .. '}${alignr}${color1}Enviando:$color ${upspeed ' .. i .. '}',
-        '${color1}Total:$color ${totaldown ' .. i .. '}${alignr}${color1}Total:$color ${totalup ' .. i .. '}',
+        '${color1}网络:$color${alignr}' .. i,
+        '${color1}地址:$color${alignr}${addr ' .. i .. '}',
+        '${color1}下载:$color ${downspeed ' .. i .. '}${alignr}${color1}上传:$color ${upspeed ' .. i .. '}',
+        '${color1}总计:$color ${totaldown ' .. i .. '}${alignr}${color1}总计:$color ${totalup ' .. i .. '}',
     }, '\n')
 end
 

@@ -1,8 +1,7 @@
-"""Deteccao do ambiente e verificacoes previas.
+"""环境检测和预检查。
 
-Tudo que e especifico de ambiente grafico fica aqui. Hoje so o XFCE esta
-implementado, mas quem chama pergunta pela capacidade, nao pelo nome do
-desktop, entao acrescentar outro depois nao obriga a mexer nas receitas.
+所有图形环境专属内容都在这里。目前只实现了 XFCE，但调用方按能力而非桌面名称
+询问，因此之后添加其他桌面无需改动配方。
 """
 
 from __future__ import annotations
@@ -47,7 +46,7 @@ def sessao_grafica() -> bool:
 
 
 def sudo_liberado() -> bool:
-    """Ha credencial em cache, ou seja, da para usar sudo sem perguntar nada."""
+    """有缓存的凭据，即可以无提示使用 sudo。"""
     try:
         return _roda("sudo", "-n", "true", tempo=6).returncode == 0
     except (OSError, subprocess.TimeoutExpired):
@@ -63,7 +62,7 @@ def pacote_instalado(nome: str) -> bool:
 
 
 def estado_pacotes(nomes: list[str]) -> dict[str, dict]:
-    """Para cada pacote: se o repositorio oferece e se ja esta instalado."""
+    """对每个软件包：仓库是否提供以及是否已安装。"""
     fora = {n: {"disponivel": False, "instalado": False, "versao": ""} for n in nomes}
     if not nomes:
         return fora
@@ -86,7 +85,7 @@ def estado_pacotes(nomes: list[str]) -> dict[str, dict]:
                 atual = linha.rstrip()[:-1].split(":")[0]
             elif atual in fora and ":" in linha:
                 rotulo, _, valor = linha.strip().partition(":")
-                # o apt e traduzido; "Candidat" cobre Candidate e Candidato
+                # apt 会被翻译；"Candidat" 同时覆盖 Candidate 和 Candidato
                 if rotulo.startswith("Candidat"):
                     valor = valor.strip()
                     if valor and valor not in ("(none)", "(nenhum)"):
@@ -106,7 +105,7 @@ def espaco_livre_gb(onde: Path | None = None) -> float:
 
 
 def _repositorios_do_apt() -> list[str]:
-    """Enderecos http(s) das fontes do apt, os do Debian primeiro."""
+    """apt 源的 http(s) 地址，Debian 的排在最前。"""
     pasta = Path("/etc/apt/sources.list.d")
     arquivos = [Path("/etc/apt/sources.list"), *sorted(pasta.glob("*.list")),
                 *sorted(pasta.glob("*.sources"))]
@@ -131,7 +130,7 @@ def _repositorios_do_apt() -> list[str]:
 
 
 def _proxy_do_apt() -> dict[str, str]:
-    """O proxy que o apt usa, quando ha; a rede pode so sair por ele."""
+    """apt 使用的代理（如果有）；网络可能只能通过它访问。"""
     try:
         saida = _roda("apt-config", "shell", "HTTP", "Acquire::http::Proxy",
                       "HTTPS", "Acquire::https::Proxy", tempo=5).stdout
@@ -147,11 +146,10 @@ def _proxy_do_apt() -> dict[str, str]:
 
 
 def repositorios_alcancaveis() -> tuple[bool, str]:
-    """Pergunta aos repositorios do apt se respondem.
+    """询问 apt 源是否有响应。
 
-    Nao usa curl: ele nao vem numa instalacao padrao do Debian e so chega com a
-    receita 10, depois desta verificacao. Qualquer resposta HTTP, ate um 404,
-    ja prova que o servidor foi alcancado.
+    不使用 curl：它不在 Debian 默认安装中，只随配方 10 到来，晚于本检查。
+    任何 HTTP 响应，甚至 404，都足以证明服务器可达。
     """
     import urllib.error
     import urllib.request
@@ -173,14 +171,13 @@ def repositorios_alcancaveis() -> tuple[bool, str]:
 
 
 _CACHE: tuple[float, list[dict]] | None = None
-VALIDADE = 30.0          # segundos
+VALIDADE = 30.0          # 秒
 
 
 def verificacoes(usar_cache: bool = True) -> list[dict]:
-    """Lista de checagens previas, no formato que a pagina web desenha.
+    """预检查列表，采用网页绘制的格式。
 
-    Guarda o resultado por meio minuto: a faixa de estado do topo consulta em
-    toda pagina, e uma delas fala com a rede.
+    结果缓存半分钟：顶部状态栏在每个页面都会查询，其中一项还会访问网络。
     """
     global _CACHE
     import time
@@ -198,40 +195,40 @@ def _verificar() -> list[dict]:
         saida.append({"nome": nome, "ok": bool(ok), "detalhe": detalhe, "critico": critico})
 
     info = distribuicao()
-    nome_distro = info.get("PRETTY_NAME", "") or "nao identificado"
+    nome_distro = info.get("PRETTY_NAME", "") or "未识别"
     familia = (info.get("ID", "") + " " + info.get("ID_LIKE", "")).lower()
-    add("Sistema", "debian" in familia, nome_distro)
+    add("系统", "debian" in familia, nome_distro)
 
-    add("Ambiente grafico", e_xfce(), desktop() or "desconhecido")
-    add("Sessao grafica", sessao_grafica(),
-        "ativa" if sessao_grafica() else "sem DISPLAY; rode dentro da sua sessao")
+    add("图形环境", e_xfce(), desktop() or "未知")
+    add("图形会话", sessao_grafica(),
+        "活动" if sessao_grafica() else "没有 DISPLAY；请在你的会话中运行")
     add("xfconf-query", tem("xfconf-query"),
-        "presente" if tem("xfconf-query") else "faltando, vem com o xfconf")
+        "存在" if tem("xfconf-query") else "缺失，随 xfconf 提供")
 
     liberado = sudo_liberado()
-    add("Permissao de administrador", liberado,
-        "autorizada nesta sessao" if liberado
-        else "sem credencial; abra o painel pelo comando d3bian-init-bigsur-xfce")
+    add("管理员权限", liberado,
+        "已在本会话中授权" if liberado
+        else "无凭据；请用 d3bian-init-bigsur-xfce 命令打开面板")
 
     gb = espaco_livre_gb()
-    add("Espaco em disco", gb < 0 or gb >= 2.0,
-        "nao verificado" if gb < 0 else f"{gb:.1f} GB livres na pasta pessoal",
+    add("磁盘空间", gb < 0 or gb >= 2.0,
+        "未检查" if gb < 0 else f"主目录有 {gb:.1f} GB 可用",
         critico=gb >= 0)
 
     rede, hosts = repositorios_alcancaveis()
-    add("Acesso aos repositorios", rede,
-        f"alcancaveis ({hosts})" if rede else f"sem resposta de {hosts}")
+    add("软件源访问", rede,
+        f"可达（{hosts}）" if rede else f"来自 {hosts} 无响应")
 
     return saida
 
 
 def impedimentos(lista: list[dict] | None = None) -> list[str]:
-    """Nomes das verificacoes criticas que falharam."""
+    """失败的严重检查项名称。"""
     return [c["nome"] for c in (lista or verificacoes()) if c["critico"] and not c["ok"]]
 
 
 def pacotes_instalados() -> set[str]:
-    """Nomes dos pacotes instalados agora, sem a arquitetura; vazio se o dpkg nao responder."""
+    """当前已安装软件包的名称，不含架构；dpkg 无响应时为空。"""
     try:
         saida = subprocess.run(["dpkg-query", "-W", "-f=${binary:Package} ${db:Status-Status}\n"],
                                capture_output=True, text=True, env={**os.environ, "LC_ALL": "C"}).stdout

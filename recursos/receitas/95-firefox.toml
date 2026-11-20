@@ -1,11 +1,11 @@
 [modulo]
 id = "95"
 nome = "firefox"
-titulo = "Tema WhiteSur no Firefox"
+titulo = "Firefox 的 WhiteSur 主题"
 requer = ["10"]
 
-# commit fixo (o main de 2026-10-06): o que roda e o que foi conferido. Para
-# atualizar: git ls-remote https://github.com/vinceliuice/WhiteSur-firefox-theme.git main
+# 固定提交（2026-10-06 的 main）：实际运行且已核对过的版本。要
+# 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-firefox-theme.git main
 [[passo]]
 tipo = "git"
 url = "https://github.com/vinceliuice/WhiteSur-firefox-theme.git"
@@ -14,15 +14,15 @@ destino = "@@fontes@@/WhiteSur-firefox-theme"
 
 [[passo]]
 tipo = "script"
-dizer = "instalando o tema no perfil do Firefox"
+dizer = "在 Firefox 配置文件中安装主题"
 tolera_falha = true
 corpo = '''
 navegador=""
 for b in firefox-esr firefox; do command -v "$b" >/dev/null && navegador="$b" && break; done
-[ -n "$navegador" ] || { echo "Firefox nao encontrado, pulando"; exit 0; }
+[ -n "$navegador" ] || { echo "未找到 Firefox，pulando"; exit 0; }
 
 if ! ls "$HOME/.mozilla/firefox"/*default* >/dev/null 2>&1; then
-  echo "criando o perfil padrao"
+  echo "创建默认配置文件"
   d3_antes "$HOME/.mozilla/firefox/profiles.ini"
   perfis_antes="$(ls -d "$HOME/.mozilla/firefox"/*/ 2>/dev/null || true)"
   "$navegador" --headless --createprofile default-release >/dev/null 2>&1 || true
@@ -32,22 +32,22 @@ if ! ls "$HOME/.mozilla/firefox"/*default* >/dev/null 2>&1; then
   done
 fi
 ls "$HOME/.mozilla/firefox"/*default* >/dev/null 2>&1 || {
-  echo "nenhum perfil; abra o Firefox uma vez e rode esta etapa de novo"; exit 0; }
+  echo "没有配置文件；请先打开一次 Firefox 再重新运行此步骤"; exit 0; }
 
-# o instalador troca o chrome/ e apaga o user.js sem guardar
+# 安装程序会替换 chrome/ 并删除 user.js 而不保存
 for perfil in "$HOME/.mozilla/firefox"/*default*/; do
   [ -d "$perfil" ] || continue
   d3_antes "${perfil}chrome" "${perfil}user.js"
 done
 cd "$D3_FONTES/WhiteSur-firefox-theme"
-# o instalador so le confirmacoes; com pipefail, o yes morto quando ele termina
-# faria a instalacao parecer falha, entao a saida que vale e a dele
+# 安装程序只读取确认；使用 pipefail 时，它结束时被终止的 yes
+# 会让安装看似失败，所以真正有效的是它的输出
 set +o pipefail
 yes '' | bash ./install.sh -m 3+4 >/dev/null 2>&1
 codigo=${PIPESTATUS[1]}
 set -o pipefail
-[ "$codigo" = 0 ] && echo "tema instalado" || echo "o instalador do tema falhou ($codigo)"
-echo "falta um passo manual, uma vez so:"
-echo "  em about:config, ligue toolkit.legacyUserProfileCustomizations.stylesheets"
-echo "  depois feche e abra o Firefox"
+[ "$codigo" = 0 ] && echo "主题已安装" || echo "主题安装程序失败（$codigo）"
+echo "还需要一次手动步骤："
+echo "  在 about:config 中启用 toolkit.legacyUserProfileCustomizations.stylesheets"
+echo "  然后关闭并重新打开 Firefox"
 '''

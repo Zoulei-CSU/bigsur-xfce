@@ -1,4 +1,4 @@
 [Icon Theme]
 Name=Default
-Comment=Tema de cursor padrao
+Comment=默认光标主题
 Inherits=@@cursores@@

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Seletor de layouts de janela, como o do Windows 11 (Super+Z).
+"""窗口布局选择器，类似 Windows 11 的（Super+Z）。
 
-Abre um quadro com desenhos de layouts em cima da janela ativa; clicar numa
-das partes de um desenho leva a janela para aquela parte da tela. O xfwm4 nao
-deixa por nada no botao de maximizar, entao o quadro abre pelo atalho.
+在活动窗口上方打开一个带布局示意图的框；点击某个示意图的某部分，就把窗口
+移到屏幕的相应部分。xfwm4 无论如何都不让放在最大化按钮上，因此该框通过
+快捷键打开。
 
-    d3bian-layouts          abre o quadro para a janela ativa
-    Esc ou clicar fora      fecha sem mexer em nada
+    d3bian-layouts          为活动窗口打开该框
+    Esc 或点击外部          关闭且不做任何改动
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 
-# cada layout e uma lista de partes: x, y, largura, altura, em fracao da tela
+# 每个布局是若干部分的列表：x、y、宽度、高度，以屏幕比例表示
 LAYOUTS = [
     [(0, 0, 1 / 2, 1), (1 / 2, 0, 1 / 2, 1)],
     [(0, 0, 2 / 3, 1), (2 / 3, 0, 1 / 3, 1)],
@@ -79,7 +79,7 @@ def mover(janela: int, area: tuple[int, int, int, int], parte) -> None:
     w, h = round(aw * fw), round(ah * fh)
     alvo = f"0x{janela:08x}"
     x11("wmctrl", "-i", "-r", alvo, "-b", "remove,maximized_vert,maximized_horz,fullscreen")
-    # wmctrl mede o conteudo; a moldura do tema sai da conta
+    # wmctrl 测量的是内容；主题边框要扣除
     esq, dir_, cima, baixo = (numeros(x11("xprop", "-id", str(janela), "-notype",
                                           "_NET_FRAME_EXTENTS")) + [0, 0, 0, 0])[:4]
     w, h = max(w - esq - dir_, 200), max(h - cima - baixo, 150)
@@ -94,7 +94,7 @@ def maximizar(janela: int) -> None:
 
 
 class Cartao(Gtk.DrawingArea):
-    """O desenho de um layout; a parte sob o mouse fica na cor de destaque."""
+    """某个布局的示意图；鼠标下的部分使用高亮颜色。"""
 
     def __init__(self, partes, escolher) -> None:
         super().__init__()
@@ -158,7 +158,7 @@ class Cartao(Gtk.DrawingArea):
 
 class Quadro(Gtk.Window):
     def __init__(self, janela: int) -> None:
-        super().__init__(title="Layouts")
+        super().__init__(title="布局")
         self.janela = janela
         self.set_decorated(False)
         self.set_resizable(False)
@@ -189,7 +189,7 @@ class Quadro(Gtk.Window):
         caixa.pack_start(grade, False, False, 0)
 
         botoes = Gtk.Box(spacing=6, homogeneous=True)
-        for rotulo, acao in (("Maximizar", self.maximizar), ("Centralizar", self.centralizar)):
+        for rotulo, acao in (("最大化", self.maximizar), ("居中", self.centralizar)):
             b = Gtk.Button(label=rotulo)
             b.connect("clicked", lambda _b, a=acao: a())
             botoes.pack_start(b, True, True, 0)
@@ -201,7 +201,7 @@ class Quadro(Gtk.Window):
         self.connect("realize", self.posicionar)
 
     def posicionar(self, *_args) -> None:
-        # como no Windows, logo abaixo da barra de titulo, no meio da janela
+        # 像 Windows 一样，紧贴标题栏下方、窗口中部的居中位置
         largura, altura = self.get_preferred_size()[1].width, self.get_preferred_size()[1].height
         lx, ly, lw, lh = self.limite
         if self.geo:
@@ -227,7 +227,7 @@ class Quadro(Gtk.Window):
         Gtk.main_quit()
 
     def depois(self, acao) -> None:
-        # o quadro some antes, para o foco voltar para a janela certa
+        # 先让框消失，好让焦点回到正确的窗口
         self.escolhido = True
         self.hide()
         GLib.timeout_add(60, lambda: (acao(), Gtk.main_quit()) and False)

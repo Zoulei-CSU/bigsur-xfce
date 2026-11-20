@@ -1,48 +1,48 @@
 #!/usr/bin/env bash
-# Configura o Docker no modo rootless para o usuario que roda o painel.
+# 为运行面板的用户配置 Docker 的 rootless 模式。
 #
-# Roda como o usuario, e nao como root: o daemon rootless e dele. Os poucos
-# passos de sistema usam sudo -n, com a autorizacao que o painel ja tem.
+# 以该用户身份运行，而不是 root：rootless 守护进程属于他。少数系统步骤
+# 使用 sudo -n，沿用面板已有的授权。
 #
-# O usuario nao entra no grupo docker. Esse grupo fala com o daemon de root e
-# vale tanto quanto ser root, o que desfaria a vantagem do rootless.
+# 该用户不加入 docker 组。这个组会与 root 守护进程通信，等同于 root，
+# 会抵消 rootless 的好处。
 set -euo pipefail
 
 usuario="$(id -un)"
 if [ "$(id -u)" -eq 0 ]; then
-  echo "rode como usuario comum, nao como root" >&2
+  echo "请以普通用户身份运行，而不是 root" >&2
   exit 1
 fi
 if ! command -v dockerd-rootless-setuptool.sh >/dev/null; then
-  echo "dockerd-rootless-setuptool.sh ausente: o docker-ce-rootless-extras nao foi instalado" >&2
+  echo "缺少 dockerd-rootless-setuptool.sh：未安装 docker-ce-rootless-extras" >&2
   exit 1
 fi
 
-# o rootless mapeia os ids do container numa faixa reservada ao usuario
+# rootless 会把容器 id 映射到为用户预留的区间
 if ! grep -q "^$usuario:" /etc/subuid || ! grep -q "^$usuario:" /etc/subgid; then
-  echo "reservando ids para $usuario em /etc/subuid e /etc/subgid"
+  echo "正在 /etc/subuid 和 /etc/subgid 中为 $usuario 预留 id"
   sudo -n usermod --add-subuids 100000-165535 --add-subgids 100000-165535 "$usuario"
 fi
 
-# Com o daemon de root ativo a ferramenta recusa continuar, e o rootless nao
-# precisa dele. Fica instalado, so desligado
-echo "desligando o daemon de root do Docker"
+# root 守护进程开启时该工具会拒绝继续，而 rootless 也不需要它。
+# 保留安装，只是关闭
+echo "正在关闭 Docker 的 root 守护进程"
 sudo -n systemctl disable --now docker.service docker.socket >/dev/null 2>&1 || true
 sudo -n rm -f /var/run/docker.sock
 
-echo "instalando o daemon rootless"
+echo "正在安装 rootless 守护进程"
 dockerd-rootless-setuptool.sh install
 
 systemctl --user enable --now docker
-# sem linger, o daemon para quando a sessao fecha
+# 没有 linger 时，会话关闭后守护进程就会停止
 sudo -n loginctl enable-linger "$usuario"
 
-# o setuptool cria o contexto rootless; usar ele dispensa DOCKER_HOST no shell
+# setuptool 会创建 rootless 上下文；使用它就不必在 shell 中设置 DOCKER_HOST
 docker context use rootless >/dev/null
 
 if docker info --format '{{.SecurityOptions}}' 2>/dev/null | grep -q rootless; then
-  echo "Docker rootless ativo para $usuario"
+  echo "已为 $usuario 启用 Docker rootless"
 else
-  echo "o daemon rootless nao respondeu; veja: systemctl --user status docker" >&2
+  echo "rootless 守护进程没有响应；请查看：systemctl --user status docker" >&2
   exit 1
 fi

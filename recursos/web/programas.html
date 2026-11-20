@@ -1,65 +1,65 @@
-<title>Programas - d3bian-init-bigsur-xfce</title>
+<title>程序 - d3bian-init-bigsur-xfce</title>
 <link rel="stylesheet" href="estilo.css">
 <script src="comum.js"></script>
 
-<div class="estado"><span class="viva"></span><span id="ePronto">verificando</span><span>host: <b id="eDistro">…</b></span><span>ambiente: <b id="eDesktop">…</b></span><span class="dir"><span>d3bian-init-bigsur-xfce <b>v0.1.0</b></span><span>ativo: <b id="eTempo">00:00:00</b></span><span id="eSit">[ verificando ]</span></span></div>
+<div class="estado"><span class="viva"></span><span id="ePronto">检查中</span><span>主机：<b id="eDistro">…</b></span><span>环境：<b id="eDesktop">…</b></span><span class="dir"><span>d3bian-init-bigsur-xfce <b>v0.1.0</b></span><span>已运行：<b id="eTempo">00:00:00</b></span><span id="eSit">[ 检查中 ]</span></span></div>
 
-<a class="voltar" href="/"><span aria-hidden="true">&larr;</span> Voltar ao início</a>
-<h1>Programas úteis</h1>
-<p class="sub" id="aviso">Carregando…</p>
+<a class="voltar" href="/"><span aria-hidden="true">&larr;</span> 返回首页</a>
+<h1>实用程序</h1>
+<p class="sub" id="aviso">加载中…</p>
 
-<!-- o hardware encontrado e o que o catalogo tem para ele. Os itens com
-     "hardware" no programas.json so aparecem aqui, e so se a maquina tiver -->
+<!-- 发现的硬件以及目录中适用于它的项。programas.json 中带
+     "hardware" 的项只在这里出现，且仅在机器具备该硬件时 -->
 <div class="cartao hw" id="hardware" hidden>
-  <h2>Hardware desta máquina</h2>
+  <h2>本机硬件</h2>
   <div class="hw-disp" id="hwDisp"></div>
   <div class="aviso erro" id="hwFonte" hidden>
-    <b>Firmware fora do alcance do apt</b>
-    Falta o componente non-free-firmware nas fontes do Debian. Acrescente
-    non-free-firmware ao fim das linhas do Debian em /etc/apt/sources.list,
-    rode sudo apt update e abra esta página de novo.
+    <b>固件超出 apt 范围</b>
+    Debian 源中缺少 non-free-firmware 组件。请把
+    non-free-firmware 添加到 /etc/apt/sources.list 中 Debian 行的末尾，
+    运行 sudo apt update 并重新打开此页面。
   </div>
-  <h3>Para o hardware funcionar</h3>
-  <p class="hw-ok" id="hwOk" hidden>Nada faltando para o hardware encontrado.</p>
+  <h3>让硬件正常工作</h3>
+  <p class="hw-ok" id="hwOk" hidden>所发现的硬件没有缺失项。</p>
   <div class="itens" id="hwFalta"></div>
   <div id="hwSugestoes" hidden>
-    <h3>Sugestões</h3>
-    <p class="hw-nota">Não são necessárias para o hardware funcionar. Marque se quiser.</p>
+    <h3>建议</h3>
+    <p class="hw-nota">并非硬件正常工作所必需。需要时请勾选。</p>
     <div class="itens" id="hwExtra"></div>
   </div>
   <div class="acoes">
-    <button class="bt pri" id="btFalta" hidden>Instalar o que falta</button>
+    <button class="bt pri" id="btFalta" hidden>安装缺失项</button>
   </div>
 </div>
 
 <input id="busca" class="busca" type="search" autocomplete="off"
-       placeholder="Buscar por nome, pacote ou descrição…" aria-label="Buscar programas">
+       placeholder="按名称、软件包或描述搜索…" aria-label="搜索程序">
 <p class="contagem" id="contagem"></p>
 
 <div class="acoes" style="margin-top:0;margin-bottom:20px">
-  <button class="bt sec" id="btTodos">Marcar tudo que falta</button>
-  <button class="bt sec" id="btNenhum">Desmarcar tudo</button>
+  <button class="bt sec" id="btTodos">勾选所有缺失项</button>
+  <button class="bt sec" id="btNenhum">全部取消勾选</button>
 </div>
 
 <div id="lista"></div>
 
 <div class="barra">
-  <!-- a pergunta aparece aqui, junto do botao que a pessoa acabou de apertar -->
+  <!-- 问题出现在这里，紧挨着用户刚按下的按钮 -->
   <div id="confirmacao" hidden class="aviso erro" role="alert"></div>
-  <span class="conta" id="conta">Nada selecionado</span>
-  <button class="bt pri" id="btInstalar" disabled>Instalar selecionados</button>
-  <button class="bt sec" id="btRemover" disabled>Remover selecionados</button>
+  <span class="conta" id="conta">未选择</span>
+  <button class="bt pri" id="btInstalar" disabled>安装所选</button>
+  <button class="bt sec" id="btRemover" disabled>移除所选</button>
 </div>
 
 <p class="rodape">
-  Só pacotes do repositório oficial do Debian. O servidor recusa qualquer nome que
-  não esteja nesta lista, então a página não consegue instalar coisa de fora.
+  仅限 Debian 官方仓库的软件包。服务器拒绝任何不在此列表中的名称，
+  因此页面无法安装外部内容。
 </p>
 
 <script>
 const $ = s => document.querySelector(s);
 let catalogo = null, retomou = false;
-// pacotes que acabaram de mudar; o proximo desenho os destaca uma vez
+// 刚刚发生变化的软件包；下次绘制时将高亮一次
 let destacar = new Set();
 
 function selecionados(){
@@ -68,13 +68,13 @@ function selecionados(){
 
 function atualizarBarra(){
   const n = selecionados().length;
-  $("#conta").textContent = n === 0 ? "Nada selecionado"
-    : n === 1 ? "1 programa selecionado" : `${n} programas selecionados`;
+  $("#conta").textContent = n === 0 ? "未选择"
+    : n === 1 ? "已选择 1 个程序" : `已选择 ${n} 个程序`;
   $("#btInstalar").disabled = n === 0 || Terminal.ocupado();
   $("#btRemover").disabled = n === 0 || Terminal.ocupado();
 }
 
-// nome amigavel de um pacote, para o terminal e as mensagens
+// 软件包的友好名称，用于终端和消息
 function nomeDe(pkg){
   for (const cat of (catalogo || {}).categorias || []){
     const it = (cat.itens || []).find(i => i.pkg === pkg);
@@ -83,12 +83,12 @@ function nomeDe(pkg){
   return pkg;
 }
 
-// um item marcavel, igual na lista comum e no cartao do hardware
+// 可勾选项，在普通列表和硬件卡片中相同
 function criarItem(it){
   const rot = document.createElement("label");
   rot.className = "item" + (it.instalado ? " ja" : "") + (it.fonte ? " externo" : "")
                 + (destacar.has(it.pkg) ? " mudou" : "");
-  // texto sem acento, para a busca achar "grafico" digitando "gráfico" e vice-versa
+  // 规范化搜索文本（去掉重音），让带重音和不带重音的写法都能搜到
   rot.dataset.busca = semAcento(`${it.nome} ${it.pkg} ${it.desc || ""}`);
   const cx = document.createElement("input");
   cx.type = "checkbox"; cx.value = it.pkg; cx.dataset.instalado = it.instalado ? "1" : "0";
@@ -101,11 +101,11 @@ function criarItem(it){
     s.className = "selo" + (classe ? " " + classe : ""); s.textContent = texto;
     nome.appendChild(s);
   };
-  if (it.instalado) selo("instalado");
-  else if (it.fonte) selo("fonte de terceiro", "alerta");
+  if (it.instalado) selo("已安装");
+  else if (it.fonte) selo("第三方源", "alerta");
   else if (!it.disponivel){
-    // so chega aqui pelo cartao do hardware: o pacote existe, mas o apt nao alcanca
-    selo("fora do apt", "alerta");
+    // 只会经由硬件卡片到达这里：软件包存在，但 apt 访问不到
+    selo("apt 之外", "alerta");
     cx.disabled = true;
   }
   const desc = document.createElement("div");
@@ -135,10 +135,9 @@ function render(dados){
     const caixa = document.createElement("div");
     caixa.className = "itens";
     (cat.itens || []).forEach(it => {
-      // item de hardware vai para o cartao do topo, e so se a maquina tiver o hardware
+      // 硬件项放到顶部卡片，且仅在机器具备该硬件时
       if (it.hardware){ if (it.detectado) doHardware.push(it); return; }
-      // um item de fonte externa so fica disponivel depois que o repositorio
-      // e acrescentado, entao ele aparece mesmo antes disso
+      // 外部源项只有在仓库添加后才可用，因此在此之前也会显示
       if (!it.disponivel && !it.fonte) return;
       caixa.appendChild(criarItem(it));
     });
@@ -149,8 +148,8 @@ function render(dados){
   filtrar();
 }
 
-// Cartao do hardware: o que foi encontrado, o que falta para ele funcionar
-// (ja marcado) e as sugestoes, desmarcadas para a pessoa decidir
+// 硬件卡片：发现了什么、让它正常工作还缺什么
+// （已勾选）以及建议（未勾选，由用户决定）
 function desenharHardware(maquina, itens){
   const cartao = $("#hardware");
   cartao.hidden = !maquina;
@@ -166,7 +165,7 @@ function desenharHardware(maquina, itens){
     if (d.detalhe) s.appendChild(document.createTextNode(" " + d.detalhe));
     disp.appendChild(s);
   });
-  if (!disp.children.length) disp.textContent = "Nenhum dispositivo reconhecido.";
+  if (!disp.children.length) disp.textContent = "未识别到设备。";
 
   const necessarios = itens.filter(it => it.papel !== "extra");
   const extras = itens.filter(it => it.papel === "extra");
@@ -188,12 +187,12 @@ function desenharHardware(maquina, itens){
   extras.forEach(it => extra.appendChild(criarItem(it)));
   $("#hwSugestoes").hidden = !extras.length;
 
-  // pendente que o apt nao alcanca: quase sempre falta o non-free-firmware
+  // apt 访问不到的待处理项：几乎总是缺少 non-free-firmware
   $("#hwFonte").hidden = maquina.non_free_firmware || !pendentes.some(it => !it.disponivel);
 
   const bt = $("#btFalta");
   bt.hidden = !instalaveis.length;
-  bt.textContent = `Instalar o que falta (${instalaveis.length})`;
+  bt.textContent = `安装缺失项（${instalaveis.length}）`;
   bt.onclick = () => agir("/api/programas/instalar", {pacotes: instalaveis.map(it => it.pkg)}, false);
 }
 
@@ -215,28 +214,28 @@ function filtrar(){
   });
   const total = document.querySelectorAll("#lista .item").length;
   $("#contagem").textContent = termo
-    ? (visiveis ? `${visiveis} de ${total} programas` : "Nenhum programa com esse termo")
-    : `${total} programas, todos do repositório oficial`;
+    ? (visiveis ? `${total} 个程序中的 ${visiveis} 个` : "没有匹配该词的程序")
+    : `${total} 个程序，全部来自官方仓库`;
 }
 
 async function carregar(){
-  // ?q=termo abre a pagina ja filtrada, util para atalho e para teste
+  // ?q=词 打开已过滤的页面，便于快捷方式和测试
   const q = new URLSearchParams(location.search).get("q");
   if (q) $("#busca").value = q;
   try { render(await fetch("/api/programas").then(r => r.json())); }
-  catch (e) { $("#aviso").textContent = "Não consegui falar com o servidor local."; }
+  catch (e) { $("#aviso").textContent = "无法与本地服务器通信。"; }
   destacar = new Set();
 
-  // uma instalacao que ja rodava antes de a pagina abrir volta a aparecer
+  // 页面打开前已在运行的安装会重新出现
   if (!retomou){
     retomou = true;
-    let tarefa = null;     // {remover, pacotes}, tirado do rotulo do servidor
+    let tarefa = null;     // {remover, pacotes}，取自服务器标签
     Terminal.retomar({
       titulo: rotulo => {
-        const m = (rotulo || "").match(/^(Instalando|Removendo): (.*)$/);
+        const m = (rotulo || "").match(/^(正在安装|正在移除)： (.*)$/);
         if (!m) return rotulo;
-        tarefa = {remover: m[1] === "Removendo", pacotes: m[2].split(", ")};
-        return tarefa.remover ? "Removendo programas" : "Instalando programas";
+        tarefa = {remover: m[1] === "正在移除", pacotes: m[2].split(", ")};
+        return tarefa.remover ? "正在移除程序" : "正在安装程序";
       },
       etapas: () => tarefa ? tarefa.pacotes.map(p => ({id: p, nome: nomeDe(p)})) : [],
       aoTerminar: async codigo => {
@@ -254,7 +253,7 @@ $("#busca").addEventListener("keydown", e => {
   if (e.key === "Escape"){ e.target.value = ""; filtrar(); }
 });
 
-// so marca o que esta visivel, para a busca servir de recorte
+// 只勾选可见项，让搜索起到筛选作用
 $("#btTodos").addEventListener("click", () => {
   document.querySelectorAll("#lista .item").forEach(item => {
     if (item.hidden) return;
@@ -274,15 +273,15 @@ function travar(ocupado){
   });
   if (!ocupado) atualizarBarra();
 }
-// quando a tarefa termina (ou retoma depois de recarregar), a barra acompanha
+// 任务结束时（或重新加载后恢复时），栏会跟随
 Terminal.aoMudar(travar);
 
-// pergunta dentro da barra fixa: texto, lista e dois botoes
+// 固定栏内的询问：文本、列表和两个按钮
 function perguntar(texto, itens, rotuloSim, aoSim){
   const caixa = $("#confirmacao");
   caixa.textContent = "";
   const t = document.createElement("b");
-  t.textContent = "Confirme antes de continuar";
+  t.textContent = "继续前请确认";
   caixa.appendChild(t);
   caixa.appendChild(document.createTextNode(texto));
   if (itens && itens.length){
@@ -295,7 +294,7 @@ function perguntar(texto, itens, rotuloSim, aoSim){
   const sim = document.createElement("button");
   sim.className = "bt pri"; sim.textContent = rotuloSim;
   const nao = document.createElement("button");
-  nao.className = "bt sec"; nao.textContent = "Cancelar";
+  nao.className = "bt sec"; nao.textContent = "取消";
   sim.addEventListener("click", () => { caixa.hidden = true; aoSim(); });
   nao.addEventListener("click", () => { caixa.hidden = true; });
   acoes.append(sim, nao);
@@ -314,30 +313,30 @@ async function agir(rota, corpo, remover){
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify(corpo)
     }).then(x => x.json());
-  } catch (e) { r = {erro: "O servidor local não respondeu."}; }
+  } catch (e) { r = {erro: "本地服务器未响应。"}; }
 
   if (!r.iniciado){
     travar(false);
     if (r.motivo === "fonte_externa"){
       const nomes = r.externas.map(e => e.nome).join(", ");
-      perguntar(`${nomes} não vem do repositório do Debian. Leia o que será acrescentado ao seu sistema:`,
-                r.externas.map(e => e.aviso), "Entendi, pode instalar",
+      perguntar(`${nomes} 并非来自 Debian 仓库。请阅读将向系统添加的内容：`,
+                r.externas.map(e => e.aviso), "知道了，可以安装",
                 () => agir(rota, {...corpo, confirmar_externo: true}, remover));
       return;
     }
     if (r.motivo === "arrasta_outros"){
-      perguntar("O apt levaria junto pacotes que você não pediu:", r.extras, "Remover assim mesmo",
+      perguntar("apt 会连带移除你未请求的软件包：", r.extras, "仍然移除",
                 () => agir(rota, {...corpo, confirmar: true}, remover));
       return;
     }
-    Terminal.avisar(false, "Não deu para começar",
-      r.erro || (r.motivo === "ocupado" ? "Já tem uma tarefa rodando. Espere terminar." : "Não consegui iniciar."));
+    Terminal.avisar(false, "无法开始",
+      r.erro || (r.motivo === "ocupado" ? "已有任务在运行。请等待完成。" : "无法开始。"));
     return;
   }
 
   const pacotes = r.pacotes || corpo.pacotes;
   Terminal.acompanhar({
-    titulo: remover ? "Removendo programas" : "Instalando programas",
+    titulo: remover ? "正在移除程序" : "正在安装程序",
     etapas: pacotes.map(p => ({id: p, nome: nomeDe(p)})),
     aoTerminar: async codigo => {
       if (codigo === 0) destacar = new Set(pacotes);
@@ -347,16 +346,16 @@ async function agir(rota, corpo, remover){
   });
 }
 
-// o que dizer ao terminar, igual para o clique e para a tarefa retomada
+// 结束时显示什么，点击和恢复的任务相同
 function fimPrograma(pacotes, remover, codigo){
   const nomes = pacotes.map(nomeDe);
   if (codigo === 0) return {bom: true,
-    titulo: remover ? "Programas removidos" : "Programas instalados",
-    texto: (pacotes.length === 1 ? "" : `${pacotes.length} programas: `) + nomes.join(", ") + ".",
-    itens: remover ? [] : ["Eles já aparecem no menu de aplicativos."]};
-  if (codigo !== null) return {bom: false, titulo: "O apt parou com erro",
-    texto: `Código ${codigo}. As linhas vermelhas do log mostram o motivo.`,
-    itens: ["Se falar em permissão, abra o painel pelo comando d3bian-init-bigsur-xfce."]};
+    titulo: remover ? "程序已移除" : "程序已安装",
+    texto: (pacotes.length === 1 ? "" : `${pacotes.length} 个程序：`) + nomes.join(", ") + "。",
+    itens: remover ? [] : ["它们已出现在应用菜单中。"]};
+  if (codigo !== null) return {bom: false, titulo: "apt 出错停止",
+    texto: `代码 ${codigo}。日志中的红色行显示了原因。`,
+    itens: ["若提到权限，请用 d3bian-init-bigsur-xfce 命令打开面板。"]};
   return null;
 }
 
@@ -365,7 +364,7 @@ $("#btInstalar").addEventListener("click", () =>
 
 $("#btRemover").addEventListener("click", () => {
   const alvos = selecionados();
-  if (!confirm(`Remover ${alvos.length} programa(s)?\n\n` + alvos.map(nomeDe).join(", "))) return;
+  if (!confirm(`移除 ${alvos.length} 个程序？\n\n` + alvos.map(nomeDe).join(", "))) return;
   agir("/api/programas/remover", {pacotes: alvos}, true);
 });
 </script>

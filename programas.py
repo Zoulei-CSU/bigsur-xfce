@@ -1,8 +1,7 @@
-"""Catalogo de programas do repositorio oficial.
+"""官方仓库的软件目录。
 
-O catalogo tambem e a lista de permissao: o programa so instala ou remove o
-que estiver aqui. Isso importa porque quem pede e uma pagina web, e a pagina
-nao deve conseguir mandar instalar qualquer coisa.
+目录同时也是许可列表：程序只安装或移除这里的内容。这很重要，因为请求来自
+网页，页面不应能要求安装任意内容。
 """
 
 from __future__ import annotations
@@ -15,11 +14,10 @@ from typing import Callable
 
 from . import caminhos, diario, hardware, motor, sistema
 
-LIMITE = 60          # pacotes por operacao
+LIMITE = 60          # 每次操作的软件包上限
 
-# o que o fonte-externa.sh pode criar no sistema (chave, lista e preferencias
-# de cada fonte); o desfazer com "apagar" so tira estes, e so os que nao
-# existiam antes
+# fonte-externa.sh 可在系统中创建的内容（各源的密钥、列表和偏好）；
+# 配合 "apagar" 的撤销只会移除这些，且只限原本不存在的
 ARQUIVOS_DE_FONTE = {
     f"{pasta}/{nome}{fim}"
     for nome in ("microsoft-vscode", "docker")
@@ -32,11 +30,11 @@ def catalogo() -> dict:
     try:
         return json.loads(caminhos.CATALOGO.read_text())
     except (OSError, json.JSONDecodeError):
-        return {"aviso": "catalogo indisponivel", "categorias": []}
+        return {"aviso": "目录不可用", "categorias": []}
 
 
 def itens() -> dict[str, dict]:
-    """Todos os itens do catalogo, indexados pelo nome do pacote."""
+    """目录中的所有项，按软件包名称索引。"""
     return {
         item["pkg"]: item
         for categoria in catalogo().get("categorias", [])
@@ -46,7 +44,7 @@ def itens() -> dict[str, dict]:
 
 
 def fontes_necessarias(pacotes: list[str]) -> list[dict]:
-    """Quais pacotes escolhidos dependem de um repositorio de terceiro."""
+    """所选软件包中有哪些依赖第三方仓库。"""
     tabela = itens()
     saida = []
     for nome in pacotes:
@@ -67,12 +65,12 @@ def permitidos() -> set[str]:
 
 
 def com_estado() -> dict:
-    """O catalogo anotado com disponivel e instalado, para desenhar a pagina."""
+    """带可用和已安装标记的目录，供页面绘制。"""
     dados = catalogo()
     nomes = sorted(permitidos())
     estados = sistema.estado_pacotes(nomes)
-    # item com "hardware" so interessa se a maquina tem aquele hardware; a
-    # pagina o mostra no cartao do hardware, nao na lista comum
+    # 带 "hardware" 的项仅在机器有该硬件时才相关；
+    # 页面在硬件卡片中显示它，而不在普通列表中
     maquina = hardware.detectar()
     for categoria in dados.get("categorias", []):
         for item in categoria.get("itens", []):
@@ -81,7 +79,7 @@ def com_estado() -> dict:
                 item["detectado"] = hardware.atende(item, maquina)
                 usos = maquina["firmware"].get(item.get("pkg", ""))
                 if usos:
-                    item["motivo"] = "usado por " + ", ".join(usos)
+                    item["motivo"] = "被以下使用：" + ", ".join(usos)
     dados["hardware"] = maquina
     return dados
 
@@ -91,16 +89,16 @@ class Recusado(Exception):
 
 
 def conferir(pedidos) -> list[str]:
-    """Valida a lista pedida contra o catalogo. Levanta Recusado se algo nao bate."""
+    """对照目录校验请求的列表。有不符项时抛出 Recusado。"""
     if not isinstance(pedidos, list) or not pedidos:
-        raise Recusado("nenhum programa informado")
+        raise Recusado("未提供任何程序")
     lista = permitidos()
     fora = [str(x) for x in pedidos if not isinstance(x, str) or x not in lista]
     if fora:
-        raise Recusado("fora do catalogo: " + ", ".join(fora[:5]))
+        raise Recusado("不在目录中：" + ", ".join(fora[:5]))
     if len(pedidos) > LIMITE:
-        raise Recusado(f"limite de {LIMITE} programas por vez")
-    # sem repetidos, mantendo a ordem
+        raise Recusado(f"每次最多 {LIMITE} 个程序")
+    # 去重并保持顺序
     vistos: list[str] = []
     for nome in pedidos:
         if nome not in vistos:
@@ -109,7 +107,7 @@ def conferir(pedidos) -> list[str]:
 
 
 def arrastaria(pacotes: list[str]) -> list[str]:
-    """Simula a remocao e devolve o que o apt levaria junto sem ter sido pedido."""
+    """模拟移除，并返回 apt 未请求也会一并移除的内容。"""
     try:
         simulacao = subprocess.run(["apt-get", "-s", "remove", *pacotes],
                                    capture_output=True, text=True, timeout=60)
@@ -123,29 +121,29 @@ def arrastaria(pacotes: list[str]) -> list[str]:
     return sorted(saindo - set(pacotes))
 
 
-# o apt escreve o progresso em linhas "dlstatus:" e "pmstatus:" na saida; a
-# pagina tira dali a barra e o pacote da vez e esconde essas linhas do log
+# apt 在输出中以 "dlstatus:" 和 "pmstatus:" 行写入进度；
+# 页面据此绘制进度条和当前包，并从日志中隐藏这些行
 PROGRESSO_APT = ["-o", "APT::Status-Fd=1"]
 
 
 def comando_instalar(pacotes: list[str]) -> list[str]:
-    # o sudo limpa o ambiente: o DEBIAN_FRONTEND vai por dentro, pelo env
+    # sudo 会清空环境：DEBIAN_FRONTEND 通过 env 内置传入
     return ["env", "DEBIAN_FRONTEND=noninteractive", "apt-get", *PROGRESSO_APT,
             *motor.APT_SEM_PERGUNTAS, "install", "-y",
             "--no-install-recommends", *pacotes]
 
 
 def instalar(pacotes: list[str], diz: Callable[[str], None]) -> int:
-    """Habilita as fontes de terceiro, instala e roda o roteiro de cada item.
+    """启用第三方源、安装，并运行各项的脚本。
 
-    Um item pode levar pacotes junto ("junto") e pedir um roteiro de
-    configuracao depois do apt ("depois"), como o Docker rootless.
+    某个项可以一并带上软件包（"junto"），并在 apt 之后请求配置脚本
+    （"depois"），如 Docker rootless。
     """
     try:
         with caminhos.trava():
             return _instalar(pacotes, diz)
     except caminhos.Ocupado as erro:
-        diz(f"{erro}; espere terminar")
+        diz(f"{erro}；请等待完成")
         return 1
 
 
@@ -156,7 +154,7 @@ def remover(pacotes: list[str], diz: Callable[[str], None]) -> int:
             diz("$ sudo " + " ".join(comando))
             return _correr(["sudo", "-n", *comando], diz)
     except caminhos.Ocupado as erro:
-        diz(f"{erro}; espere terminar")
+        diz(f"{erro}；请等待完成")
         return 1
 
 
@@ -166,32 +164,32 @@ def _instalar(pacotes: list[str], diz: Callable[[str], None]) -> int:
         roteiro = caminhos.ARQUIVOS / "fonte-externa.sh"
         antes = {c for c in ARQUIVOS_DE_FONTE if Path(c).exists()}
         codigo = _correr(["sudo", "-n", "bash", str(roteiro), pedido["fonte"]], diz)
-        # anotado para o desfazer com "apagar": so o que este passo criou
+        # 为配合 "apagar" 的撤销而记录：只记本步骤创建的内容
         criados = sorted(c for c in ARQUIVOS_DE_FONTE - antes if Path(c).exists())
         if criados:
             diario.anotar("fonte_externa", receita="programas", fonte=pedido["fonte"],
                           criados=criados)
         if codigo != 0:
-            diz("nao consegui habilitar a fonte; nada foi instalado")
+            diz("无法启用源；未安装任何内容")
             return codigo
 
     tabela = itens()
     todos = list(pacotes)
     for nome in pacotes:
         todos += [p for p in tabela.get(nome, {}).get("junto", []) if p not in todos]
-    diz("instalando: " + ", ".join(todos))
+    diz("正在安装：" + ", ".join(todos))
     codigo = _correr(["sudo", "-n", *comando_instalar(todos)], diz)
     if codigo != 0:
         return codigo
 
     for nome in pacotes:
         roteiro = tabela.get(nome, {}).get("depois", "")
-        # so nome de arquivo de recursos/arquivos, nunca um caminho
+        # 只用 recursos/arquivos 的文件名，绝不是路径
         if not roteiro or Path(roteiro).name != roteiro:
             continue
-        diz(f"configurando {tabela[nome].get('nome', nome)}")
-        # roda como o usuario: o que o roteiro configura e dele, e ele mesmo usa
-        # sudo -n nos passos de sistema
+        diz(f"正在配置 {tabela[nome].get('nome', nome)}")
+        # 以用户身份运行：脚本配置的内容属于用户并由其使用，
+        # 系统步骤中它会自行使用 sudo -n
         codigo = _correr(["bash", str(caminhos.ARQUIVOS / roteiro)], diz)
         if codigo != 0:
             return codigo
@@ -210,7 +208,7 @@ def _correr(argumentos: list[str], diz: Callable[[str], None]) -> int:
         proc.wait()
         return proc.returncode
     except OSError as erro:
-        diz(f"nao consegui executar: {erro}")
+        diz(f"无法执行：{erro}")
         return 1
 
 

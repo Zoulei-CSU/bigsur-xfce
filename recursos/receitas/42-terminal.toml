@@ -1,17 +1,17 @@
 [modulo]
 id = "42"
 nome = "terminal"
-titulo = "Cores e transparencia do terminal"
+titulo = "终端颜色和透明度"
 afetada_por = []
 
-# O xfce4-terminal 1.x guarda tudo no xfconf; o terminalrc so e lido uma vez,
-# para migrar, e o que ele traz nao voltaria ao desfazer. Cada propriedade vai
-# pelo xfconf e fica anotada no diario com o valor de antes.
+# xfce4-terminal 1.x 把所有内容存在 xfconf；terminalrc 只被读取一次，
+# 用于迁移，且其中的内容不会在撤销时还原。每个属性都通过
+# xfconf 设置，并在日志中记录之前的值。
 [[passo]]
 tipo = "script"
-dizer = "fonte, cores e transparencia do xfce4-terminal"
+dizer = "xfce4-terminal 的字体、颜色和透明度"
 corpo = '''
-command -v xfce4-terminal >/dev/null || { echo "xfce4-terminal nao instalado; nada a fazer"; exit 0; }
+command -v xfce4-terminal >/dev/null || { echo "xfce4-terminal 未安装；无需操作"; exit 0; }
 x() {
   d3_xfconf xfce4-terminal "$1" "$2"
   xfconf-query -c xfce4-terminal -p "$1" -t "$2" -s "$3" --create 2>/dev/null || {
@@ -51,6 +51,6 @@ x /color-selection-use-default bool false
 x /color-bold string "#ffffff"
 x /color-bold-use-default bool false
 x /color-palette string "#282c34;#e06c75;#98c379;#e5c07b;#61afef;#c678dd;#56b6c2;#abb2bf;#5c6370;#ef596f;#89ca78;#e5c07b;#61afef;#d55fde;#2bbac5;#ffffff"
-echo "xfce4-terminal com $D3_FONTE_MONO 11 e fundo translucido"
-echo "atencao: janelas do terminal ja abertas so mudam depois de fechar todas"
+echo "xfce4-terminal 使用 $D3_FONTE_MONO 11 和半透明背景"
+echo "atencao: 已打开的终端窗口只有在全部关闭后才会改变"
 '''

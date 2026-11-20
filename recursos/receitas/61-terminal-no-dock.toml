@@ -1,51 +1,51 @@
 [modulo]
 id = "61"
 nome = "terminal-no-dock"
-titulo = "Novo terminal no clique direito"
+titulo = "右键新建终端"
 afetada_por = ["dock"]
 
-# O clique direito do dock (e do menu) mostra as Actions do .desktop, e o do
-# xfce4-terminal so traz Preferencias. A copia em ~/.local/share/applications
-# vale no lugar da do sistema e ganha nova janela e nova aba.
+# 程序坞（和菜单）的右键会显示 .desktop 的 Actions，而
+# xfce4-terminal 的只有"首选项"。~/.local/share/applications 中的副本
+# 会取代系统的那份，并获得新建窗口和新建标签页。
 [[passo]]
 tipo = "script"
-dizer = "pondo nova janela e nova aba no clique direito do terminal"
+dizer = "在终端右键中加入新建窗口和新建标签页"
 tolera_falha = true
 corpo = '''
 origem=/usr/share/applications/xfce4-terminal.desktop
-[ -f "$origem" ] || { echo "xfce4-terminal nao instalado"; exit 0; }
+[ -f "$origem" ] || { echo "xfce4-terminal 未安装"; exit 0; }
 dest="$HOME/.local/share/applications/xfce4-terminal.desktop"
 d3_pasta "$HOME/.local/share/applications"
 d3_antes "$dest"
 mkdir -p "${dest%/*}"
-# so a secao principal; as acoes sao escritas abaixo
+# 只有主段；动作在下面写入
 sed -n '/^\[Desktop Entry\]/,/^\[Desktop Action/{/^\[Desktop Action/d;/^Actions=/d;p}' "$origem" > "$dest"
 cat >> "$dest" <<'EOF'
 Actions=new-window;new-tab;preferences;
 
 [Desktop Action new-window]
 Name=New Window
-Name[pt_BR]=Nova janela
-Name[pt]=Nova janela
+Name[pt_BR]=新建窗口
+Name[pt]=新建窗口
 Exec=xfce4-terminal --window
 
 [Desktop Action new-tab]
 Name=New Tab
-Name[pt_BR]=Nova aba
-Name[pt]=Nova aba
+Name[pt_BR]=新建标签页
+Name[pt]=新建标签页
 Exec=xfce4-terminal --tab
 
 [Desktop Action preferences]
 Name=Terminal Preferences
-Name[pt_BR]=Preferencias do terminal
-Name[pt]=Preferencias do terminal
+Name[pt_BR]=终端首选项
+Name[pt]=终端首选项
 Exec=xfce4-terminal --preferences
 EOF
 update-desktop-database "${dest%/*}" 2>/dev/null || true
-echo "acoes do terminal: nova janela, nova aba, preferencias"
+echo "终端动作：新建窗口、新建标签页、首选项"
 '''
 
-# o plank guarda o caminho do .desktop no item; o 60 aponta para o do sistema
+# plank 在项目里保存 .desktop 的路径；60 指向系统的那个
 [[passo]]
 tipo = "script"
 se = "dock == sim"
@@ -63,12 +63,12 @@ for item in "$HOME"/.config/plank/*/launchers/*.dockitem "$HOME"/.config/plank/*
 done
 if [ "$mudou" = 1 ] && pgrep -x plank >/dev/null; then
   pkill -x plank
-  # o novo so sobe depois que o antigo saiu: antes disso ele nao consegue o
-  # nome no D-Bus e desiste, e o antigo morre logo em seguida (fica sem dock)
+  # 新的进程只在旧的退出后才启动：在此之前它无法在 D-Bus 取得
+  # 名字并放弃，旧的随即死去（结果是没有程序坞）
   for _ in $(seq 50); do pgrep -x -u "$(id -u)" plank >/dev/null || break; sleep 0.1; done
-  # preso, o plank nao sai com o TERM (ele o trata no laco principal)
+  # 卡住时 plank 不会随 TERM 退出（它在主循环中处理）
   pkill -KILL -x -u "$(id -u)" plank 2>/dev/null && sleep 0.5
   setsid plank >/dev/null 2>&1 < /dev/null &
 fi
-echo "dock usando o terminal com as acoes novas"
+echo "程序坞已使用带新动作的终端"
 '''

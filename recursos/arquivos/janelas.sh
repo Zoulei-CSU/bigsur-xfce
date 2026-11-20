@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
-# Posiciona a janela ativa em fracoes da tela.
+# 将活动窗口定位到屏幕的若干比例区域。
 #
-# O xfwm4 ja faz metades e quartos sozinho, e os atalhos usam isso. Este script
-# cobre o que ele nao faz: centralizar e dividir em tercos.
+# xfwm4 本身已能完成半屏和四分之一屏，快捷键用的就是它。本脚本
+# 补上它做不到的：居中以及三等分。
 #
-#   bigsur-janelas centro          centraliza ocupando 72% da tela
-#   bigsur-janelas quase-cheia     ocupa 92%, com respiro nas bordas
-#   bigsur-janelas 2-3-esquerda    dois tercos a esquerda
-#   bigsur-janelas 1-3-direita     um terco a direita
-#   bigsur-janelas 2-3-direita     dois tercos a direita
-#   bigsur-janelas 1-3-esquerda    um terco a esquerda
+#   bigsur-janelas centro          居中，占屏幕 72%
+#   bigsur-janelas quase-cheia     占 92%，四周留出间隙
+#   bigsur-janelas 2-3-esquerda    靠左三分之二
+#   bigsur-janelas 1-3-direita     靠右三分之一
+#   bigsur-janelas 2-3-direita     靠右三分之二
+#   bigsur-janelas 1-3-esquerda    靠左三分之一
 set -u
 
 comando="${1:-}"
 [ -z "$comando" ] && { sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
 
 for exigido in wmctrl xprop; do
-  command -v "$exigido" >/dev/null || { echo "falta o $exigido: sudo apt install wmctrl x11-utils"; exit 1; }
+  command -v "$exigido" >/dev/null || { echo "缺少 $exigido：sudo apt install wmctrl x11-utils"; exit 1; }
 done
 
-# Area util: a tela menos o painel e o dock. Vem em x, y, largura, altura.
+# 可用区域：屏幕减去面板和 dock。以 x、y、宽度、高度表示。
 leia_area(){
   local bruto
   bruto="$(xprop -root -notype _NET_WORKAREA 2>/dev/null | sed 's/.*= //;s/,//g')"
   # shellcheck disable=SC2086
   set -- $bruto
   AX="${1:-0}"; AY="${2:-0}"; AW="${3:-0}"; AH="${4:-0}"
-  [ "${AW:-0}" -gt 0 ] || { echo "nao consegui ler a area util da tela"; exit 1; }
+  [ "${AW:-0}" -gt 0 ] || { echo "无法读取屏幕可用区域"; exit 1; }
 }
 
-# A moldura da janela entra na conta, senao ela passa da borda.
+# 窗口边框要计入，否则会越出边缘。
 leia_moldura(){
   local bruto
   bruto="$(xprop -id "$(xdotool getactivewindow 2>/dev/null)" -notype _NET_FRAME_EXTENTS 2>/dev/null | sed 's/.*= //;s/,//g')"
@@ -44,7 +44,7 @@ posicionar(){ # posicionar <x> <y> <largura> <altura>
   wmctrl -r :ACTIVE: -b remove,maximized_vert,maximized_horz 2>/dev/null
   sleep 0.08
   leia_moldura
-  # wmctrl mede o conteudo, nao a moldura; descontamos as bordas
+  # wmctrl 测量的是内容而非边框；减去边框
   w=$(( w - ME - MD )); h=$(( h - MC - MB ))
   [ "$w" -lt 200 ] && w=200
   [ "$h" -lt 150 ] && h=150
@@ -64,5 +64,5 @@ case "$comando" in
   1-3-direita)  posicionar $(( AX + AW * 2 / 3 )) "$AY" $(( AW / 3 )) "$AH" ;;
   2-3-direita)  posicionar $(( AX + AW / 3 )) "$AY" $(( AW * 2 / 3 )) "$AH" ;;
   1-3-esquerda) posicionar "$AX" "$AY" $(( AW / 3 )) "$AH" ;;
-  *) echo "comando desconhecido: $comando"; sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+  *) echo "未知命令：$comando"; sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

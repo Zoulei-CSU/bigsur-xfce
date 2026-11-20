@@ -1,32 +1,30 @@
 [modulo]
 id = "97"
 nome = "login"
-titulo = "Tela de login e de bloqueio"
+titulo = "登录和锁屏界面"
 requer = ["30"]
 afetada_por = ["destaque", "papel_de_parede",
                "login_fundo", "login_desfoque", "login_escurecer", "login_usuarios"]
 
-# Os arquivos sao montados primeiro em @@login_dir@@, uma pasta nova e fechada
-# (0700) que receitas.py cria a cada execucao e apaga no fim, e so depois
-# levados para o sistema, passando por uma pasta nova do root. A previa roda estes mesmos passos com
-# login_instalar = nao e outra pasta, entao o que ela mostra e exatamente o
-# que seria instalado.
+# 文件先组装到 @@login_dir@@，一个每次执行时由 receitas.py 新建、
+# 私有（0700）且结束时删除的新文件夹，然后经过一个新建的 root
+# 文件夹带到系统。预览用 login_instalar = nao 和另一个文件夹运行
+# 这些相同的步骤，因此它显示的内容正是将要安装的内容。
 
 [[passo]]
 tipo = "apt"
 se = "login_instalar == sim"
 pacotes = ["lightdm-gtk-greeter"]
 
-# a pasta de montagem tem de ser a da execucao: nova, da pessoa, fechada e
-# nao um link. Comeca vazia (a pasta fica; um nome livre em /tmp poderia ser
-# tomado por outra conta)
+# 组装文件夹必须是本次执行的：新建、属于用户、私有且不是链接。
+# 开始时为空（文件夹保留；/tmp 中的空闲名称可能被其他账户占用）
 [[passo]]
 tipo = "script"
 corpo = '''
 d="${D3_LOGIN_DIR:-}"
 if [ -z "$d" ] || [ -L "$d" ] || [ ! -d "$d" ] || [ ! -O "$d" ] \
    || [ "$(stat -c %a "$d")" != 700 ]; then
-  echo "pasta de montagem do login invalida: ${d:-vazia}" >&2
+  echo "登录组装文件夹无效：${d:-空}" >&2
   exit 1
 fi
 find "$d" -mindepth 1 -delete
@@ -34,7 +32,7 @@ find "$d" -mindepth 1 -delete
 
 [[passo]]
 tipo = "arquivo"
-dizer = "montando o tema da tela de login"
+dizer = "组装登录界面主题"
 destino = "@@login_dir@@/share/themes/d3bian-login/gtk-3.0/gtk.css"
 modelo = "login-gtk.css"
 
@@ -47,10 +45,10 @@ modelo = "login-greeter.conf"
 tipo = "arquivo"
 destino = "@@login_dir@@/lightdm.conf.d/90-d3bian.conf"
 conteudo = '''
-# Escrito pelo d3bian-init-bigsur-xfce.
+# 由 d3bian-init-bigsur-xfce 写入。
 [Seat:*]
 greeter-session=lightdm-gtk-greeter
-# true mostra os campos de nome e senha; false, a lista de usuarios
+# true 显示用户名和密码字段；false 显示用户列表
 greeter-hide-users=@@login_esconder_usuarios@@
 greeter-show-manual-login=true
 user-session=xfce
@@ -58,31 +56,31 @@ user-session=xfce
 
 [[passo]]
 tipo = "script"
-dizer = "preparando o fundo e a foto"
+dizer = "准备背景和照片"
 corpo = '''
 d="$D3_LOGIN_DIR"
 rm -f "$d/fundo.jpg" "$d/avatar.png"
 
 origem="$D3_LOGIN_FUNDO_ARQUIVO"
 if [ -n "$origem" ] && [ -f "$origem" ]; then
-  # o quanto escurecer o fundo atras do texto branco e a pessoa quem diz
+  # 白色文字背后背景要调暗多少由用户决定
   esc="${D3_LOGIN_ESCURECER:-10}"
   case "$esc" in ''|*[!0-9]*) esc=10 ;; esac
   [ "$esc" -le 90 ] || esc=90
   if [ "$D3_LOGIN_DESFOQUE" = "sim" ]; then
-    # reduzir antes de desfocar deixa o desfoque rapido; o greeter estica de volta
+    # 先缩小再模糊可让模糊变快；greeter 会把它拉回
     convert "$origem[0]" -resize '1920x1200^' -blur 0x24 -fill black -colorize "$esc%" \
             -quality 88 "$d/fundo.jpg"
   else
     convert "$origem[0]" -resize '2560x1600>' -fill black -colorize "$esc%" -quality 90 "$d/fundo.jpg"
   fi
-  echo "fundo: $(basename "$origem")$([ "$D3_LOGIN_DESFOQUE" = "sim" ] && echo ', desfocado'), escurecido $esc%"
+  echo "背景：$(basename "$origem")$([ "$D3_LOGIN_DESFOQUE" = "sim" ] && echo '，已模糊')，已调暗 $esc%"
 else
   convert -size 1920x1200 gradient:'#2a3a52'-'#0b0f16' "$d/fundo.jpg"
-  echo "nao achei imagem de fundo; usando um degrade escuro"
+  echo "没找到背景图片；使用深色渐变"
 fi
 
-# foto redonda. O svg do logo nao tem fundo, entao ganha um disco de vidro
+# 圆形照片。标志的 svg 没有背景，因此加上一个玻璃圆盘
 avatar="$D3_LOGIN_AVATAR_ARQUIVO"
 mascara=( \( -size 256x256 xc:none -fill white -draw 'circle 128,128 128,1' \) -compose DstIn -composite )
 case "$avatar" in
@@ -94,7 +92,7 @@ case "$avatar" in
     convert "$avatar[0]" -resize '256x256^' -gravity center -extent 256x256 \
             "${mascara[@]}" "$d/avatar.png" ;;
 esac
-echo "foto: $(basename "$avatar")"
+echo "照片：$(basename "$avatar")"
 '''
 
 [[passo]]
@@ -105,22 +103,22 @@ caminhos = ["/etc/lightdm/lightdm.conf.d/90-d3bian.conf"]
 [[passo]]
 tipo = "script"
 se = "login_instalar == sim"
-dizer = "levando para o sistema"
+dizer = "带到系统"
 corpo = '''
 d="$D3_LOGIN_DIR"
 tema=/usr/share/themes/d3bian-login
-# anotado antes de levar para o sistema; o desfazer apaga ou devolve cada um
+# 在带到系统之前记录；撤销会逐个删除或还原
 d3_antes "$D3_LOGIN_RAIZ" "$tema" /etc/xdg/lightdm/lightdm-gtk-greeter.conf.d/90-d3bian.conf \
          /etc/lightdm/lightdm.conf.d/90-d3bian.conf
-# o root copia tudo primeiro para uma pasta nova dele, recusando link
-# simbolico, e instala de la: o que esta na pasta da pessoa nao chega ao
-# sistema por um atalho, nem trocado depois de conferido
+# root 先把所有内容复制到自己的新文件夹，拒绝符号
+# 链接，并从那里安装：用户文件夹中的内容不会通过快捷方式
+# 进入系统，也不会在核对后被替换
 r="$(sudo -n mktemp -d)"
 trap 'sudo -n rm -rf -- "$r"' EXIT
-leva() {  # arquivo da montagem -> nome na pasta do root
-  if [ -L "$d/$1" ] || [ ! -f "$d/$1" ]; then echo "recusado: $d/$1" >&2; exit 1; fi
+leva() {  # 组装文件 -> root 文件夹中的名字
+  if [ -L "$d/$1" ] || [ ! -f "$d/$1" ]; then echo "已拒绝：$d/$1" >&2; exit 1; fi
   sudo -n cp -P --no-preserve=all -- "$d/$1" "$r/$2"
-  sudo -n test -f "$r/$2" -a ! -L "$r/$2" || { echo "recusado: $d/$1" >&2; exit 1; }
+  sudo -n test -f "$r/$2" -a ! -L "$r/$2" || { echo "已拒绝：$d/$1" >&2; exit 1; }
 }
 leva fundo.jpg fundo.jpg
 leva avatar.png avatar.png
@@ -137,18 +135,18 @@ sudo -n install -o root -g root -m 644 -T "$r/lightdm.conf" /etc/lightdm/lightdm
 sudo -n rm -rf -- "$r"
 trap - EXIT
 
-# Nao confunda "nao consegui verificar" com "deu errado": o lightdm --show-config
-# exige root, e o greeter em uso so muda quando o LightDM reinicia, porque ele
-# le a configuracao uma unica vez, ao iniciar.
+# 不要把"无法核对"和"出错了"混为一谈：lightdm --show-config
+# 需要 root，而且正在使用的 greeter 只在 LightDM 重启时改变，
+# 因为它只在启动时读取一次配置。
 saida="$(sudo -n lightdm --show-config 2>&1 || true)"
 if [ -z "$saida" ]; then
-  echo "configurado; nao deu para verificar sem root"
+  echo "已配置；没有 root 无法核对"
 elif printf '%s\n' "$saida" | grep -q 'greeter-session=lightdm-gtk-greeter'; then
-  echo "configurado e confirmado pelo lightdm"
+  echo "已配置并经 lightdm 确认"
 else
-  echo "atencao: o lightdm resolveu outro greeter, confira /etc/lightdm/lightdm.conf.d"
+  echo "atencao: lightdm 解析到了另一个 greeter，请检查 /etc/lightdm/lightdm.conf.d"
 fi
-echo "a tela de bloqueio muda na hora; a de login, no proximo reinicio"
-echo "se o login falhar, va ao modo texto com Ctrl+Alt+F2 e rode:"
+echo "锁屏界面立即改变；登录界面在下次重启时改变"
+echo "如果登录失败，用 Ctrl+Alt+F2 进入文本模式并运行："
 echo "  sudo rm /etc/lightdm/lightdm.conf.d/90-d3bian.conf && sudo systemctl restart lightdm"
 '''

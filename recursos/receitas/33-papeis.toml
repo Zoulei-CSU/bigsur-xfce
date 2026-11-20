@@ -1,11 +1,11 @@
 [modulo]
 id = "33"
 nome = "papeis"
-titulo = "Papeis de parede Big Sur"
+titulo = "Big Sur 壁纸"
 requer = ["10"]
 
-# commit fixo (o main de 2026-10-06): o que roda e o que foi conferido. Para
-# atualizar: git ls-remote https://github.com/vinceliuice/WhiteSur-wallpapers.git main
+# 固定提交（2026-10-06 的 main）：实际运行且已核对过的版本。要
+# 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-wallpapers.git main
 [[passo]]
 tipo = "git"
 url = "https://github.com/vinceliuice/WhiteSur-wallpapers.git"
@@ -14,13 +14,13 @@ destino = "@@fontes@@/WhiteSur-wallpapers"
 
 [[passo]]
 tipo = "script"
-dizer = "copiando os papeis de parede"
+dizer = "复制壁纸"
 corpo = '''
 destino="$HOME/.local/share/backgrounds/WhiteSur"
 d3_antes "$destino"
 mkdir -p "$destino"
 find "$D3_FONTES/WhiteSur-wallpapers" -type f \( -iname '*.jpg' -o -iname '*.png' \) \
      ! -iname 'preview-*' ! -ipath '*4k*' -exec cp -f {} "$destino/" \; 2>/dev/null || true
-echo "$(find "$destino" -type f | wc -l) papeis de parede disponiveis"
-# o fundo da tela de login e escolhido e preparado pela receita 97
+echo "可用壁纸：$(find "$destino" -type f | wc -l) 张"
+# 登录界面的背景由配方 97 选择和准备
 '''

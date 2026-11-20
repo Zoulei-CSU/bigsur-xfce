@@ -1,11 +1,11 @@
 [modulo]
 id = "31"
 nome = "icones"
-titulo = "Icones WhiteSur"
+titulo = "WhiteSur 图标"
 requer = ["10"]
 
-# commit fixo (o master de 2026-10-06): o que roda e o que foi conferido. Para
-# atualizar: git ls-remote https://github.com/vinceliuice/WhiteSur-icon-theme.git master
+# 固定提交（2026-10-06 的 master）：实际运行且已核对过的版本。要
+# 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-icon-theme.git master
 [[passo]]
 tipo = "git"
 url = "https://github.com/vinceliuice/WhiteSur-icon-theme.git"
@@ -14,24 +14,24 @@ destino = "@@fontes@@/WhiteSur-icon-theme"
 
 [[passo]]
 tipo = "script"
-dizer = "instalando os icones"
+dizer = "安装图标"
 corpo = '''
 cd "$D3_FONTES/WhiteSur-icon-theme"
 d3_pasta "$HOME/.local/share/icons"
 d3_antes "$HOME/.local/share/icons/WhiteSur" "$HOME/.local/share/icons/WhiteSur-dark" \
          "$HOME/.local/share/icons/WhiteSur-light"
 bash ./install.sh -t default -a -b
-echo "icones gerados"
+echo "图标已生成"
 '''
 
-# o instalador (codigo de terceiros) roda no trecho de cima, sem sudo; este so
-# copia o resultado para o sistema
+# 安装程序（第三方代码）在上面这段运行，无需 sudo；这里只
+# 把结果复制到系统
 [[passo]]
 tipo = "script"
-dizer = "copiando os icones para /usr/share/icons"
+dizer = "把图标复制到 /usr/share/icons"
 corpo = '''
-# o WhiteSur busca no breeze o que nao tem, mas o breeze nao vem no XFCE e
-# o icone some; o Adwaita e dependencia do GTK e esta sempre instalado
+# WhiteSur 会从 breeze 找缺失的图标，但 XFCE 不带 breeze，
+# 图标就会消失；Adwaita 是 GTK 的依赖，始终已安装
 for t in "$HOME/.local/share/icons/WhiteSur" \
          "$HOME/.local/share/icons/WhiteSur-dark" \
          "$HOME/.local/share/icons/WhiteSur-light"; do
@@ -43,9 +43,9 @@ for t in "$HOME/.local/share/icons/WhiteSur" \
          "$HOME/.local/share/icons/WhiteSur-light"; do
   [ -d "$t" ] || continue
   d3_antes "/usr/share/icons/$(basename "$t")"
-  # root:root e sem escrita para outros, passando por uma pasta nova do root
+  # root:root 且其他人不可写，经过一个新建的 root 文件夹
   d3_raiz_instalar "$t" "/usr/share/icons/$(basename "$t")" || true
 done
 gtk-update-icon-cache -f "$HOME/.local/share/icons/WhiteSur" >/dev/null 2>&1 || true
-echo "icones instalados"
+echo "图标已安装"
 '''

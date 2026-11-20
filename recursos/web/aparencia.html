@@ -1,91 +1,90 @@
-<title>Aparência - d3bian-init-bigsur-xfce</title>
+<title>外观 - d3bian-init-bigsur-xfce</title>
 <link rel="stylesheet" href="estilo.css">
 <script src="comum.js"></script>
 
-<div class="estado"><span class="viva"></span><span id="ePronto">verificando</span><span>host: <b id="eDistro">…</b></span><span>ambiente: <b id="eDesktop">…</b></span><span class="dir"><span>d3bian-init-bigsur-xfce <b>v0.1.0</b></span><span>ativo: <b id="eTempo">00:00</b></span><span id="eSit">[ verificando ]</span></span></div>
+<div class="estado"><span class="viva"></span><span id="ePronto">检查中</span><span>主机：<b id="eDistro">…</b></span><span>环境：<b id="eDesktop">…</b></span><span class="dir"><span>d3bian-init-bigsur-xfce <b>v0.1.0</b></span><span>已运行：<b id="eTempo">00:00</b></span><span id="eSit">[ 检查中 ]</span></span></div>
 
-<a class="voltar" href="/"><span aria-hidden="true">&larr;</span> Voltar ao início</a>
-<h1>Aparência do desktop</h1>
+<a class="voltar" href="/"><span aria-hidden="true">&larr;</span> 返回首页</a>
+<h1>桌面外观</h1>
 <p class="caminho">/etc/aparencia</p>
-<p class="sub">Escolha como quer o visual, veja a prévia e aplique. Vale para esta máquina.</p>
+<p class="sub">选择想要的外观，查看预览并应用。仅对本机生效。</p>
 
 <div class="cartao destaque" id="cartaoInstalar" hidden style="margin-bottom:22px">
-  <h2>Primeira instalação</h2>
+  <h2>首次安装</h2>
   <p style="margin:0 0 12px;color:var(--fraco)">
-    Esta máquina ainda não foi preparada. A instalação baixa os temas, compila o tema
-    das janelas e configura a barra, o dock e a tela de login. Leva de 15 a 25 minutos,
-    e a maior parte é a compilação.
+    这台机器尚未准备。安装会下载主题、编译窗口主题，并配置栏、Dock 和登录界面。
+    需要 15 到 25 分钟，大部分时间用于编译。
   </p>
-  <!-- outro tema Xfce da familia aplicado: os dois nao convivem (familia.py) -->
+  <!-- 已应用同族的另一个 Xfce 主题：两者无法共存（familia.py） -->
   <div class="aviso erro" id="cartaoTrocar" hidden style="margin:0 0 12px">
-    <b id="trocarTitulo">Outro tema instalado</b>
+    <b id="trocarTitulo">已安装其他主题</b>
     <span id="trocarTexto"></span>
     <div class="acoes" style="margin-top:10px" id="trocarAcoes">
-      <button class="bt pri" id="btTrocar">Voltar o outro e instalar este</button>
+      <button class="bt pri" id="btTrocar">恢复另一个并安装本主题</button>
     </div>
     <div id="confirmaTrocar" hidden role="alert" style="margin-top:10px">
       <span id="confirmaTrocarTexto"></span>
       <div class="acoes" style="margin-top:10px">
-        <button class="bt pri" id="btTrocarSim">Sim, trocar</button>
-        <button class="bt sec" id="btTrocarNao">Cancelar</button>
+        <button class="bt pri" id="btTrocarSim">是的，切换</button>
+        <button class="bt sec" id="btTrocarNao">取消</button>
       </div>
     </div>
   </div>
   <details class="verif" id="verif">
-    <summary id="verifResumo">Verificando…</summary>
+    <summary id="verifResumo">检查中…</summary>
     <div id="verificacoes"></div>
   </details>
   <div class="etapas" id="etapas"></div>
   <div class="acoes">
-    <button class="bt pri" id="btInstalar">Instalar tudo</button>
-    <button class="bt sec" id="btRever">Verificar de novo</button>
+    <button class="bt pri" id="btInstalar">全部安装</button>
+    <button class="bt sec" id="btRever">重新检查</button>
   </div>
   <p style="color:var(--fraco);font-size:13px;margin:12px 0 0">
-    Se quiser, ajuste as opções abaixo antes de instalar. Dá para mudar tudo depois.
+    如有需要，可在安装前调整下面的选项。之后都可以更改。
   </p>
 </div>
 
 <div class="grade">
   <div class="estica">
     <div class="cartao previa fixa-lado">
-      <div class="seg abas" role="group" aria-label="Tipo de prévia">
-        <button id="abaEsquema" aria-pressed="true">Esquema</button>
-        <button id="abaFoto" aria-pressed="false">Foto da tela</button>
+      <div class="seg abas" role="group" aria-label="预览类型">
+        <button id="abaEsquema" aria-pressed="true">示意图</button>
+        <button id="abaFoto" aria-pressed="false">屏幕截图</button>
       </div>
 
       <div id="painelEsquema">
-        <div class="esquema" id="esquema" aria-label="Esquema do desktop com as opções escolhidas">
+        <div class="esquema" id="esquema" aria-label="带所选选项的桌面示意图">
           <div class="e-barra">
             <span class="e-logo"><img id="eLogo" alt=""></span>
-            <span class="e-menu" id="eMenu"><b>Arquivos</b><span>Arquivo</span><span>Editar</span><span>Ver</span></span>
-            <span class="e-titulo" id="eTitulo">Imagens</span>
+            <span class="e-menu" id="eMenu"><b>文件</b><span>文件</span><span>编辑</span><span>显示</span></span>
+            <span class="e-titulo" id="eTitulo">图片</span>
             <span class="e-dir"><span>21:04</span><span>◍</span></span>
           </div>
-          <div class="e-encaixe" id="eEncaixe"><span>arraste para a borda: metade da tela</span></div>
+          <div class="e-encaixe" id="eEncaixe"><span>拖到边缘：半屏</span></div>
           <div class="e-jan">
             <div class="e-tit">
-              <span class="e-nome">Imagens</span>
+              <span class="e-nome">图片</span>
               <span class="e-bt" style="background:#febc2e"></span>
               <span class="e-bt" style="background:#28c840"></span>
               <span class="e-bt" style="background:#ff5f57"></span>
             </div>
             <div class="e-corpo">
               <div class="e-lado">
-                <span class="e-item">Pasta pessoal</span>
-                <span class="e-item sel">Imagens</span>
-                <span class="e-item">Documentos</span>
-                <span class="e-item">Downloads</span>
+                <span class="e-item">主文件夹</span>
+                <span class="e-item sel">图片</span>
+                <span class="e-item">文档</span>
+                <span class="e-item">下载</span>
               </div>
               <div class="e-conteudo">
                 <div class="e-linha" style="width:72%"></div><div class="e-linha" style="width:88%"></div>
                 <div class="e-linha" style="width:55%"></div><div class="e-linha" style="width:80%"></div>
-                <span class="e-botao">Abrir</span>
+                <span class="e-botao">打开</span>
               </div>
             </div>
           </div>
           <div class="e-widget" id="eWidget">
             <div class="e-hora">21:04</div>
-            <div class="e-sub">sábado, 12 de setembro</div>
+            <div class="e-sub">9月12日，星期六</div>
             <div class="e-med">
               <div class="e-bar" style="width:70%"></div>
               <div class="e-bar" style="width:45%"></div>
@@ -101,27 +100,26 @@
           </div>
         </div>
         <p class="e-nota">
-          Muda na hora a cada opção. Em Foto da tela há uma imagem de verdade, e cada
-          opção ao lado também mostra como fica.
+          每个选项都会立即变化。屏幕截图中有真实图片，旁边的每个选项也会显示效果。
         </p>
       </div>
 
       <div id="painelFoto" hidden>
-        <img id="img" alt="Prévia do desktop" src="/capturas/escuro-com-widget.jpg">
+        <img id="img" alt="桌面预览" src="/capturas/escuro-com-widget.jpg">
         <div class="semfoto" id="semfoto" hidden>
-          Ainda não há prévia para esta combinação.<br>
-          Use os botões abaixo para fotografar a sua tela.
+          此组合尚无预览。<br>
+          使用下面的按钮拍摄你的屏幕。
         </div>
         <div class="legenda">
-          <span id="legenda">Prévia</span><span id="origem"></span>
+          <span id="legenda">预览</span><span id="origem"></span>
         </div>
         <div class="acoes" style="margin-top:12px">
-          <button class="bt sec" id="btCapturar">Capturar a tela como está</button>
-          <button class="bt sec" id="btCapturarTodas">Recapturar as quatro</button>
+          <button class="bt sec" id="btCapturar">按当前状态截取屏幕</button>
+          <button class="bt sec" id="btCapturarTodas">重新截取四种</button>
         </div>
         <p style="color:var(--fraco);font-size:13px;margin:10px 2px 0">
-          A prévia é uma foto da sua tela. Depois de aplicar, deixe a área de trabalho
-          do jeito que quer mostrar e capture de novo. A contagem dá cinco segundos.
+          预览是你屏幕的照片。应用后，把桌面摆成想展示的样子再截取。
+          倒计时为五秒。
         </p>
       </div>
     </div>
@@ -129,88 +127,84 @@
 
   <div>
     <div class="cartao">
-      <h2>Ajustes</h2>
+      <h2>调整</h2>
       <div id="opcoes"></div>
       <div id="galeria" hidden>
-        <div class="dica" style="margin-top:14px">Galeria de papéis de parede</div>
+        <div class="dica" style="margin-top:14px">壁纸图库</div>
         <div class="papeis" id="papeis"></div>
       </div>
       <div class="barra-acao">
-        <span class="conta" id="contaMudancas">Nada alterado</span>
-        <button class="bt pri" id="btAplicar">Aplicar</button>
+        <span class="conta" id="contaMudancas">未更改</span>
+        <button class="bt pri" id="btAplicar">应用</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="cartao" style="margin-top:20px" id="cartaoLogin">
-  <h2>Tela de login e de bloqueio</h2>
+  <h2>登录和锁定界面</h2>
   <div class="grade">
     <div>
-      <img id="imgLogin" src="/capturas/login.jpg" alt="Prévia da tela de login"
+      <img id="imgLogin" src="/capturas/login.jpg" alt="登录界面预览"
            style="width:100%;display:block;border-radius:var(--raio);border:1px solid var(--borda)">
       <div class="semfoto" id="semLogin" hidden>
-        Ainda não há prévia da tela de login.<br>
-        Marque as opções e use Gerar prévia.
+        登录界面尚无预览。<br>
+        勾选选项并使用“生成预览”。
       </div>
       <p style="color:var(--fraco);font-size:13px;margin:10px 2px 0">
-        A prévia abre a tela de login de verdade numa janela, com as opções marcadas
-        aqui, mesmo antes de aplicar, e fotografa. A tela de bloqueio é a mesma, com o
-        seu usuário já escolhido. Depois de aplicar, o bloqueio muda na hora e o login
-        no próximo reinício.
+        预览会在窗口中打开真正的登录界面，使用此处勾选的选项，即使在应用之前，
+        然后拍照。锁定界面相同，但已选中你的用户。应用后，锁定立即改变，
+        登录在下次重启后改变。
       </p>
       <div class="acoes" style="margin-top:12px">
-        <button class="bt sec" id="btLogin">Gerar prévia</button>
+        <button class="bt sec" id="btLogin">生成预览</button>
       </div>
     </div>
     <div>
       <div id="opcoesLogin"></div>
       <div id="galeriaLogin" hidden>
-        <div class="dica" style="margin-top:14px">Fundo da tela de login</div>
+        <div class="dica" style="margin-top:14px">登录界面背景</div>
         <div class="papeis" id="papeisLogin"></div>
         <div class="escolher-imagem">
-          <button class="bt sec" id="btImagemLogin" type="button">Escolher imagem…</button>
-          <span class="dica" id="avisoImagemLogin">JPEG, PNG ou WebP do seu computador</span>
+          <button class="bt sec" id="btImagemLogin" type="button">选择图片…</button>
+          <span class="dica" id="avisoImagemLogin">来自你电脑的 JPEG、PNG 或 WebP</span>
           <input type="file" id="arquivoLogin" accept="image/jpeg,image/png,image/webp" hidden>
         </div>
       </div>
       <div class="acoes">
-        <button class="bt pri" id="btAplicarLogin">Aplicar</button>
-        <button class="bt sec" id="btReiniciarLogin">Reiniciar a tela de login</button>
+        <button class="bt pri" id="btAplicarLogin">应用</button>
+        <button class="bt sec" id="btReiniciarLogin">重启登录界面</button>
       </div>
       <p style="color:var(--fraco);font-size:12.5px;margin:10px 2px 0">
-        A tela de login nova só aparece quando o LightDM reinicia. O botão faz isso
-        agora, mas fecha a sessão e os programas abertos; salve antes. Ou apenas
-        reinicie o computador quando for melhor.
+        新的登录界面只有在 LightDM 重启后才出现。按钮会立即执行，但会关闭会话和
+        打开的程序；请先保存。或者在方便时直接重启电脑。
       </p>
     </div>
   </div>
 </div>
 
-<!-- desfaz pelo desfazer.py; so aparece quando alguma etapa ja rodou -->
+<!-- 由 desfazer.py 撤销；仅在某个步骤已运行后出现 -->
 <div class="cartao" style="margin-top:20px" id="cartaoDesfazer" hidden>
-  <h2>Voltar ao que era antes</h2>
+  <h2>恢复到之前的状态</h2>
   <p style="margin:0;color:var(--fraco);font-size:13px">
-    Não gostou? Isto desfaz o que as etapas mudaram: temas, ícones e arquivos criados saem, arquivos que
-    já existiam voltam da cópia de segurança e configurações voltam ao valor de antes. Os pacotes
-    instalados ficam, a não ser que você marque a opção abaixo. O visual antigo aparece por completo depois de encerrar a sessão; a tela de login, depois de reiniciar o LightDM.
+    不喜欢？这会撤销各步骤所做的更改：删除创建的主题、图标和文件，原本已存在的文件从备份恢复，配置恢复为之前的值。已安装的软件包会保留，除非勾选下面的选项。注销后旧外观才会完全恢复；登录界面则需重启 LightDM。
   </p>
   <label class="opcao-apagar">
     <input type="checkbox" id="apagarInstalado">
-    <span><b>Remover também o que foi instalado</b>
-      <span class="dica">Desinstala com o apt os pacotes que o projeto instalou e apaga as opções, o log,
-      as cópias de segurança e os downloads do projeto. O que já existia na máquina fica.</span></span>
+    <span><b>同时移除已安装的内容</b>
+      <span class="dica">通过 apt 卸载项目安装的软件包，并删除项目的选项、日志、
+      备份和下载。机器上原本已有的内容保留。</span></span>
   </label>
   <div class="aviso erro" id="listaApagar" hidden></div>
   <div class="aviso erro" id="confirmaDesfazer" hidden role="alert">
-    <b id="confirmaTitulo">Voltar ao que era antes?</b>
+    <b id="confirmaTitulo">恢复到之前的状态？</b>
     <div class="acoes" style="margin-top:10px">
-      <button class="bt pri" id="btDesfazerSim">Sim, voltar</button>
-      <button class="bt sec" id="btDesfazerNao">Cancelar</button>
+      <button class="bt pri" id="btDesfazerSim">是的，恢复</button>
+      <button class="bt sec" id="btDesfazerNao">取消</button>
     </div>
   </div>
   <div class="acoes">
-    <button class="bt sec" id="btDesfazer">Voltar ao que era antes</button>
+    <button class="bt sec" id="btDesfazer">恢复到之前的状态</button>
   </div>
 </div>
 
@@ -221,24 +215,23 @@ let retomou = false;
 const BOTOES = ["#btAplicar", "#btAplicarLogin", "#btCapturar", "#btCapturarTodas",
                 "#btLogin", "#btReiniciarLogin", "#btInstalar", "#btRever", "#btDesfazer", "#btDesfazerSim",
                 "#btTrocar", "#btTrocarSim"];
-let outroTema = null;   // outro tema Xfce da familia aplicado nesta conta
+let outroTema = null;   // 本账户已应用的同族另一个 Xfce 主题
 const APLICAR = ["#btAplicar", "#btAplicarLogin"];
-// imagens de exemplo por opcao, do pacote: {chave: {valor: arquivo}}
+// 包内各选项的示例图片：{键: {值: 文件}}
 let EXEMPLOS = null;
 let proprias = [];
-// estas ficam no cartao da tela de login; as galerias tem desenho proprio
+// 这些放在登录界面卡片中；图库有各自的绘制方式
 const DO_LOGIN = ["login_usuarios", "login_desfoque", "login_escurecer", "bloqueio"];
 const COM_GALERIA = ["papel_de_parede", "login_fundo"];
 const ROTULOS = {};
 
-// ---- desenho ------------------------------------------------------------
+// ---- 绘制 ------------------------------------------------------------
 
 function desenharOpcoes(){
   $("#opcoes").textContent = "";
   $("#opcoesLogin").textContent = "";
   opcoes.forEach(o => {
-    // os papeis de parede tem galeria propria, com miniatura; a linha de
-    // botoes nao daria conta de treze opcoes
+    // 壁纸有自己的图库和缩略图；按钮行应付不了十三个选项
     if (COM_GALERIA.includes(o.chave)) return;
     const caixa = DO_LOGIN.includes(o.chave) ? $("#opcoesLogin") : $("#opcoes");
     const linha = document.createElement("div");
@@ -249,12 +242,12 @@ function desenharOpcoes(){
     const dica = document.createElement("div");
     dica.className = "dica"; dica.textContent = o.ajuda || "";
     txt.appendChild(rot); txt.appendChild(dica);
-    // como fica o valor marcado, numa imagem generica que vem no pacote
+    // 所选值的效果，用包内的通用图片表示
     const exemplo = ((EXEMPLOS || {})[o.chave] || {})[estado[o.chave]];
     if (exemplo){
       const img = document.createElement("img");
       img.className = "exemplo";
-      img.alt = `Exemplo: ${o.titulo}, ${rotulo(estado[o.chave], o.chave)}`;
+      img.alt = `示例：${o.titulo}，${rotulo(estado[o.chave], o.chave)}`;
       img.src = `/exemplos/${exemplo}`;
       txt.appendChild(img);
     }
@@ -286,18 +279,20 @@ function desenharOpcoes(){
   });
 }
 
-const NOMES = {sim: "Com", nao: "Sem", claro: "Claro", escuro: "Escuro",
-               manter: "Manter", "do-tema": "Do tema", padrao: "Padrão",
-               debian: "Debian branco", "debian-cor": "Debian magenta",
-               tux: "Tux", "tux-cor": "Tux colorido",
+const NOMES = {sim: "有", nao: "无", claro: "浅色", escuro: "深色",
+               manter: "保留", "do-tema": "跟随主题", padrao: "默认",
+               azul: "蓝色", roxo: "紫色", rosa: "粉色", vermelho: "红色",
+               laranja: "橙色", amarelo: "黄色", verde: "绿色", cinza: "灰色",
+               debian: "Debian 白色", "debian-cor": "Debian 品红",
+               tux: "Tux", "tux-cor": "Tux 彩色",
                inter: "Inter",
-               campos: "Nome e senha", lista: "Lista"};
-// o mesmo valor pode querer dizer coisas diferentes em opcoes diferentes
+               campos: "用户名和密码", lista: "列表"};
+// 同一个值在不同选项中可能有不同含义
 const NOMES_POR_CHAVE = {
-  bloqueio: {nao: "Nunca", 5: "5 minutos", 10: "10 minutos", 15: "15 minutos", 30: "30 minutos"},
-  login_desfoque: {sim: "Desfocado", nao: "Nítido"},
-  login_escurecer: {0: "Nada", 10: "10%", 20: "20%", 30: "30%", 40: "40%", 50: "50%", 60: "60%"},
-  widget: {sim: "Simples", aneis: "Anéis", nao: "Sem"},
+  bloqueio: {nao: "从不", 5: "5 分钟", 10: "10 分钟", 15: "15 分钟", 30: "30 分钟"},
+  login_desfoque: {sim: "模糊", nao: "清晰"},
+  login_escurecer: {0: "无", 10: "10%", 20: "20%", 30: "30%", 40: "40%", 50: "50%", 60: "60%"},
+  widget: {sim: "简单", aneis: "圆环", nao: "无"},
 };
 const rotulo = (v, chave) =>
   (NOMES_POR_CHAVE[chave] || {})[v] || NOMES[v] || v[0].toUpperCase() + v.slice(1);
@@ -307,17 +302,16 @@ let baixados = true;
 
 function desenharGaleria(){
   galeria("#galeria", "#papeis", "papel_de_parede",
-          [["manter", "Manter o meu"], ["do-tema", "Deixar o tema escolher"]]);
+          [["manter", "保留我的"], ["do-tema", "让主题选择"]]);
   galeria("#galeriaLogin", "#papeisLogin", "login_fundo",
-          [["desktop", "Igual ao desktop"], ["do-tema", "Deixar o tema escolher"],
-           ["propria", "Minha imagem", () => `/api/login-propria.jpg?v=${versaoPropria}`]]);
+          [["desktop", "与桌面相同"], ["do-tema", "让主题选择"],
+           ["propria", "我的图片", () => `/api/login-propria.jpg?v=${versaoPropria}`]]);
 }
 
 function galeria(moldura, seletor, chave, especiais){
   const caixa = $(seletor);
-  // As imagens so chegam com a receita 33. Antes disso a galeria mostra as
-  // miniaturas que vem no pacote; a escolha fica guardada pelo nome e a
-  // aparencia aplica o arquivo baixado com esse nome
+  // 图片只随配方 33 到来。在此之前图库显示包内缩略图；
+  // 选择按名称保存，外观会应用具有该名称的已下载文件
   $(moldura).hidden = false;
   caixa.textContent = "";
 
@@ -325,7 +319,7 @@ function galeria(moldura, seletor, chave, especiais){
     const b = document.createElement("button");
     b.className = "papel especial";
     b.textContent = texto;
-    // a imagem da pessoa aparece em miniatura; sem ela, fica so o texto
+    // 用户的图片以缩略图显示；没有图片时只保留文字
     if (imagem){
       const img = document.createElement("img");
       img.alt = texto; img.src = imagem();
@@ -348,11 +342,11 @@ function galeria(moldura, seletor, chave, especiais){
     aviso.style.margin = "4px 2px 0";
     aviso.textContent = !papeis.length
       ? (instalado
-        ? "Nenhum papel de parede encontrado. Reaplique a etapa de papéis de parede para baixá-los."
-        : "As imagens para escolher aparecem aqui depois da instalação. Até lá, o tema escolhe um combinando.")
+        ? "未找到壁纸。重新应用壁纸步骤以下载。"
+        : "安装后可在此选择图片。在此之前，主题会选择一个合适的。")
       : instalado
-        ? "As imagens ainda não estão na máquina. Reaplique a etapa de papéis de parede para baixá-las; a escolha fica guardada."
-        : "As imagens são baixadas durante a instalação, e a que você escolher aqui já entra no fim.";
+        ? "图片尚未到机器上。重新应用壁纸步骤以下载；选择会被保存。"
+        : "图片在安装期间下载，你在此选择的会直接生效到最后。";
     caixa.appendChild(aviso);
   }
 
@@ -373,9 +367,9 @@ function galeria(moldura, seletor, chave, especiais){
 
 let doTema = {};
 
-// ---- imagem propria para o fundo do login ----------------------------------
-// a foto de uma camera passaria do limite do painel: sai daqui em JPEG de no
-// maximo 2560x1600, e o painel confere e regrava
+// ---- 登录背景的自有图片 ----------------------------------
+// 相机照片会超出面板限制：在此以最大 2560x1600 的 JPEG 发出，
+// 面板会校验并重新写入
 let versaoPropria = 0;
 function reduzirImagem(arquivo){
   return new Promise((ok, falha) => {
@@ -390,7 +384,7 @@ function reduzirImagem(arquivo){
       URL.revokeObjectURL(url);
       ok(c.toDataURL("image/jpeg", 0.9).split(",")[1]);
     };
-    img.onerror = () => { URL.revokeObjectURL(url); falha(new Error("o navegador não abriu essa imagem")); };
+    img.onerror = () => { URL.revokeObjectURL(url); falha(new Error("浏览器无法打开该图片")); };
     img.src = url;
   });
 }
@@ -402,35 +396,35 @@ $("#arquivoLogin").addEventListener("change", async () => {
   if (!arquivo) return;
   botao.disabled = true;
   aviso.classList.remove("erro");
-  aviso.textContent = "Preparando a imagem…";
+  aviso.textContent = "正在准备图片…";
   try {
     const imagem = await reduzirImagem(arquivo);
-    aviso.textContent = "Enviando…";
+    aviso.textContent = "正在发送…";
     const r = await fetch("/api/login-imagem", {
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify({imagem}),
     }).then(x => x.json());
-    if (!r.ok) throw new Error(r.erro || "o painel recusou a imagem");
+    if (!r.ok) throw new Error(r.erro || "面板拒绝了该图片");
     versaoPropria++;
-    aviso.textContent = "Imagem escolhida. Aplique para a tela de login usar.";
+    aviso.textContent = "已选择图片。应用后登录界面即可使用。";
     estado.login_fundo = "propria";
     desenhar();
   } catch (erro){
-    aviso.textContent = "Não deu: " + erro.message;
+    aviso.textContent = "失败：" + erro.message;
     aviso.classList.add("erro");
   }
   botao.disabled = false;
 });
 
-// as mesmas cores do WhiteSur, de src/sass/_colors-palette.scss
+// 与 WhiteSur 相同的颜色，来自 src/sass/_colors-palette.scss
 const DESTAQUE = {padrao: "#0860f2", azul: "#2e7cf7", roxo: "#9a57a3", rosa: "#e55e9c",
                   vermelho: "#ed5f5d", laranja: "#e9873a", amarelo: "#f3ba4b",
                   verde: "#79b757", cinza: "#8c8c8c"};
 
-// o fundo que o desktop teria com as opcoes marcadas
+// 勾选选项后桌面将使用的背景
 function fundoDoEsquema(){
   const v = estado.papel_de_parede;
-  // "manter" desenha o degrade generico: a pagina nao mostra nada da maquina
+  // "保留"绘制通用渐变：页面不显示机器的任何内容
   if (v === "manter") return "";
   if (v === "do-tema") return doTema[estado.tema] ? `/papeis/${doTema[estado.tema]}.jpg` : "";
   return v ? `/papeis/${v}.jpg` : "";
@@ -440,7 +434,7 @@ function desenharEsquema(){
   const e = $("#esquema");
   e.classList.toggle("claro", estado.tema === "claro");
   e.classList.toggle("arred", estado.efeitos === "sim");
-  // a imagem vem por cima de um degrade, que aparece se ela nao carregar
+  // 图片覆盖在渐变之上，加载失败时渐变会显现
   const fundo = fundoDoEsquema();
   e.style.setProperty("--e-img", fundo ? `url("${fundo}")` : "none");
   e.style.setProperty("--e-acento", DESTAQUE[estado.destaque] || DESTAQUE.padrao);
@@ -456,12 +450,12 @@ function desenharEsquema(){
   $("#eLogo").src = `/logos/${arq}`;
 }
 
-// quantas opcoes a pagina tem diferentes do que foi aplicado por ultimo
+// 页面上与上次应用值不同的选项数量
 function desenharMudancas(){
   const n = Object.keys(estado).filter(c => estado[c] !== salvo[c]).length;
   const conta = $("#contaMudancas");
-  conta.textContent = n === 0 ? "Nada alterado"
-    : n === 1 ? "1 opção alterada, ainda não aplicada" : `${n} opções alteradas, ainda não aplicadas`;
+  conta.textContent = n === 0 ? "未更改"
+    : n === 1 ? "1 个选项已更改，尚未应用" : `${n} 个选项已更改，尚未应用`;
   conta.classList.toggle("mudou", n > 0);
 }
 
@@ -477,8 +471,8 @@ function desenhar(){
   img.onerror = () => { img.hidden = true; $("#semfoto").hidden = false; };
   img.onload  = () => { img.hidden = false; $("#semfoto").hidden = true; };
   img.src = `/capturas/${previa}.jpg?t=${Date.now()}`;
-  $("#legenda").textContent = `Tema ${tema}, ${w} widget`;
-  $("#origem").textContent = proprias.includes(previa) ? "Foto desta máquina" : "Imagem de exemplo";
+  $("#legenda").textContent = `${tema === "claro" ? "浅色" : "深色"}主题，${w === "com" ? "有" : "无"}组件`;
+  $("#origem").textContent = proprias.includes(previa) ? "本机拍摄" : "示例图片";
 }
 
 function aba(qual){
@@ -506,17 +500,17 @@ function desenharEtapas(){
     const el = document.createElement("span");
     el.className = "etapa" + (r.aplicada ? " feito" : "");
     el.textContent = (r.aplicada ? "✓ " : "") + (r.titulo || r.nome);
-    el.title = "etapa " + r.id;
+    el.title = "步骤 " + r.id;
     caixa.appendChild(el);
   });
 }
 
 async function desenharVerificacoes(){
   const caixa = $("#verificacoes"), resumo = $("#verifResumo");
-  resumo.textContent = "Verificando…";
+  resumo.textContent = "检查中…";
   let dados;
   try { dados = await fetch("/api/verificacoes").then(r => r.json()); }
-  catch (e) { resumo.textContent = "Não consegui verificar."; return true; }
+  catch (e) { resumo.textContent = "无法检查。"; return true; }
   caixa.textContent = "";
   const lista = dados.verificacoes || [];
   lista.forEach(c => {
@@ -531,7 +525,7 @@ async function desenharVerificacoes(){
     linha.appendChild(mk); linha.appendChild(txt);
     caixa.appendChild(linha);
   });
-  // tudo certo cabe numa linha; so abre a lista quando algo impede
+  // 一切正常时只占一行；仅在有阻碍时展开列表
   const impedem = dados.impedimentos || [];
   const oks = lista.filter(c => c.ok).length;
   resumo.textContent = "";
@@ -540,61 +534,61 @@ async function desenharVerificacoes(){
   marca.textContent = impedem.length ? "! " : "✓ ";
   resumo.appendChild(marca);
   resumo.appendChild(document.createTextNode(impedem.length
-    ? `${impedem.length} ${impedem.length === 1 ? "verificação impede" : "verificações impedem"} a instalação`
-    : `${oks} de ${lista.length} verificações passaram`));
+    ? `${impedem.length} 项检查${impedem.length === 1 ? "" : ""}阻止安装`
+    : `${lista.length} 项检查中有 ${oks} 项通过`));
   $("#verif").open = impedem.length > 0;
   $("#btInstalar").disabled = impedem.length > 0 || Terminal.ocupado();
   return impedem.length === 0;
 }
 
-// etapas que o terminal lista, a partir das receitas que a pagina conhece
+// 终端列出的步骤，来自页面已知的配方
 const etapasDe = ids => ids.map(id => {
   const r = receitas.find(x => x.id === id);
-  return {id, nome: r ? (r.titulo || r.nome) : "Etapa " + id};
+  return {id, nome: r ? (r.titulo || r.nome) : "步骤 " + id};
 });
 function etapasDoRotulo(rotulo){
-  if (/^Instalacao/.test(rotulo || "")) return etapasDe(receitas.map(r => r.id));
-  const m = (rotulo || "").match(/^(?:Re)?[Aa]plicando: (.*)$/);
+  if (/^完整安装/.test(rotulo || "")) return etapasDe(receitas.map(r => r.id));
+  const m = (rotulo || "").match(/^正在(?:重新)?应用： (.*)$/);
   return m ? etapasDe(m[1].split(", ")) : [];
 }
-// o rotulo do servidor e para o registro; na tela vai um nome curto
+// 服务器标签用于日志；屏幕上使用简短名称
 function tituloDoRotulo(rotulo){
   const r = rotulo || "";
-  if (/^Instalacao/.test(r)) return "Instalação completa";
-  if (/^Desfazendo/.test(r)) return "Voltando ao que era antes";
-  if (/^Reaplicando/.test(r)) return "Reaplicando a aparência";
-  if (/^Aplicando/.test(r)) return "Aplicando a aparência";
-  if (/^Capturando/.test(r)) return "Capturando a tela";
-  if (/login/i.test(r)) return "Prévia da tela de login";
-  return r || "Tarefa em andamento";
+  if (/^完整安装/.test(r)) return "完整安装";
+  if (/^正在撤销/.test(r)) return "正在恢复之前的状态";
+  if (/^正在重新应用/.test(r)) return "正在重新应用外观";
+  if (/^正在应用/.test(r)) return "正在应用外观";
+  if (/^正在截图/.test(r)) return "正在截取屏幕";
+  if (/登录/.test(r)) return "登录界面预览";
+  return r || "任务进行中";
 }
 
-// o que dizer ao terminar, igual para o clique e para a tarefa retomada
+// 结束时显示什么，点击和恢复的任务相同
 function fimInstalar(codigo){
-  if (codigo === 0) return {bom: true, titulo: "Instalação concluída",
-    texto: "O desktop está pronto. Daqui em diante é só ajustar e aplicar.",
+  if (codigo === 0) return {bom: true, titulo: "安装完成",
+    texto: "桌面已就绪。接下来只需调整并应用。",
     itens: [
-      "Encerre a sessão e entre de novo para a barra do topo funcionar por completo.",
-      "Reinicie para ver a nova tela de login.",
-      "Use Capturar a tela como está, em Foto da tela, para as prévias mostrarem a sua máquina."
+      "请注销并重新登录，让顶栏完整生效。",
+      "重启以查看新的登录界面。",
+      "在“屏幕截图”中使用“按当前状态截取屏幕”，让预览显示你的机器。"
     ]};
-  if (codigo !== null) return {bom: false, titulo: "A instalação parou com erro",
-    texto: `Código ${codigo}. A etapa em vermelho mostra onde parou; dá para corrigir e instalar de novo, `
-         + "e o que já foi feito é pulado."};
+  if (codigo !== null) return {bom: false, titulo: "安装出错停止",
+    texto: `代码 ${codigo}。红色的步骤显示了停在哪里；可以修正后重新安装，`
+         + "已完成的部分会被跳过。"};
   return null;
 }
 function fimAplicar(reaplicou, codigo){
-  if (codigo === 0) return {bom: true, titulo: "Aparência aplicada",
+  if (codigo === 0) return {bom: true, titulo: "外观已应用",
     texto: reaplicou
-      ? "Reapliquei as mesmas opções. Pode mudar algo e aplicar quantas vezes quiser."
-      : "Pronto. Pode mudar outra coisa e aplicar de novo, sem fechar a página.",
+      ? "已重新应用相同的选项。可随时更改并再次应用。"
+      : "完成。可以再改别的并重新应用，无需关闭页面。",
     itens: [
-      "A barra do topo só lista os menus dos programas depois de encerrar e reabrir a sessão.",
-      "O bloqueio vale na hora, e Ctrl+Alt+L bloqueia.",
-      "A tela de login muda ao reiniciar; use Reiniciar a tela de login quando tiver salvo o que está aberto."
+      "顶栏只有在注销并重新登录后才会列出程序菜单。",
+      "锁定立即生效，Ctrl+Alt+L 可锁定。",
+      "登录界面在重启后改变；保存好打开的内容后使用“重启登录界面”。"
     ]};
-  if (codigo !== null) return {bom: false, titulo: "A aplicação parou com erro",
-    texto: `Código ${codigo}. A etapa em vermelho e as linhas vermelhas do log mostram onde parou.`};
+  if (codigo !== null) return {bom: false, titulo: "应用出错停止",
+    texto: `代码 ${codigo}。红色的步骤和日志中的红色行显示了停在哪里。`};
   return null;
 }
 
@@ -626,12 +620,12 @@ async function carregar(){
   $("#cartaoDesfazer").hidden = !receitas.some(r => r.aplicada);
   desenharTroca();
   APLICAR.forEach(sel => {
-    ROTULOS[sel] = instalado ? "Aplicar" : "Aplicar (instale primeiro)";
+    ROTULOS[sel] = instalado ? "应用" : "应用（请先安装）";
   });
   travar(Terminal.ocupado());
   if (!instalado) await desenharVerificacoes();
 
-  // uma tarefa que ja rodava antes de a pagina abrir (ou de recarregar) volta a aparecer
+  // 页面打开（或重新加载）前已在运行的任务会重新出现
   if (!retomou){
     retomou = true;
     let rotuloRetomado = "";
@@ -640,9 +634,9 @@ async function carregar(){
       etapas: etapasDoRotulo,
       aoTerminar: async codigo => {
         await carregar();
-        if (/^Instalacao/.test(rotuloRetomado)) return fimInstalar(codigo);
-        if (/aplicando/i.test(rotuloRetomado)) return fimAplicar(/^Re/.test(rotuloRetomado), codigo);
-        if (/^Desfazendo/.test(rotuloRetomado)) return fimDesfazer(codigo);
+        if (/^完整安装/.test(rotuloRetomado)) return fimInstalar(codigo);
+        if (/正在(?:重新)?应用/.test(rotuloRetomado)) return fimAplicar(/重新应用/.test(rotuloRetomado), codigo);
+        if (/^正在撤销/.test(rotuloRetomado)) return fimDesfazer(codigo);
         return null;
       },
     });
@@ -650,7 +644,7 @@ async function carregar(){
 }
 carregar();
 
-// ---- execucao -----------------------------------------------------------
+// ---- 执行 -----------------------------------------------------------
 
 function travar(ocupado, qual, rotuloOcupado){
   BOTOES.forEach(sel => {
@@ -660,9 +654,8 @@ function travar(ocupado, qual, rotuloOcupado){
     b.textContent = (ocupado && sel === qual) ? rotuloOcupado : ROTULOS[sel];
   });
 }
-// os botoes acompanham a tarefa: voltam quando ela termina e travam quando a
-// pagina retoma uma que ja rodava. Num clique eles ja estao travados, com o
-// rotulo "Aplicando…", que nao deve ser trocado
+// 按钮跟随任务：结束时恢复，页面恢复已运行的任务时锁定。
+// 点击时按钮已锁定，标签为“正在应用…”，不应被替换
 Terminal.aoMudar(ocupado => {
   if (!ocupado || !BOTOES.some(sel => $(sel) && $(sel).disabled)) travar(ocupado);
 });
@@ -673,27 +666,27 @@ async function pedir(rota, corpo){
       method: "POST", headers: {"Content-Type": "application/json"},
       body: JSON.stringify(corpo || {})
     }).then(x => x.json());
-  } catch (e) { return {iniciado: false, erro: "O servidor local não respondeu."}; }
+  } catch (e) { return {iniciado: false, erro: "本地服务器未响应。"}; }
 }
 
 function naoComecou(texto){
   travar(false);
-  Terminal.avisar(false, "Não deu para começar", texto);
+  Terminal.avisar(false, "无法开始", texto);
 }
 
 APLICAR.forEach(sel => $(sel).addEventListener("click", () => aplicar(sel)));
 
 async function aplicar(qual){
-  travar(true, qual, "Aplicando…");
+  travar(true, qual, "正在应用…");
   const r = await pedir("/api/aplicar", estado);
   if (!r.iniciado){
     naoComecou(r.erro || (r.motivo === "ocupado"
-      ? "Já tem uma tarefa rodando. Espere terminar."
-      : "Não havia nada a fazer com essas opções."));
+      ? "已有任务在运行。请等待完成。"
+      : "这些选项没有可做的操作。"));
     return;
   }
   Terminal.acompanhar({
-    titulo: r.reaplicou ? "Reaplicando a aparência" : "Aplicando a aparência",
+    titulo: r.reaplicou ? "正在重新应用外观" : "正在应用外观",
     etapas: etapasDe(r.receitas || []),
     aoTerminar: async codigo => { await carregar(); return fimAplicar(r.reaplicou, codigo); },
   });
@@ -701,48 +694,47 @@ async function aplicar(qual){
 
 $("#btInstalar").addEventListener("click", async () => {
   if (!await desenharVerificacoes()) return;
-  travar(true, "#btInstalar", "Instalando…");
+  travar(true, "#btInstalar", "正在安装…");
   const r = await pedir("/api/instalar", estado);
   if (!r.iniciado){
     naoComecou((r.impedimentos || []).length
-      ? "As verificações impedem: " + r.impedimentos.join(", ") + "."
-      : (r.erro || "Não consegui iniciar a instalação."));
+      ? "检查项阻止安装：" + r.impedimentos.join(", ") + "。"
+      : (r.erro || "无法开始安装。"));
     return;
   }
   Terminal.acompanhar({
-    titulo: "Instalação completa",
+    titulo: "完整安装",
     etapas: etapasDe(receitas.map(x => x.id)),
-    dica: "Leva de 15 a 25 minutos; a compilação do tema é a parte lenta. Deixe esta página aberta.",
+    dica: "需要 15 到 25 分钟；主题编译是慢的部分。请保持此页面打开。",
     aoTerminar: async codigo => { await carregar(); return fimInstalar(codigo); },
   });
 });
 
-// ---- trocar de tema: outro tema Xfce da familia esta aplicado ---------------
+// ---- 切换主题：已应用同族的另一个 Xfce 主题 ---------------
 
 function desenharTroca(){
   const o = outroTema;
   $("#cartaoTrocar").hidden = !o;
   $("#confirmaTrocar").hidden = true;
   if (!o) return;
-  $("#trocarTitulo").textContent = `O tema ${o.nome} está instalado nesta conta`;
+  $("#trocarTitulo").textContent = `主题 ${o.nome} 已安装在本账户中`;
   $("#trocarAcoes").hidden = !o.achado;
   $("#trocarTexto").textContent = o.achado
-    ? `Os dois usam os mesmos scripts, o picom, o painel e os atalhos, então não dá para ter os dois. `
-      + `A troca primeiro volta o ${o.nome} ao que era antes (os pacotes dele ficam) e só então instala este, `
-      + `com as opções abaixo.`
-    : `Os dois não convivem, e não achei o projeto ${o.modulo} para voltar o ${o.nome} daqui. `
-      + `Rode no terminal: ${o.comando}`;
-  ROTULOS["#btTrocar"] = `Voltar o ${o.nome} e instalar este`;
+    ? `两者使用相同的脚本、picom、面板和快捷键，因此无法共存。`
+      + `切换会先让 ${o.nome} 恢复到之前的状态（它的软件包保留），然后才用下面的选项安装本主题。`
+    : `两者无法共存，且找不到项目 ${o.modulo} 来从此处恢复 ${o.nome}。`
+      + `请在终端中运行：${o.comando}`;
+  ROTULOS["#btTrocar"] = `恢复 ${o.nome} 并安装本主题`;
   $("#btTrocar").textContent = ROTULOS["#btTrocar"];
-  $("#confirmaTrocarTexto").textContent = `O ${o.nome} volta ao que era antes, como no “voltar” dele, `
-    + `e depois a instalação deste roda inteira. Se o voltar do ${o.nome} falhar, nada deste é instalado.`;
+  $("#confirmaTrocarTexto").textContent = `${o.nome} 会像其“还原”一样恢复到之前的状态，`
+    + `然后完整安装本主题。若 ${o.nome} 的还原失败，本主题不会安装任何内容。`;
 }
 
 function fimTrocar(codigo){
-  if (codigo === 0) return {bom: true, titulo: "Tema trocado",
-    texto: "O tema anterior voltou e este foi instalado. Saia da sessão e entre de novo para ver tudo no lugar."};
-  if (codigo !== null) return {bom: false, titulo: "A troca parou com erro",
-    texto: `Código ${codigo}. Se parou no voltar do outro tema, nada deste foi instalado; o log mostra onde.`};
+  if (codigo === 0) return {bom: true, titulo: "主题已切换",
+    texto: "之前的主题已恢复，本主题已安装。请注销并重新登录以查看全部效果。"};
+  if (codigo !== null) return {bom: false, titulo: "切换出错停止",
+    texto: `代码 ${codigo}。若在恢复另一个主题时停止，本主题未安装任何内容；日志显示了位置。`};
   return null;
 }
 
@@ -753,46 +745,46 @@ $("#btTrocar").addEventListener("click", () => {
 $("#btTrocarNao").addEventListener("click", () => { $("#confirmaTrocar").hidden = true; });
 $("#btTrocarSim").addEventListener("click", async () => {
   $("#confirmaTrocar").hidden = true;
-  travar(true, "#btTrocar", "Trocando…");
+  travar(true, "#btTrocar", "正在切换…");
   const r = await pedir("/api/trocar", estado);
   if (!r.iniciado){
     naoComecou((r.impedimentos || []).length
-      ? "As verificações impedem: " + r.impedimentos.join(", ") + "."
+      ? "检查项阻止安装：" + r.impedimentos.join(", ") + "。"
       : (r.erro || (r.motivo === "ocupado"
-        ? "Já tem uma tarefa rodando. Espere terminar." : "Não consegui começar a troca.")));
+        ? "已有任务在运行。请等待完成。" : "无法开始切换。")));
     return;
   }
   Terminal.acompanhar({
-    titulo: `Trocando o ${r.outro} por este tema`,
+    titulo: `正在将 ${r.outro} 切换为本主题`,
     etapas: etapasDe(receitas.map(x => x.id)),
     aoTerminar: async codigo => { await carregar(); return fimTrocar(codigo); },
   });
 });
 
-// ---- voltar ao que era antes ----------------------------------------------
+// ---- 恢复到之前的状态 ----------------------------------------------
 
 function fimDesfazer(codigo){
-  if (codigo === 0) return {bom: true, titulo: "Máquina como era antes",
-    texto: "Encerre a sessão e entre de novo para tudo voltar ao visual de antes."};
-  if (codigo !== null) return {bom: false, titulo: "Voltou só em parte",
-    texto: `${codigo} problema(s). As linhas vermelhas do log mostram o que não deu.`};
+  if (codigo === 0) return {bom: true, titulo: "机器已恢复到之前的状态",
+    texto: "请注销并重新登录，让一切回到之前的外观。"};
+  if (codigo !== null) return {bom: false, titulo: "仅部分恢复",
+    texto: `${codigo} 个问题。日志中的红色行显示了失败的内容。`};
   return null;
 }
 
-// com a caixa marcada, a lista exata do que sai, antes de confirmar
+// 勾选复选框后，在确认前列出将删除的确切内容
 async function desenharPreviaApagar(){
   const caixa = $("#listaApagar");
   const apagar = $("#apagarInstalado").checked;
   $("#confirmaTitulo").textContent = apagar
-    ? "Voltar ao que era antes e apagar o que foi instalado?" : "Voltar ao que era antes?";
-  $("#btDesfazerSim").textContent = apagar ? "Sim, voltar e apagar" : "Sim, voltar";
+    ? "恢复到之前的状态并删除已安装的内容？" : "恢复到之前的状态？";
+  $("#btDesfazerSim").textContent = apagar ? "是的，恢复并删除" : "是的，恢复";
   ROTULOS["#btDesfazerSim"] = $("#btDesfazerSim").textContent;
   if (!apagar){ caixa.hidden = true; return; }
   caixa.hidden = false;
-  caixa.textContent = "Conferindo o que o projeto instalou…";
+  caixa.textContent = "正在核对项目安装的内容…";
   let p;
   try { p = await fetch("/api/desfazer/previa").then(r => r.json()); }
-  catch (e) { caixa.textContent = "Não consegui conferir o que seria apagado."; return; }
+  catch (e) { caixa.textContent = "无法核对将删除的内容。"; return; }
   caixa.textContent = "";
   const criarEl = (tag, texto) => { const e = document.createElement(tag); e.textContent = texto; return e; };
   const lista = (titulo, itens) => {
@@ -803,16 +795,16 @@ async function desenharPreviaApagar(){
     caixa.appendChild(ul);
   };
   const sai = [];
-  if (p.pacotes.length) sai.push("Pacotes desinstalados com apt: " + p.pacotes.join(", "));
-  (p.fontes_externas || []).forEach(a => sai.push("Apagado: " + a + " (fonte de programas de fora do Debian)"));
-  p.pastas_do_projeto.forEach(a => sai.push("Apagado: " + a + " (opções, log, cópias e downloads)"));
-  if (sai.length) lista("Será apagado", sai);
-  else caixa.appendChild(criarEl("b", "Nada instalado pelo projeto foi encontrado"));
-  lista("Fica instalado", p.ficam.map(f => `${f.nome}: ${f.motivo}`));
-  lista("Confira e apague à mão, se for do projeto (pode ter existido antes)", p.conferir || []);
+  if (p.pacotes.length) sai.push("通过 apt 卸载的软件包：" + p.pacotes.join(", "));
+  (p.fontes_externas || []).forEach(a => sai.push("删除：" + a + "（Debian 之外的软件源）"));
+  p.pastas_do_projeto.forEach(a => sai.push("删除：" + a + "（选项、日志、备份和下载）"));
+  if (sai.length) lista("将被删除", sai);
+  else caixa.appendChild(criarEl("b", "未找到项目安装的任何内容"));
+  lista("保持安装", p.ficam.map(f => `${f.nome}：${f.motivo}`));
+  lista("请手动检查并删除（如果属于项目，可能之前已存在）", p.conferir || []);
   if (p.origem === "historico"){
-    const nota = criarEl("p", "Esta instalação é anterior ao diário de alterações; a lista de pacotes veio "
-      + "do histórico do apt, e só as cópias de segurança voltam.");
+    const nota = criarEl("p", "本次安装早于更改日志；软件包列表来自 "
+      + "apt 历史记录，只有备份会被恢复。");
     nota.className = "dica";
     caixa.appendChild(nota);
   }
@@ -826,15 +818,15 @@ $("#btDesfazer").addEventListener("click", () => {
 $("#btDesfazerNao").addEventListener("click", () => { $("#confirmaDesfazer").hidden = true; });
 $("#btDesfazerSim").addEventListener("click", async () => {
   $("#confirmaDesfazer").hidden = true;
-  travar(true, "#btDesfazer", "Voltando…");
+  travar(true, "#btDesfazer", "正在恢复…");
   const r = await pedir("/api/desfazer", {apagar: $("#apagarInstalado").checked});
   if (!r.iniciado){
     naoComecou(r.erro || (r.motivo === "ocupado"
-      ? "Já tem uma tarefa rodando. Espere terminar." : "Não consegui começar."));
+      ? "已有任务在运行。请等待完成。" : "无法开始。"));
     return;
   }
   Terminal.acompanhar({
-    titulo: "Voltando ao que era antes",
+    titulo: "正在恢复到之前的状态",
     etapas: r.etapas || [],
     aoTerminar: async codigo => { await carregar(); return fimDesfazer(codigo); },
   });
@@ -847,58 +839,58 @@ $("#btRever").addEventListener("click", async e => {
 async function capturar(qual, modo, ocupado){
   travar(true, qual, ocupado);
   const r = await pedir("/api/capturar", {modo, espera: 5});
-  if (!r.iniciado){ naoComecou(r.erro || "Já tem uma tarefa rodando. Espere terminar."); return; }
+  if (!r.iniciado){ naoComecou(r.erro || "已有任务在运行。请等待完成。"); return; }
   Terminal.acompanhar({
-    titulo: modo === "todas" ? "Recapturando as prévias" : "Capturando a tela",
-    dica: "A contagem dá cinco segundos; deixe a área de trabalho à vista.",
+    titulo: modo === "todas" ? "正在重新截取预览" : "正在截取屏幕",
+    dica: "倒计时五秒；请让桌面保持可见。",
     aoTerminar: codigo => {
       if (codigo === 0){
         desenhar(); aba("foto");
-        return {bom: true, titulo: "Prévia atualizada", texto: "A foto agora mostra a sua tela."};
+        return {bom: true, titulo: "预览已更新", texto: "照片现在显示你的屏幕。"};
       }
       return codigo === null ? null
-        : {bom: false, titulo: "Não consegui capturar", texto: "O log mostra o motivo."};
+        : {bom: false, titulo: "无法截图", texto: "日志显示了原因。"};
     },
   });
 }
 $("#btCapturar").addEventListener("click", () =>
-  capturar("#btCapturar", "atual", "Capturando…"));
+  capturar("#btCapturar", "atual", "正在截图…"));
 $("#btCapturarTodas").addEventListener("click", () =>
-  capturar("#btCapturarTodas", "todas", "Percorrendo…"));
+  capturar("#btCapturarTodas", "todas", "正在遍历…"));
 
 $("#btLogin").addEventListener("click", async () => {
-  travar(true, "#btLogin", "Montando…");
+  travar(true, "#btLogin", "正在生成…");
   const r = await pedir("/api/previa-login", estado);
-  if (!r.iniciado){ naoComecou(r.erro || "Já tem uma tarefa rodando. Espere terminar."); return; }
+  if (!r.iniciado){ naoComecou(r.erro || "已有任务在运行。请等待完成。"); return; }
   Terminal.acompanhar({
-    titulo: "Prévia da tela de login",
+    titulo: "登录界面预览",
     aoTerminar: codigo => {
       ajustarLogin();
       if (codigo === 0){
         $("#cartaoLogin").scrollIntoView({behavior: "smooth", block: "start"});
-        return {bom: true, titulo: "Prévia pronta", texto: "A imagem mostra a tela de login com as opções marcadas."};
+        return {bom: true, titulo: "预览已就绪", texto: "图片显示了含所选选项的登录界面。"};
       }
       return codigo === null ? null
-        : {bom: false, titulo: "Não consegui montar a prévia", texto: "O log mostra o motivo."};
+        : {bom: false, titulo: "无法生成预览", texto: "日志显示了原因。"};
     },
   });
 });
 
 $("#btReiniciarLogin").addEventListener("click", async () => {
-  if (!confirm("Isto encerra a sua sessão agora: fecha os programas abertos, "
-             + "inclusive este navegador, e mostra a tela de login nova.\n\n"
-             + "Salve o que estiver aberto antes. Continuar?")) return;
-  travar(true, "#btReiniciarLogin", "Reiniciando…");
+  if (!confirm("这会立即结束你的会话：关闭打开的程序，"
+             + "包括此浏览器，并显示新的登录界面。\n\n"
+             + "请先保存打开的内容。继续？")) return;
+  travar(true, "#btReiniciarLogin", "正在重启…");
   const r = await pedir("/api/reiniciar-login", {confirmar: true});
   const motivos = {
-    login_nao_aplicado: "A tela de login nova ainda não foi aplicada. Clique em Aplicar primeiro.",
-    sem_permissao: "Sem permissão de administrador. Abra o painel pelo comando d3bian-init-bigsur-xfce.",
-    ocupado: "Já tem uma tarefa rodando. Espere terminar.",
+    login_nao_aplicado: "新的登录界面尚未应用。请先点击“应用”。",
+    sem_permissao: "没有管理员权限。请用 d3bian-init-bigsur-xfce 命令打开面板。",
+    ocupado: "已有任务在运行。请等待完成。",
   };
   if (!r.iniciado){
-    naoComecou(motivos[r.motivo] || r.erro || "Não consegui reiniciar.");
+    naoComecou(motivos[r.motivo] || r.erro || "无法重启。");
   } else {
-    Terminal.avisar(true, "Reiniciando a tela de login", "A sessão fecha em instantes.");
+    Terminal.avisar(true, "正在重启登录界面", "会话即将关闭。");
   }
 });
 </script>

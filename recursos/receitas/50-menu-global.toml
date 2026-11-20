@@ -1,13 +1,13 @@
 [modulo]
 id = "50"
 nome = "menu-global"
-titulo = "Barra de menus do programa ativo"
+titulo = "活动程序的菜单栏"
 afetada_por = ["menu_global"]
 
 [[passo]]
 tipo = "script"
 se = "menu_global != sim"
-dizer = "desligando o menu global"
+dizer = "关闭全局菜单"
 tolera_falha = true
 corpo = '''
 d3_xfconf xsettings /Gtk/ShellShowsMenubar bool
@@ -19,7 +19,7 @@ xfconf-query -c xsettings -p /Gtk/ShellShowsMenubar -s false 2>/dev/null || true
 xfconf-query -c xsettings -p /Gtk/ShellShowsAppmenu -s false 2>/dev/null || true
 rm -f "$HOME/.config/environment.d/50-appmenu.conf" "$HOME/.config/xfce4/appmenu.sh"
 sed -i '/d3bian-init: menu global/,+1d' "$HOME/.xprofile" 2>/dev/null || true
-echo "menu global desligado; o efeito completo vem depois de reiniciar a sessao"
+echo "全局菜单已关闭；完整效果在重启会话后出现"
 '''
 
 [[passo]]
@@ -53,7 +53,7 @@ destino = "~/.config/xfce4/appmenu.sh"
 [[passo]]
 tipo = "script"
 se = "menu_global == sim"
-dizer = "carregando o modulo GTK no inicio da sessao"
+dizer = "在会话启动时加载 GTK 模块"
 corpo = '''
 chmod +x "$HOME/.config/xfce4/appmenu.sh"
 d3_antes "$HOME/.config/environment.d/50-appmenu.conf" "$HOME/.xprofile"
@@ -63,5 +63,5 @@ printf 'GTK_MODULES=appmenu-gtk-module\nUBUNTU_MENUPROXY=1\n' \
 touch "$HOME/.xprofile"
 grep -q 'xfce4/appmenu.sh' "$HOME/.xprofile" 2>/dev/null || \
   printf '\n# d3bian-init: menu global\n. "$HOME/.config/xfce4/appmenu.sh"\n' >> "$HOME/.xprofile"
-echo "menu global pronto; ele so lista os menus depois de reiniciar a sessao"
+echo "全局菜单已就绪；它只在重启会话后才列出菜单"
 '''

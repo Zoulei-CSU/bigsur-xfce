@@ -1,19 +1,16 @@
-"""Os temas Xfce da familia d3bian-init nao convivem na mesma conta.
+"""d3bian-init 系列的 Xfce 主题无法在同一账户中共存。
 
-Todos usam os mesmos nomes e ajustes: os scripts d3bian-janelas,
-d3bian-layouts, d3bian-bordas e d3bian-picom em ~/.local/bin, o picom.conf e o
-seu autostart, o painel do xfce4, o tema e as margens do xfwm4, os atalhos de
-teclado e o gtk. Instalar um segundo tema escreve por cima do primeiro, e o
-"voltar" do primeiro passaria a apagar scripts que o segundo usa ou a devolver
-ajustes por baixo dele. Por isso a instalacao e recusada enquanto outro tema da
-familia estiver aplicado; refazer, config e restaurar do proprio tema seguem.
+它们都使用相同的名称和调整项：~/.local/bin 中的 d3bian-janelas、d3bian-layouts、
+d3bian-bordas 和 d3bian-picom 脚本，picom.conf 及其自启动，xfce4 面板，xfwm4 的
+主题和边距，键盘快捷键以及 gtk。安装第二个主题会覆盖第一个，而第一个的“还原”
+随后会删除第二个使用的脚本或在它下面恢复设置。因此在已应用同族另一主题时会
+拒绝安装；本主题的重做、config 和还原仍可执行。
 
-A troca (aplicar --trocar, ou o botao do painel) roda o restaurar do outro
-tema pelo proprio projeto dele, que conhece as receitas, as listas do que pode
-apagar e as copias que guardou; os pacotes dele ficam. So depois de o outro
-voltar inteiro (saida 0) este tema e instalado.
+切换（aplicar --trocar，或面板按钮）通过另一个主题自己的项目运行其还原，该项目
+知道配方、可删除内容列表和已保存的备份；它的软件包保留。只有另一个主题完整
+还原后（退出码 0），才安装本主题。
 
-O mesmo arquivo vai nos cinco projetos.
+相同的文件出现在全部五个项目中。
 """
 
 from __future__ import annotations
@@ -28,7 +25,7 @@ from typing import Callable
 
 from . import caminhos
 
-# pasta de estado (em ~/.local/state) -> (nome do tema, modulo python)
+# 状态目录（在 ~/.local/state 中）->（主题名称、python 模块）
 FAMILIA_XFCE = {
     "d3bian-init": ("bigsur-xfce", "d3bian_init_bigsur_xfce"),
     "d3bian-init-bigsur-minimalista": ("bigsur-minimalista-xfce", "d3bian_init_bigsur_minimalista_xfce"),
@@ -46,12 +43,11 @@ def _mtime(caminho: Path) -> int:
 
 
 def aplicado(pasta: Path) -> bool:
-    """O tema desta pasta de estado mexeu na conta e nao foi desfeito.
+    """该状态目录对应的主题改动过账户且尚未撤销。
 
-    Conta a marca de receita aplicada em aplicado/, ou uma linha no diario
-    mais nova que a pasta aplicado/: o restaurar apaga as marcas e deixa a
-    pasta com a hora dele, mas guarda o diario (a remocao ainda le). So
-    simulacao deixa apenas o registro.log, e isso nao conta."""
+    以 aplicado/ 中的已应用配方标记计数，或以比 aplicado/ 目录更新的日志行为准：
+    restaurar 会删除标记并让目录带上其时间，但保留日志（移除时仍会读取）。仅
+    模拟只留下 registro.log，不算数。"""
     marcas = pasta / "aplicado"
     try:
         if any(m.is_file() for m in marcas.iterdir()):
@@ -75,9 +71,8 @@ def aplicado(pasta: Path) -> bool:
 
 
 def outro_aplicado() -> tuple[str, str] | None:
-    """(nome, modulo) de outro tema da familia aplicado nesta conta, ou None.
-    Com este proprio tema ja aplicado nao ha o que recusar: a troca ja
-    aconteceu, e refazer, config e restaurar precisam seguir."""
+    """本账户中已应用的另一个同族主题的 (名称, 模块)，否则为 None。
+    本主题已应用时无需拒绝：切换已经发生，重做、config 和还原需要继续。"""
     proprio = caminhos.ESTADO_DIR
     if aplicado(proprio):
         return None
@@ -88,22 +83,21 @@ def outro_aplicado() -> tuple[str, str] | None:
 
 
 def recusa() -> str:
-    """A mensagem de recusa, ou vazio quando pode instalar."""
+    """拒绝消息；可以安装时为空。"""
     outro = outro_aplicado()
     if not outro:
         return ""
     nome, modulo = outro
-    return (f"o tema {nome} está instalado nesta conta; use o 'voltar' dele antes "
-            f"(python3 -m {modulo} restaurar) ou troque de vez com "
-            f"python3 -m {caminhos.PACOTE.name} aplicar --trocar")
+    return (f"主题 {nome} 已安装在本账户中；请先使用它的“还原” "
+            f"(python3 -m {modulo} restaurar)，或用 "
+            f"python3 -m {caminhos.PACOTE.name} aplicar --trocar 直接切换")
 
 
 def localizar(modulo: str) -> Path | None:
-    """A pasta de onde o outro projeto roda (a que vai no PYTHONPATH).
+    """另一个项目运行的目录（放入 PYTHONPATH 的那个）。
 
-    Primeiro a vizinha deste (os projetos lado a lado, como saem do git),
-    depois o que o Python acharia sozinho (instalado no sistema). A pasta de
-    estado nao guarda de onde o projeto rodou."""
+    先找与本项目相邻的（项目并排，如从 git 克隆时），再找 Python 自行找到的
+    （安装在系统中）。状态目录不记录项目运行自何处。"""
     pai = caminhos.PACOTE.parent
     if (pai / modulo / "__main__.py").is_file() and (pai / modulo / "desfazer.py").is_file():
         return pai
@@ -119,7 +113,7 @@ def localizar(modulo: str) -> Path | None:
 
 
 def para_pagina() -> dict | None:
-    """O outro tema aplicado, para o painel oferecer a troca."""
+    """已应用的另一个主题，供面板提供切换。"""
     outro = outro_aplicado()
     if not outro:
         return None
@@ -129,26 +123,26 @@ def para_pagina() -> dict | None:
 
 
 def trocar(diz: Callable[[str], None], terminal: bool = False) -> int:
-    """Volta o outro tema da familia pelo restaurar dele (os pacotes ficam).
-    Devolve 0 quando nao ha outro ou quando ele voltou inteiro; qualquer outra
-    coisa para tudo, e a conta fica como o restaurar do outro deixou."""
+    """通过另一个主题的还原将其恢复（软件包保留）。
+    没有另一个主题或它完整还原时返回 0；其他任何情况都会停止，
+    账户保持其还原后的状态。"""
     outro = outro_aplicado()
     if not outro:
         return 0
     nome, modulo = outro
     pai = localizar(modulo)
     if pai is None:
-        diz(f"  nao achei o projeto {modulo} para voltar o tema {nome}; rode a mao e depois "
-            f"instale este de novo: python3 -m {modulo} restaurar --sim")
+        diz(f"  找不到项目 {modulo} 来恢复主题 {nome}；请手动运行，然后重新安装本主题："
+            f"python3 -m {modulo} restaurar --sim")
         return 1
-    diz(f"\n==> voltando o tema {nome} ({pai / modulo})")
+    diz(f"\n==> 正在恢复主题 {nome} ({pai / modulo})")
     comando = [sys.executable or "python3", "-m", modulo, "restaurar", "--sim"]
     ambiente = {**os.environ,
                 "PYTHONPATH": str(pai) + (os.pathsep + os.environ["PYTHONPATH"]
                                           if os.environ.get("PYTHONPATH") else "")}
     try:
         if terminal:
-            # no terminal a saida vai direto, e o sudo pode perguntar a senha
+            # 在终端中输出直接透传，sudo 可以询问密码
             codigo = subprocess.run(comando, cwd=pai, env=ambiente).returncode
         else:
             proc = subprocess.Popen(comando, cwd=pai, env=ambiente, stdin=subprocess.DEVNULL,
@@ -158,14 +152,14 @@ def trocar(diz: Callable[[str], None], terminal: bool = False) -> int:
                 diz(linha.rstrip("\n"))
             codigo = proc.wait()
     except OSError as erro:
-        diz(f"  nao consegui rodar o restaurar do tema {nome}: {erro}")
+        diz(f"  无法运行主题 {nome} 的还原：{erro}")
         return 1
     if codigo != 0:
-        diz(f"  o restaurar do tema {nome} terminou com erro (codigo {codigo}); parei aqui, "
-            "nada deste tema foi instalado")
+        diz(f"  主题 {nome} 的还原出错结束（代码 {codigo}）；已在此停止，"
+            "本主题未安装任何内容")
         return 1
     if outro_aplicado() == outro:
-        diz(f"  o tema {nome} ainda aparece como instalado; parei aqui, nada deste tema foi instalado")
+        diz(f"  主题 {nome} 仍显示为已安装；已在此停止，本主题未安装任何内容")
         return 1
-    diz(f"  tema {nome} voltado; agora a instalacao deste")
+    diz(f"  主题 {nome} 已恢复；现在安装本主题")
     return 0

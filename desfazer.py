@@ -1,22 +1,18 @@
-"""Volta a maquina ao que era antes do projeto.
+"""把机器恢复到项目之前的状态。
 
-Tres etapas, e uma quarta opcional:
+共三个阶段，外加一个可选阶段：
 
-- d1: os [[desfazer]] de cada receita aplicada, da ultima para a primeira. E ali
-  que fica o que nenhum passo generico sabe desfazer: chsh, gsettings, extensao
-  habilitada, servico ligado.
-- d2: o diario de tras para frente. Arquivo criado sai; arquivo que ja existia
-  volta da copia de seguranca; bloco sai do arquivo e o resto fica; xfconf,
-  gsettings e dconf voltam ao valor de antes; processo que o projeto iniciou e
-  nao rodava antes para. Downloads e clones na pasta de dados do projeto ficam
-  para o d4, que apaga a pasta inteira.
-- d3: as marcas de etapa aplicada, e a pagina volta a oferecer a instalacao.
-- d4 (so com apagar): os pacotes que o projeto instalou, e as pastas do projeto
-  (opcoes, log, copias, downloads). Pacote que levaria outros programas junto
-  fica, e o que da o shell do login tambem.
+- d1：各已应用配方的 [[desfazer]]，从最后一个到第一个。没有任何通用步骤知道
+  如何撤销的内容都放在这里：chsh、gsettings、已启用的扩展、已启动的服务。
+- d2：倒序遍历更改日志。创建的文件删除；原本已存在的文件从备份恢复；块从
+  文件中移除，其余保留；xfconf、gsettings 和 dconf 恢复为之前的值；项目启动
+  且之前未运行的进程停止。项目数据目录中的下载和克隆留给 d4，由它删除整个
+  目录。
+- d3：已应用阶段的标记，页面重新提供安装。
+- d4（仅配合 apagar）：项目安装的软件包，以及项目目录（选项、日志、备份、
+  下载）。会连带移除其他程序的软件包保留，提供登录 shell 的软件包也保留。
 
-Maquina instalada antes de existir o diario: d2 so devolve as copias de
-seguranca, e os pacotes vem do historico do apt.
+在更改日志出现之前安装的机器：d2 只恢复备份，软件包则来自 apt 历史记录。
 """
 
 from __future__ import annotations
@@ -36,13 +32,13 @@ from . import caminhos, config, diario, estado, motor, programas, receitas, sist
 Diz = Callable[[str], None]
 
 ETAPAS = [
-    ("d1", "O que cada receita pede para desfazer"),
-    ("d2", "Arquivos, blocos e configuracoes"),
-    ("d3", "Etapas marcadas como aplicadas"),
+    ("d1", "各配方要求撤销的内容"),
+    ("d2", "文件、块和配置"),
+    ("d3", "标记为已应用的阶段"),
 ]
-ETAPA_APAGAR = ("d4", "Remover o que foi instalado")
+ETAPA_APAGAR = ("d4", "移除已安装的内容")
 
-# nunca apagados, por engano de caminho ou de diario
+# 因路径或日志错误而永不删除
 PROTEGIDOS = {Path("/"), Path.home(), Path("/usr"), Path("/etc"), Path("/opt"), Path("/boot"),
               Path("/usr/share"), Path("/usr/local"), Path("/usr/local/bin"),
               Path.home() / ".config", Path.home() / ".local", Path.home() / ".local/share"}
@@ -57,7 +53,7 @@ def _rodar(argumentos: list[str], diz: Diz) -> int:
     try:
         proc = subprocess.run(argumentos, capture_output=True, text=True)
     except OSError as erro:
-        diz(f"  nao consegui executar {argumentos[0]}: {erro}")
+        diz(f"  无法执行 {argumentos[0]}：{erro}")
         return 1
     if proc.returncode != 0:
         for linha in (proc.stderr or "").splitlines()[-4:]:
@@ -69,7 +65,7 @@ def _da_pessoa(caminho: Path) -> bool:
     return caminho == Path.home() or Path.home() in caminho.parents
 
 
-# ---- d1: desfazer declarado nas receitas ------------------------------------
+# ---- d1：配方中声明的撤销 ----------------------------------------------
 
 def _receitas(diz: Diz) -> int:
     ctx = motor.montar_contexto(config.ler())
@@ -82,14 +78,14 @@ def _receitas(diz: Diz) -> int:
         try:
             motor.Motor(ctx, saida=diz, anotar=False).rodar(receita.desfazer)
         except motor.ErroDePasso as erro:
-            diz(f"  ERRO em {receita.ident}: {erro}")
+            diz(f"  ERRO 于 {receita.ident}：{erro}")
             falhas += 1
     return falhas
 
 
-# ---- d2: o diario de tras para frente ---------------------------------------
+# ---- d2：倒序遍历更改日志 ----------------------------------------------
 
-# pastas que o sistema (e outros programas) espera encontrar, mesmo vazias
+# 系统（和其他程序）即使为空也期望存在的目录
 PASTAS_DO_SISTEMA = {Path.home() / p for p in (
     ".config", ".cache", ".local", ".local/bin", ".local/share", ".local/state",
     ".themes", ".icons", ".fonts", ".local/share/icons", ".local/share/themes",
@@ -97,11 +93,10 @@ PASTAS_DO_SISTEMA = {Path.home() / p for p in (
 
 
 def _limpar_vazias(pasta: Path, diz: Diz) -> None:
-    """Sobe apagando pasta que ficou vazia, para nao ficar casca do projeto.
+    """向上删除已变空的目录，避免留下项目的空壳。
 
-    O rmdir so funciona em pasta vazia, entao nada que tenha conteudo de outra
-    pessoa ou de outro programa e tocado. Para no que o sistema espera achar,
-    na pasta de dados do projeto e na casa.
+    rmdir 只对空目录有效，因此不会碰任何含有他人或其他程序内容的目录。遇到系统
+    期望存在的目录、项目数据目录以及主目录时停止。
     """
     casa = Path.home()
     guardadas = {getattr(caminhos, n, None) for n in ("DADOS_DIR", "ESTADO_DIR", "BACKUP")}
@@ -112,14 +107,13 @@ def _limpar_vazias(pasta: Path, diz: Diz) -> None:
             pasta.rmdir()
         except OSError:
             return
-        diz(f"  pasta vazia {pasta} apagada")
+        diz(f"  空目录 {pasta} 已删除")
         pasta = pasta.parent
 
 
-# Fora da pasta pessoal, o desfazer (que roda como root ali) so apaga estes: o
-# diario fica numa pasta do usuario e nao decide sozinho o que o root apaga.
-# Sao os caminhos de sistema que as receitas criam; quem acrescentar uma
-# receita que crie outro, acrescenta aqui.
+# 在主目录之外，撤销（在那里以 root 运行）只删除以下这些：更改日志位于用户
+# 目录中，不能自行决定 root 删什么。它们是配方创建的系统路径；谁新增了会创建
+# 其他路径的配方，就在这里补充。
 APAGAVEIS_FORA_DE_CASA = {
     *(f"/usr/share/themes/WhiteSur-{v}{'' if c == 'default' else '-' + c}"
       for v in ("Light", "Dark") for c in motor.DESTAQUE_EXTERNO.values()),
@@ -128,36 +122,35 @@ APAGAVEIS_FORA_DE_CASA = {
     "/usr/share/backgrounds/d3bian-init", "/usr/share/themes/d3bian-login",
     "/etc/xdg/lightdm/lightdm-gtk-greeter.conf.d/90-d3bian.conf",
     "/etc/lightdm/lightdm.conf.d/90-d3bian.conf",
-    # fontes de terceiros da pagina de programas (fonte-externa.sh)
+    # 程序页面中的第三方源（fonte-externa.sh）
     *programas.ARQUIVOS_DE_FONTE,
     str(caminhos.BACKUP_SISTEMA),
 }
 
 
-# o que o root pode devolver da copia de seguranca dele: os mesmos caminhos de
-# sistema que as receitas mexem (a pasta das copias em si nao)
+# root 可从其备份中恢复的路径：配方所改动的相同系统路径（备份目录本身除外）
 RESTAURAVEIS_FORA_DE_CASA = APAGAVEIS_FORA_DE_CASA - {str(caminhos.BACKUP_SISTEMA)}
 
 
-# arquivos soltos na casa que as receitas criam; o desfazer apaga o que ele
-# mesmo criou (o diario diz), e nada mais logo abaixo da casa
+# 配方在主目录中直接创建的文件；撤销会删除它自己创建的内容（日志会说明），
+# 主目录下不再多删
 ARQUIVOS_DA_CASA = frozenset({".gtkrc-2.0", ".xprofile", ".xsessionrc"})
 
 
 def _apagavel(caminho: Path) -> bool:
     bruto = str(caminho)
-    # caminho normalizado e sem "..": a lista fica numa pasta do usuario
+    # 已规范化且不含 ".." 的路径：列表位于用户目录中
     if not diario.caminho_limpo(bruto):
         return False
     casa = Path.home()
     if caminho.is_relative_to(casa):
         real = Path(os.path.realpath(caminho))
-        # nunca a casa inteira nem uma pasta logo abaixo dela (Documentos, .config...)
+        # 绝不是整个主目录，也不是它正下方的目录（Documentos、.config……）
         if not real.is_relative_to(casa):
             return False
         partes = real.relative_to(casa).parts
         if len(partes) == 1:
-            # logo na casa, so os arquivos comuns que as receitas escrevem
+            # 主目录正下方，只限配方写入的普通文件
             return (partes[0] in ARQUIVOS_DA_CASA and caminho.is_file()
                     and not caminho.is_symlink())
         return len(partes) >= 2
@@ -166,12 +159,12 @@ def _apagavel(caminho: Path) -> bool:
 
 def _apagar(caminho: Path, diz: Diz) -> None:
     if caminho in PROTEGIDOS or len(caminho.parts) < 3:
-        diz(f"  atencao: {caminho} nao e apagado (caminho protegido)")
+        diz(f"  atencao: {caminho} 未删除（受保护的路径）")
         return
     if not caminho.exists() and not caminho.is_symlink():
         return
     if not _apagavel(caminho):
-        diz(f"  atencao: confira e apague a mao, se for do projeto: {caminho}")
+        diz(f"  atencao: 如果是项目内容，请手动检查并删除：{caminho}")
         return
     if _da_pessoa(caminho):
         if caminho.is_dir() and not caminho.is_symlink():
@@ -179,22 +172,22 @@ def _apagar(caminho: Path, diz: Diz) -> None:
         else:
             caminho.unlink(missing_ok=True)
     elif _rodar(["sudo", "-n", "rm", "-rf", str(caminho)], diz) != 0:
-        diz(f"  nao consegui apagar {caminho}")
+        diz(f"  无法删除 {caminho}")
         return
-    diz(f"  apagado {caminho}")
+    diz(f"  已删除 {caminho}")
     _limpar_vazias(caminho.parent, diz)
 
 
 def _voltar_copia(caminho: Path, diz: Diz) -> None:
     if not diario.caminho_limpo(str(caminho)):
-        diz(f"  atencao: caminho estranho no diario, ignorado: {caminho}")
+        diz(f"  atencao: 更改日志中有异常路径，已忽略：{caminho}")
         return
     if not _da_pessoa(caminho):
         _voltar_copia_do_sistema(caminho, diz)
         return
     copia = caminhos.BACKUP / str(caminho).lstrip("/")
     if not copia.exists():
-        diz(f"  atencao: sem copia de seguranca de {caminho}; fica como esta")
+        diz(f"  atencao: {caminho} 没有备份；保持原样")
         return
     if caminho.is_dir() and not caminho.is_symlink():
         shutil.rmtree(caminho, ignore_errors=True)
@@ -203,28 +196,28 @@ def _voltar_copia(caminho: Path, diz: Diz) -> None:
         shutil.copytree(copia, caminho, symlinks=True, dirs_exist_ok=True)
     else:
         shutil.copy2(copia, caminho)
-    diz(f"  devolvido {caminho}")
+    diz(f"  已恢复 {caminho}")
 
 
 def _voltar_copia_do_sistema(caminho: Path, diz: Diz) -> None:
-    """Arquivo do sistema volta so da copia do root (caminhos.BACKUP_SISTEMA):
-    a da pasta da pessoa poderia ter sido trocada por qualquer programa dela."""
+    """系统文件只从 root 的备份恢复（caminhos.BACKUP_SISTEMA）：
+    用户目录中的备份可能已被其任意程序篡改。"""
     if str(caminho) not in RESTAURAVEIS_FORA_DE_CASA:
-        diz(f"  atencao: {caminho} nao e devolvido pelo root (fora da lista); confira a mao")
+        diz(f"  atencao: root 不会恢复 {caminho}（不在列表中）；请手动检查")
         return
     copia = caminhos.BACKUP_SISTEMA / str(caminho).lstrip("/")
     if _rodar(["sudo", "-n", "test", "-e", str(copia)], diz) != 0:
-        diz(f"  atencao: sem copia de seguranca (do root) de {caminho}; fica como esta")
+        diz(f"  atencao: {caminho} 没有（root 的）备份；保持原样")
         return
     if _rodar(["sudo", "-n", "sh", "-c", DEVOLVER_ROOT, "sh", str(caminhos.BACKUP_SISTEMA),
                str(copia), str(caminho)], diz) != 0:
-        diz(f"  nao consegui devolver {caminho}")
+        diz(f"  无法恢复 {caminho}")
         return
-    diz(f"  devolvido {caminho}")
+    diz(f"  已恢复 {caminho}")
 
 
-# a pasta das copias e do root e nao e link; a copia, resolvida (realpath -e),
-# fica dentro dela; so entao o destino e trocado pela copia
+# 备份目录属于 root 且不是链接；解析后的副本（realpath -e）位于其中；
+# 只有这样才能用副本替换目标
 DEVOLVER_ROOT = (
     '[ -d "$1" ] && [ ! -L "$1" ] && [ "$(stat -c %u "$1")" = 0 ] || exit 3; '
     'raiz=$(realpath -e -- "$1") && c=$(realpath -e -- "$2") || exit 3; '
@@ -233,12 +226,12 @@ DEVOLVER_ROOT = (
 
 
 def tirar_bloco(arquivo: Path, marca: str, comentario: str) -> bool:
-    """Tira o trecho que o passo bloco do motor escreveu, com as mesmas marcas."""
+    """用相同的标记移除引擎的块步骤写入的片段。"""
     if not arquivo.is_file():
         return False
     abre, fecha = (f"# {marca}", f"# fim {marca}") if comentario == "#" else (f"/* {marca} */", f"/* fim {marca} */")
     texto = arquivo.read_text()
-    # as mesmas marcas em linha propria do motor.passo_bloco
+    # 与 motor.passo_bloco 相同的独占行标记
     novo = re.sub(r"\n*^" + re.escape(abre) + r"$.*?^" + re.escape(fecha) + r"$\n?", "\n", texto,
                   flags=re.S | re.M)
     if novo == texto:
@@ -269,7 +262,7 @@ def _xfconf(item: dict, diz: Diz) -> None:
 
 
 def _canais_vazios(itens: list[dict], diz: Diz) -> None:
-    """Canal do xfconf que nao existia e ficou sem propriedades: o arquivo dele sai."""
+    """原本不存在且已无属性的 xfconf 通道：删除其文件。"""
     if not shutil.which("xfconf-query"):
         return
     pasta = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "xfce4/xfconf/xfce-perchannel-xml"
@@ -280,18 +273,18 @@ def _canais_vazios(itens: list[dict], diz: Diz) -> None:
         if not any(l.startswith("/") for l in lista.splitlines()) and arquivo.is_file() \
                 and "<property" not in arquivo.read_text(errors="replace"):
             arquivo.unlink()
-            diz(f"  apagado {arquivo}, que so existia pelo projeto")
+            diz(f"  已删除 {arquivo}，它仅因本项目而存在")
 
 
 def _diario(diz: Diz) -> int:
     itens = diario.ler()
     if not itens:
-        diz("  atencao: esta instalacao e anterior ao diario; so as copias de seguranca voltam")
+        diz("  atencao: 本次安装早于更改日志；只能恢复备份文件")
         feitos = estado.restaurar_tudo()
-        diz(f"  {len(feitos)} arquivo(s) devolvido(s)")
-        # projetos do GNOME guardam o dconf inteiro de antes
+        diz(f"  已恢复 {len(feitos)} 个文件")
+        # GNOME 项目会保存之前的整个 dconf
         if getattr(estado, "restaurar_dconf", None) and estado.restaurar_dconf():
-            diz("  configuracoes do GNOME de antes carregadas")
+            diz("  已载入之前的 GNOME 配置")
         return 0
     falhas = 0
     guardados = 0
@@ -299,17 +292,17 @@ def _diario(diz: Diz) -> int:
         try:
             tipo = item.get("tipo")
             if "caminho" in item and not diario.caminho_limpo(item["caminho"]):
-                diz(f"  atencao: caminho estranho no diario, ignorado: {item['caminho']}")
+                diz(f"  atencao: 更改日志中有异常路径，已忽略：{item['caminho']}")
                 continue
             if tipo == "criado" and caminhos.DADOS_DIR in Path(item["caminho"]).parents:
                 guardados += 1
             elif tipo == "criado":
                 _apagar(Path(item["caminho"]), diz)
             elif tipo == "pasta":
-                # criada pelo projeto: sai so se ficou vazia
+                # 由项目创建：仅在变空时删除
                 try:
                     Path(item["caminho"]).rmdir()
-                    diz(f"  pasta vazia {item['caminho']} apagada")
+                    diz(f"  空目录 {item['caminho']} 已删除")
                 except OSError:
                     pass
             elif tipo == "alterado":
@@ -317,14 +310,14 @@ def _diario(diz: Diz) -> int:
             elif tipo == "bloco":
                 caminho = Path(item["caminho"])
                 if tirar_bloco(caminho, item["marca"], item.get("comentario", "")):
-                    diz(f"  bloco '{item['marca']}' tirado de {caminho}")
+                    diz(f"  已从 {caminho} 移除块 '{item['marca']}'")
                 if item.get("arquivo_novo") and caminho.is_file() and not caminho.read_text().strip():
                     caminho.unlink()
                     _limpar_vazias(caminho.parent, diz)
             elif tipo == "xfconf":
                 _xfconf(item, diz)
             elif tipo == "gsettings" and shutil.which("gsettings"):
-                # chave que estava no padrao volta a ficar no padrao, e nao gravada com ele
+                # 原本为默认值的键恢复为默认值，而不是显式写入默认值
                 if item.get("padrao"):
                     _rodar(["gsettings", "reset", item["esquema"], item["chave"]], diz)
                 elif item.get("valor"):
@@ -337,16 +330,16 @@ def _diario(diz: Diz) -> int:
             elif tipo == "processo" and not item.get("rodava"):
                 subprocess.run(["pkill", "-x", item["nome"]], capture_output=True)
         except (OSError, KeyError, shutil.Error) as erro:
-            diz(f"  ERRO ao desfazer {item.get('tipo')} {item.get('caminho', item.get('chave', ''))}: {erro}")
+            diz(f"  ERRO 撤销 {item.get('tipo')} {item.get('caminho', item.get('chave', ''))} 时：{erro}")
             falhas += 1
     _canais_vazios(itens, diz)
     if guardados:
-        diz(f"  {guardados} download(s) na pasta do projeto ficam; saem com a opcao de remover")
-    diz("  diario percorrido")
+        diz(f"  项目目录中有 {guardados} 个下载会保留；使用移除选项时删除")
+    diz("  已遍历更改日志")
     return falhas
 
 
-# ---- d4: remover o que foi instalado ----------------------------------------
+# ---- d4：移除已安装的内容 ----------------------------------------------
 
 def _pacotes_das_receitas() -> set[str]:
     nomes = set()
@@ -358,7 +351,7 @@ def _pacotes_das_receitas() -> set[str]:
 
 
 def _historico_apt() -> list[str]:
-    """Sem diario: pacotes que o painel pediu ao apt, desde o primeiro uso do projeto."""
+    """没有更改日志时：自项目首次使用以来面板向 apt 请求的软件包。"""
     usuario = getpass.getuser()
     do_projeto = _pacotes_das_receitas()
     inicio = ""
@@ -388,14 +381,14 @@ def _historico_apt() -> list[str]:
 
 
 def _pacote_do_shell() -> str:
-    """Pacote que da o shell do login: remover deixaria a pessoa sem entrar."""
+    """提供登录 shell 的软件包：移除会让人无法登录。"""
     shell = pwd.getpwnam(getpass.getuser()).pw_shell
     saida = subprocess.run(["dpkg", "-S", os.path.realpath(shell)], capture_output=True, text=True).stdout
     return saida.split(":", 1)[0].strip() if saida else ""
 
 
 def previa_remocao() -> dict:
-    """O que a etapa de remover apagaria, sem mexer em nada. A pagina mostra antes."""
+    """移除阶段会删除什么，不做任何改动。页面会先显示。"""
     itens = diario.ler()
     if itens:
         candidatos = sorted({n for e in itens if e.get("tipo") == "pacotes" for n in e.get("nomes", [])})
@@ -407,13 +400,13 @@ def previa_remocao() -> dict:
     pacotes, ficam = [], []
     for nome in (n for n in candidatos if n in instalados):
         if nome == do_shell:
-            ficam.append({"nome": nome, "motivo": "dá o shell do login; volte o shell primeiro"})
+            ficam.append({"nome": nome, "motivo": "提供登录 shell；请先换回原 shell"})
             continue
         pacotes.append(nome)
-    # o que depende de um pacote so segura ele se nao sair junto; repete porque
-    # um pacote que fica pode segurar outro. Dependencia que o apt trouxe com os
-    # pacotes do projeto tambem sai junto (o libglib2.0-bin e pedido pelo
-    # projeto e pelo appmenu-gtk-module-common, que veio com o appmenu)
+    # 依赖某软件包的东西只有在不一起移除时才会将其留下；循环重试，因为留下的
+    # 软件包可能又留下另一个。apt 随项目软件包带来的依赖也会一起移除
+    # （libglib2.0-bin 由项目以及随 appmenu 而来的
+    # appmenu-gtk-module-common 请求）
     trazidas = {d.split(":")[0] for e in itens if e.get("tipo") == "pacotes" for d in e.get("dependencias", [])}
     mudou = True
     while mudou:
@@ -425,19 +418,19 @@ def previa_remocao() -> dict:
                        if x != nome and x.split(":")[0] not in pacotes and x.split(":")[0] not in trazidas]
             if levaria:
                 pacotes.remove(nome)
-                ficam.append({"nome": nome, "motivo": "outros programas dependem dele: " + ", ".join(levaria[:6])
+                ficam.append({"nome": nome, "motivo": "其他程序依赖它：" + ", ".join(levaria[:6])
                               + ("…" if len(levaria) > 6 else "")})
                 mudou = True
     pastas = [str(p) for p in (caminhos.CONFIG_DIR, caminhos.DADOS_DIR, caminhos.ESTADO_DIR,
                                caminhos.BACKUP_SISTEMA) if p.exists()]
-    # so o que o diario anotou ao criar e a lista acima permite sai; o resto
-    # aparece para conferir a mao (pode ter existido antes do projeto)
+    # 只删除创建时日志记录且上面的列表允许的内容；其余内容出现以供手动检查
+    # （可能在项目之前就已存在）
     conferir = sorted({e["caminho"] for e in itens if e.get("tipo") == "criado" and e.get("caminho")
                        and not _apagavel(Path(e["caminho"]))
                        and (Path(e["caminho"]).exists() or Path(e["caminho"]).is_symlink())})
     fontes = sorted({c for e in itens if e.get("tipo") == "fonte_externa" for c in e.get("criados", [])
                      if c in APAGAVEIS_FORA_DE_CASA and Path(c).exists()})
-    # dependencias que o apt trouxe junto; so saem as que ninguem mais usa, depois dos pacotes
+    # apt 一并带来的依赖；先移除软件包，再只移除无人使用的依赖
     dependencias = sorted({d for e in itens if e.get("tipo") == "pacotes" for d in e.get("dependencias", [])}
                           - set(pacotes) - {f["nome"] for f in ficam})
     return {"pacotes": pacotes, "ficam": ficam, "pastas_do_projeto": pastas, "origem": origem,
@@ -446,16 +439,16 @@ def previa_remocao() -> dict:
 
 
 def _orfas() -> set[str]:
-    """Pacotes que o apt autoremove tiraria agora."""
+    """apt autoremove 现在会移除的软件包。"""
     saida = subprocess.run(["apt-get", "-s", "autoremove"], capture_output=True, text=True,
                            env={**os.environ, "LC_ALL": "C"}).stdout
     return set(re.findall(r"^Remv (\S+)", saida, re.M))
 
 
 def _dependencias_anotadas(nomes: list[str], diz: Diz) -> None:
-    """As que vieram com os pacotes do projeto e o autoremove deixou, por serem so sugeridas."""
+    """随项目软件包而来、又被 autoremove 留下的依赖，因为它们只是建议项。"""
     sobram = [n for n, i in sistema.estado_pacotes(nomes).items() if i.get("instalado")]
-    # so sai o que nao leva junto nada de fora da lista; repete porque um que fica segura outro
+    # 只移除不会连带移除列表之外的依赖；循环重试，因为留下的会留住另一个
     mudou = True
     while mudou and sobram:
         mudou = False
@@ -466,75 +459,75 @@ def _dependencias_anotadas(nomes: list[str], diz: Diz) -> None:
                 sobram.remove(nome)
                 mudou = True
     if sobram:
-        diz(f"  dependencias que vieram com eles: {', '.join(sobram)}")
+        diz(f"  随它们而来的依赖：{', '.join(sobram)}")
         if _rodar(["sudo", "-n", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "remove", "-y", *sobram], diz) != 0:
-            diz("  atencao: nao consegui tirar essas dependencias")
+            diz("  atencao: 无法移除这些依赖")
 
 
 def _remover(diz: Diz) -> int:
     previa = previa_remocao()
     if previa["origem"] == "historico":
-        diz("  atencao: instalacao anterior ao diario; pacotes tirados do historico do apt")
+        diz("  atencao: 安装早于更改日志；软件包取自 apt 历史记录")
     for item in previa["ficam"]:
-        diz(f"  atencao: {item['nome']} fica instalado: {item['motivo']}")
+        diz(f"  atencao: {item['nome']} 保持安装：{item['motivo']}")
     if previa["pacotes"]:
-        # o que ja sobrava antes nao e do projeto e fica
+        # 之前就已多余的包不属于项目，保留
         orfas_antes = _orfas()
-        diz(f"  desinstalando com apt: {', '.join(previa['pacotes'])}")
+        diz(f"  通过 apt 卸载：{', '.join(previa['pacotes'])}")
         if _rodar(["sudo", "-n", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "remove", "-y", *previa["pacotes"]], diz) != 0:
-            diz("  ERRO: apt-get remove falhou; as pastas do projeto ficam")
+            diz("  ERRO: apt-get remove 失败；项目目录保留")
             return 1
         novas = sorted(_orfas() - orfas_antes)
         if novas:
-            diz(f"  dependencias que so estavam ali pelo projeto: {', '.join(novas)}")
+            diz(f"  仅因项目而存在的依赖：{', '.join(novas)}")
             if _rodar(["sudo", "-n", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "remove", "-y", *novas], diz) != 0:
-                diz("  atencao: nao consegui tirar as dependencias; sudo apt autoremove limpa depois")
+                diz("  atencao: 无法移除依赖；之后可用 sudo apt autoremove 清理")
         _dependencias_anotadas(previa.get("dependencias", []), diz)
-    # fontes de terceiros que a pagina de programas acrescentou ao apt
+    # 程序页面向 apt 添加的第三方源
     for arquivo in previa.get("fontes_externas", []):
         _apagar(Path(arquivo), diz)
     for item in previa.get("conferir", []):
-        diz(f"  atencao: confira e apague a mao, se for do projeto: {item}")
-    # por ultimo: o log, o diario e as copias que as etapas anteriores ainda usaram
+        diz(f"  atencao: 如果是项目内容，请手动检查并删除：{item}")
+    # 最后：前面阶段仍在使用的日志、更改记录和备份
     for pasta in previa["pastas_do_projeto"]:
         if Path(pasta) == caminhos.BACKUP_SISTEMA:
             _apagar(caminhos.BACKUP_SISTEMA, diz)
             continue
         shutil.rmtree(pasta, ignore_errors=True)
-        diz(f"  apagado {pasta}")
+        diz(f"  已删除 {pasta}")
     return 0
 
 
-# ---- tudo -----------------------------------------------------------------
+# ---- 全部 -----------------------------------------------------------------
 
 def executar(diz: Diz = print, apagar: bool = False) -> int:
-    """Desfaz tudo, uma etapa por vez. Devolve quantas falharam."""
+    """逐步撤销全部内容。返回失败数量。"""
     try:
         with caminhos.trava():
             return _executar(diz, apagar)
     except caminhos.Ocupado as erro:
-        diz(f"  {erro}; espere terminar")
+        diz(f"  {erro}；请等待完成")
         return 1
 
 
 def _executar(diz: Diz, apagar: bool) -> int:
     caminhos.preparar()
     passos = {"d1": _receitas, "d2": _diario,
-              "d3": lambda d: (estado.limpar_marcas(), d("  a pagina volta a mostrar a instalacao completa"))[0] or 0,
+              "d3": lambda d: (estado.limpar_marcas(), d("  页面会重新显示完整安装"))[0] or 0,
               "d4": _remover}
     falhas = 0
     for ident, titulo in etapas(apagar):
         diz(f"\n==> {ident} {titulo}")
         try:
             erros = int(passos[ident](diz) or 0)
-        except Exception as erro:                  # uma etapa nao impede as outras
+        except Exception as erro:                  # 一个阶段不阻碍其他阶段
             diz(f"  ERRO: {erro}")
-            estado.registrar(f"desfazer {ident} falhou: {erro!r}")
+            estado.registrar(f"撤销 {ident} 失败：{erro!r}")
             falhas += 1
             continue
         if erros:
             falhas += erros
-            diz(f"  ERRO: {erros} item(ns) com problema nesta etapa")
+            diz(f"  ERRO: 本阶段有 {erros} 项有问题")
             continue
         diz(f"  concluido: {titulo}")
     return falhas

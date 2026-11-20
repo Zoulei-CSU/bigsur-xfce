@@ -1,16 +1,15 @@
 /* ===========================================================================
-   d3bian-init-bigsur-xfce - pecas comuns das paginas
-   - faixa de estado do topo
-   - Terminal: painel fixo no rodape que acompanha a tarefa do servidor, com
-     etapas, progresso, log e um quadro claro quando termina
-   Tudo fica dentro desta funcao: as paginas ja declaram o proprio `$`.
+   d3bian-init-bigsur-xfce - 页面公共部件
+   - 顶部状态栏
+   - 终端：固定在底部的面板，跟踪服务器的任务，带步骤、进度、日志，
+     结束时显示清晰的结论框
+   全部都在本函数内：各页面已自行声明 `$`。
    =========================================================================== */
 (() => {
 "use strict";
 
-/* Toda acao (POST) vai como JSON: o servidor recusa outro formato, para um
-   site qualquer aberto no navegador nao conseguir mandar ordens ao painel.
-   Sem a sessao (pagina aberta sem o link do terminal), avisa uma vez. */
+/* 每个操作（POST）都以 JSON 发送：服务器拒绝其他格式，使浏览器中任意打开的
+   网站无法向面板发号施令。没有会话（未通过终端链接打开的页面）时只提示一次。 */
 const _fetch = window.fetch.bind(window);
 let avisouAcesso = false;
 window.fetch = async (url, op = {}) => {
@@ -21,7 +20,7 @@ window.fetch = async (url, op = {}) => {
   const r = await _fetch(url, op);
   if (r.status === 403 && !avisouAcesso) {
     avisouAcesso = true;
-    alert("O painel não aceitou esta janela. Abra-o pelo link mostrado no terminal (o link vale uma vez).");
+    alert("面板未接受此窗口。请通过终端中显示的链接打开（链接仅可使用一次）。");
   }
   return r;
 };
@@ -40,17 +39,17 @@ const relogio = segundos => {
 };
 const duracao = segundos => segundos < 60 ? `${Math.max(1, segundos | 0)} s` : `${segundos / 60 | 0} min`;
 
-// ---- faixa de estado do topo -----------------------------------------------
+// ---- 顶部状态栏 -----------------------------------------------
 
-// o nome da verificacao nao diz o que fazer; a faixa precisa dizer
+// 检查项名称不说明该怎么做；状态栏需要说明
 const O_QUE_FAZER = {
-  "Permissao de administrador": "abra o painel pelo comando d3bian-init-bigsur-xfce",
-  "Acesso aos repositorios": "sem acesso aos repositórios do Debian",
-  "Sistema": "este sistema não é Debian",
-  "Ambiente grafico": "precisa do XFCE",
-  "Sessao grafica": "abra dentro da sessão gráfica",
-  "xfconf-query": "falta o xfconf",
-  "Espaco em disco": "pouco espaço em disco",
+  "管理员权限": "请用 d3bian-init-bigsur-xfce 命令打开面板",
+  "软件源访问": "无法访问 Debian 软件源",
+  "系统": "此系统不是 Debian",
+  "图形环境": "需要 XFCE",
+  "图形会话": "请在图形会话中打开",
+  "xfconf-query": "缺少 xfconf",
+  "磁盘空间": "磁盘空间不足",
 };
 
 function faixa(){
@@ -62,24 +61,24 @@ function faixa(){
 
   fetch("/api/verificacoes").then(r => r.json()).then(d => {
     const achar = n => (d.verificacoes || []).find(c => c.nome === n) || {};
-    por("eDistro", (achar("Sistema").detalhe || "desconhecido").replace(/GNU\/Linux /, ""));
-    por("eDesktop", achar("Ambiente grafico").detalhe || "desconhecido");
+    por("eDistro", (achar("系统").detalhe || "未知").replace(/GNU\/Linux /, ""));
+    por("eDesktop", achar("图形环境").detalhe || "未知");
     const imp = d.impedimentos || [];
     barra.classList.toggle("atencao", imp.length > 0);
-    por("ePronto", imp.length ? "atenção" : "pronto");
+    por("ePronto", imp.length ? "注意" : "就绪");
     por("eSit", imp.length ? "[ " + imp.map(n => O_QUE_FAZER[n] || n).join("; ") + " ]" : "[ ok ]");
   }).catch(() => {
     barra.classList.add("atencao");
-    por("ePronto", "desligado");
-    por("eSit", "[ servidor fora do ar ]");
+    por("ePronto", "已断开");
+    por("eSit", "[ 服务器未运行 ]");
   });
 }
 
-// ---- terminal --------------------------------------------------------------
+// ---- 终端 --------------------------------------------------------------
 
 const Terminal = (() => {
-  const MAX_VISIVEIS = 3000;     // linhas no DOM; o texto inteiro fica para copiar
-  const p = {};                  // pecas do DOM
+  const MAX_VISIVEIS = 3000;     // DOM 中的行数；完整文本仍可复制
+  const p = {};                  // DOM 部件
   let montado = false;
   let linhas = [], lidas = 0, falhas = 0, timer = null, relogioTimer = null;
   let rodando = false, repondo = false, seguir = true;
@@ -93,16 +92,16 @@ const Terminal = (() => {
     montado = true;
     p.raiz = el("section", "terminal");
     p.raiz.hidden = true;
-    p.raiz.setAttribute("aria-label", "Terminal da tarefa");
+    p.raiz.setAttribute("aria-label", "任务终端");
 
     const topo = el("div", "t-topo");
     p.ponto = el("span", "t-estado");
-    p.titulo = el("b", "t-titulo", "Tarefa");
+    p.titulo = el("b", "t-titulo", "任务");
     p.atual = el("span", "t-atual");
     p.pct = el("span", "t-pct");
     p.tempo = el("span", "t-tempo", "00:00");
-    p.btMin = el("button", "t-bt", "minimizar");
-    p.btFechar = el("button", "t-bt", "fechar");
+    p.btMin = el("button", "t-bt", "最小化");
+    p.btFechar = el("button", "t-bt", "关闭");
     p.btMin.type = p.btFechar.type = "button";
     topo.append(p.ponto, p.titulo, p.atual, p.pct, p.tempo, p.btMin, p.btFechar);
 
@@ -121,17 +120,17 @@ const Terminal = (() => {
     const rot = el("label");
     p.seguir = el("input");
     p.seguir.type = "checkbox"; p.seguir.checked = true;
-    rot.append(p.seguir, document.createTextNode("seguir o fim"));
-    p.btCopiar = el("button", "t-bt", "copiar log");
+    rot.append(p.seguir, document.createTextNode("跟随末尾"));
+    p.btCopiar = el("button", "t-bt", "复制日志");
     p.btCopiar.type = "button";
-    p.dica = el("span", "t-dica", "Deixe esta página aberta.");
+    p.dica = el("span", "t-dica", "请保持此页面打开。");
     rodape.append(rot, p.btCopiar, p.dica);
 
     p.raiz.append(topo, p.barra, p.corpo, rodape);
     document.body.appendChild(p.raiz);
 
-    // o espaco que o painel ocupa vira folga no fim da pagina e altura das
-    // barras fixas, senao ele cobre o botao que a pessoa quer apertar
+    // 面板占用的空间会变成页面底部的留白和固定栏的高度，
+    // 否则会盖住用户想点的按钮
     new ResizeObserver(() => {
       const h = p.raiz.hidden ? 0 : p.raiz.offsetHeight;
       document.documentElement.style.setProperty("--term-h", h + "px");
@@ -142,7 +141,7 @@ const Terminal = (() => {
     p.btFechar.addEventListener("click", e => { e.stopPropagation(); fechar(); });
     p.btCopiar.addEventListener("click", copiar);
     p.seguir.addEventListener("change", () => { seguir = p.seguir.checked; if (seguir) aoFim(); });
-    // rolar para cima desliga o "seguir"; voltar ao fim liga de novo
+    // 向上滚动会关闭“跟随”；回到末尾会重新开启
     p.log.addEventListener("scroll", () => {
       seguir = p.log.scrollHeight - p.log.scrollTop - p.log.clientHeight < 30;
       p.seguir.checked = seguir;
@@ -153,11 +152,11 @@ const Terminal = (() => {
     p.quadro.addEventListener("close", () => { document.title = tituloOriginal; });
   }
 
-  // ---- estado visivel -------------------------------------------------------
+  // ---- 可见状态 -------------------------------------------------------
 
   function minimizar(sim){
     p.raiz.classList.toggle("min", sim);
-    p.btMin.textContent = sim ? "expandir" : "minimizar";
+    p.btMin.textContent = sim ? "展开" : "最小化";
     if (!sim && seguir) aoFim();
   }
 
@@ -172,7 +171,7 @@ const Terminal = (() => {
   function classe(linha){
     if (/^==> /.test(linha)) return "l-etapa";
     if (/^\s*concluido:/.test(linha)) return "l-ok";
-    if (/\bERRO\b|^E: |^pmerror:|erro inesperado|nao consegui|não consegui/i.test(linha)) return "l-erro";
+    if (/\bERRO\b|^E: |^pmerror:|erro inesperado|nao consegui|não consegui|无法/i.test(linha)) return "l-erro";
     if (/^W: |atencao:/i.test(linha)) return "l-alerta";
     return "";
   }
@@ -190,12 +189,12 @@ const Terminal = (() => {
     if (seguir) aoFim();
   }
 
-  // ---- leitura das linhas -----------------------------------------------------
-  // devolve false para as linhas de maquina, que viram progresso e somem do log
+  // ---- 读取行 -----------------------------------------------------
+  // 对机器行返回 false，它们转为进度并从日志中消失
 
   function ler(linha){
     let m;
-    // apt com APT::Status-Fd: baixar vale 30% da barra, instalar os outros 70%
+    // 使用 APT::Status-Fd 的 apt：下载占进度条的 30%，安装占其余 70%
     if ((m = linha.match(/^pmstatus:(.+?):([\d.]+):(.*)$/))){
       const pkg = m[1].split(":")[0];
       if (pkg !== "dpkg-exec") marcarPacote(pkg);
@@ -213,7 +212,7 @@ const Terminal = (() => {
     if (/^\s*ERRO/.test(linha)){ fecharEtapa("erro"); return true; }
     if ((m = linha.match(/^\s*ja aplicado: (\S+)/))){ mudar(m[1], "feito"); return true; }
     if ((m = linha.match(/^\s*pulando (\S+)/))){ mudar(m[1], "pulado"); return true; }
-    if ((m = linha.match(/^habilitando a fonte de (.*?):/))) atual = "Habilitando a fonte de " + m[1];
+    if ((m = linha.match(/^habilitando a fonte de (.*?):/))) atual = "正在启用源：" + m[1];
     return true;
   }
 
@@ -263,11 +262,11 @@ const Terminal = (() => {
     const rodandoAgora = etapas.find(e => e.estado === "rodando");
     const indice = rodandoAgora ? etapas.indexOf(rodandoAgora) + 1 : 0;
     let texto = atual;
-    if (rodandoAgora && etapas.length) texto = `Etapa ${indice} de ${etapas.length} · ${rodandoAgora.nome}`
+    if (rodandoAgora && etapas.length) texto = `第 ${indice} 步，共 ${etapas.length} 步 · ${rodandoAgora.nome}`
                                              + (porPacote && atual ? ` · ${atual}` : "");
     p.atual.textContent = texto;
     p.atual.title = texto;
-    if (rodando) document.title = (pct === null ? "" : Math.floor(pct) + "% · ") + (opcoes.titulo || "Tarefa");
+    if (rodando) document.title = (pct === null ? "" : Math.floor(pct) + "% · ") + (opcoes.titulo || "任务");
 
     p.corpo.classList.toggle("sem-etapas", etapas.length === 0);
     p.lista.textContent = "";
@@ -292,7 +291,7 @@ const Terminal = (() => {
     return s;
   }
 
-  // ---- ciclo com o servidor ---------------------------------------------------
+  // ---- 与服务器的循环 ---------------------------------------------------
 
   async function passo(){
     let r = null;
@@ -332,11 +331,11 @@ const Terminal = (() => {
     porPacote = false; pctApt = null; atual = opcoes.atual || ""; resultado = null;
     inicioLocal = agora(); inicioServidor = null; repondo = !!opcoes.repondo;
     p.log.textContent = "";
-    p.titulo.textContent = opcoes.titulo || "Tarefa";
-    p.dica.textContent = opcoes.dica || "Deixe esta página aberta.";
+    p.titulo.textContent = opcoes.titulo || "任务";
+    p.dica.textContent = opcoes.dica || "请保持此页面打开。";
     p.raiz.classList.remove("ok", "erro", "min");
     p.raiz.classList.add("rodando");
-    p.btMin.textContent = "minimizar";
+    p.btMin.textContent = "最小化";
     p.btFechar.hidden = true;
     p.raiz.hidden = false;
     rodando = true;
@@ -358,15 +357,15 @@ const Terminal = (() => {
         if (e.estado === "rodando" || (porPacote && e.estado === "espera")) mudar(e.id, "feito");
       });
       if (pctApt !== null) pctApt = 100;
-      atual = "Terminou sem erros";
+      atual = "已无错误完成";
     } else {
       fecharEtapa("erro");
-      atual = codigo === null ? "Sem contato com o servidor" : `Terminou com erro (código ${codigo})`;
+      atual = codigo === null ? "无法连接服务器" : `出错结束（代码 ${codigo}）`;
     }
     p.raiz.classList.remove("rodando");
     p.raiz.classList.add(codigo === 0 ? "ok" : "erro");
     p.btFechar.hidden = false;
-    p.dica.textContent = codigo === 0 ? "" : "As linhas em vermelho mostram onde parou.";
+    p.dica.textContent = codigo === 0 ? "" : "红色的行显示了停在哪里。";
     desenhar();
     ouvintes.forEach(fn => fn(false));
 
@@ -382,13 +381,13 @@ const Terminal = (() => {
   }
 
   function padrao(codigo){
-    if (codigo === 0) return {bom: true, titulo: "Concluído", texto: `${opcoes.titulo || "A tarefa"} terminou sem erros.`};
-    if (codigo === null) return {bom: false, titulo: "Sem contato com o servidor",
-      texto: "O painel local parou de responder. Veja o terminal onde ele foi aberto."};
-    return {bom: false, titulo: "Terminou com erro", texto: `Código ${codigo}. O log mostra onde parou.`};
+    if (codigo === 0) return {bom: true, titulo: "已完成", texto: `${opcoes.titulo || "任务"}已无错误完成。`};
+    if (codigo === null) return {bom: false, titulo: "无法连接服务器",
+      texto: "本地面板已停止响应。请查看打开它的终端。"};
+    return {bom: false, titulo: "出错结束", texto: `代码 ${codigo}。日志显示了停在哪里。`};
   }
 
-  // ---- quadro de conclusao ------------------------------------------------------
+  // ---- 结论框 ------------------------------------------------------
 
   function quadro(r, segundos){
     const q = p.quadro;
@@ -401,22 +400,22 @@ const Terminal = (() => {
     q.setAttribute("aria-labelledby", "tQuadroTitulo");
     q.append(ic, tt);
     if (r.texto) q.appendChild(el("p", "tx", r.texto));
-    if (segundos) q.appendChild(el("p", "dur", "Tempo total: " + relogio(segundos)));
+    if (segundos) q.appendChild(el("p", "dur", "总用时：" + relogio(segundos)));
     if (r.itens && r.itens.length){
       const ul = el("ul");
       r.itens.forEach(x => ul.appendChild(el("li", "", x)));
       q.appendChild(ul);
     }
     const acoes = el("div", "acoes");
-    const verLog = el("button", "bt sec", "Ver o log");
-    const ok = el("button", "bt pri", r.bom ? "Fechar" : "Entendi");
+    const verLog = el("button", "bt sec", "查看日志");
+    const ok = el("button", "bt pri", r.bom ? "关闭" : "知道了");
     verLog.type = ok.type = "button";
     verLog.addEventListener("click", () => { q.close(); minimizar(false); p.log.focus(); });
     ok.addEventListener("click", () => { q.close(); if (r.bom) minimizar(true); });
     acoes.append(verLog, ok);
     q.appendChild(acoes);
 
-    // quem estiver em outra aba ve o resultado no titulo
+    // 在另一个标签页的人会从标题看到结果
     document.title = (r.bom ? "✓ " : "✗ ") + r.titulo + " · d3bian-init-bigsur-xfce";
     if (q.open) q.close();
     q.showModal();
@@ -436,26 +435,26 @@ const Terminal = (() => {
       try { deu = document.execCommand("copy"); } catch (e2) { deu = false; }
       area.remove();
     }
-    p.btCopiar.textContent = deu ? "copiado" : "não consegui copiar";
-    setTimeout(() => { p.btCopiar.textContent = "copiar log"; }, 1800);
+    p.btCopiar.textContent = deu ? "已复制" : "无法复制";
+    setTimeout(() => { p.btCopiar.textContent = "复制日志"; }, 1800);
   }
 
-  // ---- o que as paginas usam ------------------------------------------------------
+  // ---- 页面使用的内容 ------------------------------------------------------
 
   return {
-    // abre o painel para a tarefa que o servidor acabou de comecar.
+    // 为服务器刚开始的任务打开面板。
     // o: {titulo, etapas: [{id, nome}], dica, aoTerminar(codigo) -> {bom, titulo, texto, itens}}
     acompanhar: abrir,
 
-    // na carga da pagina: se o servidor ja roda algo, reabre o painel com o log
-    // desde o comeco. o: {titulo(rotulo), etapas(rotulo), aoTerminar(codigo)}
+    // 页面加载时：若服务器已在运行，从开头起带日志重新打开面板。
+    // o: {titulo(rotulo), etapas(rotulo), aoTerminar(codigo)}
     async retomar(o = {}){
       let r;
       try { r = await fetch("/api/progresso?desde=0").then(x => x.json()); }
       catch (e) { return false; }
       if (!r || !r.rodando) return false;
       abrir({
-        titulo: (o.titulo && o.titulo(r.rotulo)) || r.rotulo || "Tarefa em andamento",
+        titulo: (o.titulo && o.titulo(r.rotulo)) || r.rotulo || "任务进行中",
         etapas: (o.etapas && o.etapas(r.rotulo)) || [],
         aoTerminar: o.aoTerminar,
         repondo: true,
@@ -463,17 +462,17 @@ const Terminal = (() => {
       return true;
     },
 
-    // fn(ocupado) e chamada quando uma tarefa comeca e quando termina
+    // fn(ocupado) 在任务开始和结束时被调用
     aoMudar(fn){ ouvintes.push(fn); if (rodando) fn(true); },
     ocupado: () => rodando,
 
-    // quadro avulso, para erro antes de a tarefa comecar
+    // 独立结论框，用于任务开始前的错误
     avisar(bom, titulo, texto, itens){ montar(); quadro({bom, titulo, texto, itens}, 0); },
   };
 })();
 
 window.Terminal = Terminal;
-// este arquivo carrega antes do corpo da pagina; a faixa espera ele existir
+// 此文件在页面正文之前加载；状态栏等待它存在
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", faixa);
 else faixa();
 })();

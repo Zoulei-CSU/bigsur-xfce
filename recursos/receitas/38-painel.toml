@@ -1,20 +1,20 @@
 [modulo]
 id = "38"
 nome = "painel"
-titulo = "Barra do topo, estilo macOS"
+titulo = "macOS 风格顶栏"
 requer = ["10"]
 afetada_por = ["tema", "logo", "menu_global", "titulo_no_painel"]
 
-# Roda antes da aparencia de proposito: este passo reinicia o xfconfd, e um
-# ajuste gravado por outra receita logo antes correria o risco de se perder.
+# 故意在外观之前运行：这一步会重启 xfconfd，另一份配方此前刚
+# 写入的设置有可能丢失。
 
 [[passo]]
 tipo = "apt"
 se = "titulo_no_painel == sim"
 pacotes = ["xfce4-windowck-plugin"]
 
-# o plugin do menu global vem aqui, e nao so na receita 50: numa instalacao
-# do zero esta roda antes dela, e a barra sairia sem o menu
+# 全局菜单插件放在这里，而不只是在配方 50：在全新安装中这一步
+# 会先于它运行，否则顶栏会缺少菜单
 [[passo]]
 tipo = "apt"
 se = "menu_global == sim"
@@ -22,48 +22,47 @@ pacotes = ["xfce4-appmenu-plugin"]
 
 [[passo]]
 tipo = "script"
-dizer = "montando a barra do topo"
+dizer = "组装顶栏"
 corpo = '''
 xml="$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
 mkdir -p "$(dirname "$xml")"
 
-# a barra de antes, inteira e uma vez so: o [[desfazer]] devolve com
-# xfce4-panel-profiles load, que tambem traz os arquivos dos plugins
+# 之前的顶栏，完整且只保存一次：[[desfazer]] 通过
+# xfce4-panel-profiles load 还原，它也会带回插件文件
 antes="$D3_ESTADO_DIR/painel-antes.tar.bz2"
-# se nao der para guardar, fica a marca: numa rodada seguinte a barra ja e a
-# do projeto, e guardar essa como "a de antes" faria o desfazer devolve-la
+# 如果存不下来，就留下标记：下一轮顶栏已是项目的，再把它存成
+# "之前的"会让撤销把它还原回去
 if [ ! -f "$antes" ] && [ ! -f "$antes.sem" ] && command -v xfce4-panel-profiles >/dev/null; then
   mkdir -p "$D3_ESTADO_DIR"
   xfce4-panel-profiles save "$antes" >/dev/null 2>&1 \
-    || { echo "atencao: nao consegui guardar a barra de antes"; : > "$antes.sem"; }
+    || { echo "atencao: 未能保存之前的顶栏"; : > "$antes.sem"; }
 fi
 
-# menu global: so entra se o plugin existir
+# 全局菜单：只有插件存在时才加入
 appmenu=""
 if [ "$D3_MENU_GLOBAL" = "sim" ]; then
   for f in /usr/share/xfce4/panel/plugins/*appmenu*.desktop; do
     [ -f "$f" ] && appmenu="$(basename "$f" .desktop)" && break
   done
-  [ -n "$appmenu" ] || echo "plugin de menu global ausente, barra montada sem ele"
+  [ -n "$appmenu" ] || echo "缺少全局菜单插件，顶栏不带它组装"
 fi
 
-# titulo e botoes da janela maximizada dentro da barra. O id do plugin e o
-# nome do .desktop, que nao segue o nome do pacote: os botoes sao wckbuttons e
-# o titulo e windowck-plugin. Um id que nao existe faz o painel abrir a janela
-# "plugin nao pode ser carregado" na frente do usuario, entao confere um a um
+# 最大化窗口的标题和按钮放在顶栏里。插件 id 是 .desktop 的名字，
+# 并不遵循包名：按钮是 wckbuttons，标题是 windowck-plugin。不存在的
+# id 会让面板在用户面前打开"无法加载插件"窗口，所以逐个确认
 wck=""
 if [ "$D3_TITULO_NO_PAINEL" = "sim" ]; then
   for p in wckbuttons windowck-plugin; do
     if [ -f "/usr/share/xfce4/panel/plugins/$p.desktop" ]; then
       wck="$wck $p"
     else
-      echo "plugin $p ausente, barra montada sem ele"
+      echo "缺少插件 $p，顶栏不带它组装"
     fi
   done
 fi
 
-# o logo do menu vai para a maquina: o caminho de dentro do pacote some
-# quando o programa rodou de um pendrive
+# 菜单标志会放到机器上：包内路径在程序从 U 盘运行时
+# 会消失
 logo_dir="$(dirname "$D3_LOGO_ARQUIVO")"
 [ -d "$logo_dir" ] || d3_pasta "$logo_dir"
 [ -e "$D3_LOGO_ARQUIVO" ] || d3_criado "$D3_LOGO_ARQUIVO"
@@ -72,18 +71,18 @@ install -Dm644 "$D3_LOGO_ORIGEM" "$D3_LOGO_ARQUIVO"
 plugins="whiskermenu$wck"
 [ -n "$appmenu" ] && plugins="$plugins $appmenu"
 plugins="$plugins separador-expande"
-# bandeja, som e bateria so entram se o plugin existir: um id sem .desktop faz
-# o painel abrir a janela "plugin nao pode ser carregado" a cada entrada
+# 托盘、声音和电池只在插件存在时才加入：没有 .desktop 的 id 会让
+# 面板每次进入都打开"无法加载插件"窗口
 for p in systray pulseaudio power-manager-plugin; do
   if [ -f "/usr/share/xfce4/panel/plugins/$p.desktop" ]; then
     plugins="$plugins $p separador"
   else
-    echo "plugin $p ausente, barra montada sem ele"
+    echo "缺少插件 $p，顶栏不带它组装"
   fi
 done
 plugins="$plugins clock separador actions"
-# o plugin de energia esconde o icone proprio do xfce4-power-manager ao entrar
-# na barra; anotado para o desfazer devolver como era
+# 电源插件加入顶栏时会隐藏 xfce4-power-manager 自己的图标；
+# 记录下来以便撤销时恢复原状
 case " $plugins " in
   *" power-manager-plugin "*) d3_xfconf xfce4-power-manager /xfce4-power-manager/show-tray-icon bool ;;
 esac
@@ -98,9 +97,9 @@ for p in $plugins; do
   ids="$ids        <value type=\"int\" value=\"$i\"/>
 "
   case "$p" in
-    # menu-opacity abaixo de 100 da ao menu uma janela com transparencia; sem
-    # ela a margem transparente que o WhiteSur poe em volta sai preta. O
-    # instalador do tema tenta o mesmo, mas nos .rc que o whiskermenu 2 nao usa
+    # menu-opacity 低于 100 会给菜单一个透明窗口；没有它，WhiteSur
+    # 周围的透明边距会显示为黑色。主题安装程序也尝试这样做，
+    # 但写在 whiskermenu 2 不使用的 .rc 里
     whiskermenu)
       blocos="$blocos    <property name=\"plugin-$i\" type=\"string\" value=\"whiskermenu\">
       <property name=\"button-icon\" type=\"string\" value=\"$D3_LOGO_ARQUIVO\"/>
@@ -136,8 +135,8 @@ for p in $plugins; do
     </property>
 " ;;
     clock)
-      # layout 3 e "so o campo de hora"; o formato ja traz data e hora juntas,
-      # entao fica tudo em uma linha
+      # 布局 3 是"仅时间字段"；格式本身已同时带日期和时间，
+      # 所以全在一行
       blocos="$blocos    <property name=\"plugin-$i\" type=\"string\" value=\"clock\">
       <property name=\"mode\" type=\"uint\" value=\"2\"/>
       <property name=\"digital-layout\" type=\"uint\" value=\"3\"/>
@@ -193,9 +192,9 @@ $blocos  </property>
 </channel>
 XMLEOF
 
-# --quit com o painel parado nao falha em silencio: o xfce4-panel abre a janela
-# "Falha ao sair do painel" (org.xfce.Panel nao existe no D-Bus). Por isso so
-# pede para sair quando ele esta rodando, e espera ele fechar de fato
+# 面板已停止时 --quit 不会静默失败：xfce4-panel 会打开
+# "退出面板失败"窗口（D-Bus 上不存在 org.xfce.Panel）。因此只在
+# 它运行时才请求退出，并等它真正关闭
 if pgrep -x xfce4-panel >/dev/null; then
   xfce4-panel --quit >/dev/null 2>&1 || true
   for _ in 1 2 3 4 5 6 7 8 9 10; do
@@ -209,17 +208,17 @@ pkill -x xfconfd 2>/dev/null || true
 sleep 1
 setsid --fork xfce4-panel >/dev/null 2>&1 </dev/null
 sleep 2
-echo "barra montada com: $plugins"
+echo "顶栏已组装，包含：$plugins"
 '''
 
 [[passo]]
 tipo = "bloco"
-dizer = "cor do texto e folga entre os itens da barra"
+dizer = "顶栏文字颜色和条目间距"
 destino = "~/.config/gtk-3.0/gtk.css"
 marca = "d3bian-init painel"
 conteudo = '''
-/* O WhiteSur pinta o texto da barra sempre de branco, e a opcao de modo
-   claro do painel nao muda isso. Sem esta regra, barra clara fica ilegivel. */
+/* WhiteSur 总是把顶栏文字画成白色，面板的浅色模式选项
+   也无法改变这一点。没有这条规则，浅色顶栏会难以辨认。 */
 .xfce4-panel.background,
 .xfce4-panel.background label,
 .xfce4-panel.background button label,
@@ -230,19 +229,19 @@ conteudo = '''
 
 [[desfazer]]
 tipo = "script"
-dizer = "devolvendo a barra de antes"
+dizer = "还原之前的顶栏"
 tolera_falha = true
 corpo = '''
 antes="$D3_ESTADO_DIR/painel-antes.tar.bz2"
 if [ -f "$antes" ] && command -v xfce4-panel-profiles >/dev/null; then
-  # carregada, sai: a proxima instalacao guarda a barra de entao
+  # 加载后删除：下次安装会保存那时的顶栏
   if xfce4-panel-profiles load "$antes" >/dev/null 2>&1; then
-    echo "barra de antes carregada"; rm -f "$antes"
+    echo "之前的顶栏已加载"; rm -f "$antes"
   else
-    echo "atencao: o xfce4-panel-profiles nao carregou a barra de antes"
+    echo "atencao: xfce4-panel-profiles 未能加载之前的顶栏"
   fi
 else
-  echo "atencao: sem copia da barra de antes; ela fica como esta"
+  echo "atencao: 没有之前顶栏的备份；它保持原样"
 fi
 rm -f "$antes.sem"
 '''

@@ -1,4 +1,4 @@
-"""O que ja foi aplicado, o registro e as copias de seguranca."""
+"""已应用的内容、日志和备份。"""
 
 from __future__ import annotations
 
@@ -54,8 +54,8 @@ def desmarcar(ident: str) -> None:
 def limpar_marcas() -> None:
     for arquivo in caminhos.APLICADO.glob("*"):
         arquivo.unlink(missing_ok=True)
-    # a pasta fica com a hora do desfazer: diario mais velho que ela ja foi
-    # desfeito, e os outros temas da familia deixam de ver este (familia.py)
+    # 目录保留撤销的时间：比它更旧的日志已被撤销，
+    # 同族的其他主题不再看到本主题（familia.py）
     try:
         os.utime(caminhos.APLICADO)
     except OSError:
@@ -63,10 +63,10 @@ def limpar_marcas() -> None:
 
 
 def copia_de_seguranca(alvo: Path) -> bool:
-    """Guarda o arquivo ou pasta antes de mexer, preservando a arvore.
+    """在改动前保存文件或目录，保留目录树。
 
-    So guarda a primeira versao: o objetivo e poder voltar ao estado anterior
-    ao d3bian-init-bigsur-xfce, nao ter historico de cada execucao.
+    只保存第一个版本：目标是能回到 d3bian-init-bigsur-xfce 之前的状态，
+    而不是保留每次执行的历史。
     """
     alvo = Path(alvo).expanduser()
     if not alvo.exists():
@@ -82,25 +82,25 @@ def copia_de_seguranca(alvo: Path) -> bool:
             shutil.copytree(alvo, destino, symlinks=True, dirs_exist_ok=True)
         else:
             shutil.copy2(alvo, destino)
-        registrar(f"copia de seguranca: {alvo}")
+        registrar(f"备份：{alvo}")
         return True
     except (OSError, shutil.Error) as erro:
-        registrar(f"falhou a copia de {alvo}: {erro}")
+        registrar(f"备份 {alvo} 失败：{erro}")
         return False
 
 
 def _copia_do_sistema(alvo: Path) -> bool:
-    """Arquivo do sistema: a copia fica em caminhos.BACKUP_SISTEMA, do root e
-    fechada (0700), e e de la que o desfazer devolve."""
+    """系统文件：副本放在 caminhos.BACKUP_SISTEMA，属于 root 且封闭（0700），
+    撤销也从那里恢复。"""
     raiz = str(caminhos.BACKUP_SISTEMA)
     bruto = str(alvo)
-    # caminho com ".." sairia da pasta das copias
+    # 含 ".." 的路径会离开备份目录
     if not bruto.startswith("/") or os.path.normpath(bruto) != bruto:
-        registrar(f"copia (root) recusada, caminho estranho: {bruto}")
+        registrar(f"（root）备份被拒绝，异常路径：{bruto}")
         return False
     destino = str(caminhos.BACKUP_SISTEMA / bruto.lstrip("/"))
-    # so a primeira versao, como na pasta da pessoa; a pasta das copias tem de
-    # ser do root e nao um link, e o destino resolvido fica dentro dela
+    # 只保存第一个版本，如用户目录；备份目录必须是 root 的且不是链接，
+    # 解析后的目标位于其中
     trecho = ('[ -e "$2" ] || [ -L "$2" ] && exit 0; '
               '[ -L "$1" ] && exit 1; '
               'install -d -m 0700 -o root -g root "$1" && [ "$(stat -c %u "$1")" = 0 ] '
@@ -113,12 +113,12 @@ def _copia_do_sistema(alvo: Path) -> bool:
                             timeout=600).returncode == 0
     except (OSError, subprocess.TimeoutExpired):
         ok = False
-    registrar(f"copia de seguranca (root): {alvo}" if ok else f"falhou a copia (root) de {alvo}")
+    registrar(f"（root）备份：{alvo}" if ok else f"（root）备份 {alvo} 失败")
     return ok
 
 
 def restaurar_tudo() -> list[str]:
-    """Devolve os arquivos guardados para o lugar. Retorna o que foi restaurado."""
+    """把保存的文件放回原处。返回已恢复的内容。"""
     feitos: list[str] = []
     raiz = caminhos.BACKUP
     if not raiz.is_dir():
@@ -127,13 +127,12 @@ def restaurar_tudo() -> list[str]:
         if origem.is_dir():
             continue
         relativo = origem.relative_to(raiz)
-        # so volta o que veio de uma pasta que existe na raiz, como home ou etc;
-        # anotacoes antigas gravadas aqui dentro (xfconf, lista de pacotes)
-        # iriam parar em /xfconf
+        # 只恢复来自根下存在的目录（如 home 或 etc）的内容；
+        # 写在这里的旧记录（xfconf、软件包列表）会落到 /xfconf
         if len(relativo.parts) < 2 or not (Path("/") / relativo.parts[0]).is_dir():
             continue
         destino = Path("/") / relativo
-        # fora da casa, so o que esta na pasta do root volta (desfazer.py)
+        # 主目录之外，只恢复 root 目录中的内容（desfazer.py）
         if not caminhos.da_pessoa(destino):
             continue
         try:
@@ -141,5 +140,5 @@ def restaurar_tudo() -> list[str]:
             shutil.copy2(origem, destino)
             feitos.append(str(destino))
         except OSError as erro:
-            registrar(f"nao consegui restaurar {destino}: {erro}")
+            registrar(f"无法恢复 {destino}：{erro}")
     return feitos

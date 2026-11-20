@@ -1,9 +1,7 @@
-"""Onde cada coisa mora.
+"""各处文件的位置。
 
-Segue o padrao XDG, entao nada fica espalhado pela pasta pessoal. Os recursos
-do programa (receitas, paginas, arquivos modelo) vem de dentro do proprio
-pacote, o que permite rodar direto do codigo-fonte ou instalado pelo .deb, sem
-mudar nada.
+遵循 XDG 规范，因此不会散落到用户主目录里。程序的资源（配方、页面、模板文件）
+都来自包内部，可以直接从源码运行，也可以由 .deb 安装，无需任何改动。
 """
 
 from __future__ import annotations
@@ -33,33 +31,31 @@ CONFIG = CONFIG_DIR / "config.json"
 REGISTRO = ESTADO_DIR / "registro.log"
 APLICADO = ESTADO_DIR / "aplicado"
 BACKUP = ESTADO_DIR / "backup"
-FONTES = DADOS_DIR / "fontes"          # repositorios clonados
-CAPTURAS = DADOS_DIR / "capturas"      # previas feitas pelo usuario
+FONTES = DADOS_DIR / "fontes"          # 克隆的仓库
+CAPTURAS = DADOS_DIR / "capturas"      # 用户生成的预览
 
-# Copias do que e do sistema (/etc, /usr/share) ficam numa pasta do root: o
-# desfazer devolve como root, e uma copia numa pasta da pessoa poderia ser
-# trocada por qualquer programa dela antes de voltar para o sistema.
+# 系统文件（/etc、/usr/share）的副本放在 root 的目录里：撤销时以 root 恢复，
+# 而放在用户目录里的副本可能在恢复前被该用户的任意程序篡改。
 BACKUP_SISTEMA = Path("/var/backups/d3bian-init-bigsur-xfce")
 
 
 def preparar() -> None:
-    """Cria as pastas de trabalho. Barato, pode chamar sempre."""
+    """创建工作目录。开销很小，可以随时调用。"""
     for pasta in (CONFIG_DIR, ESTADO_DIR, APLICADO, BACKUP, DADOS_DIR, FONTES, CAPTURAS):
         pasta.mkdir(parents=True, exist_ok=True)
-    # log e copias de seguranca podem ter caminhos e variaveis da pessoa: so ela le
+    # 日志和备份里可能有用户的路径和变量：只有本人可读
     for pasta in (ESTADO_DIR, BACKUP):
         os.chmod(pasta, 0o700)
 
 
 def da_pessoa(caminho: Path) -> bool:
-    """Dentro da pasta pessoal: o que o proprio usuario pode mexer sem sudo."""
+    """位于用户主目录内：用户本人无需 sudo 即可改动的内容。"""
     return Path(caminho).is_relative_to(Path.home())
 
 
 def proteger_codigo() -> None:
-    """Tira a escrita de grupo e de outros do proprio codigo. Parte dele roda
-    com sudo; um arquivo que outra conta pudesse mudar viraria um atalho para
-    o root. So mexe no que e da pessoa."""
+    """去掉代码自身的组和其他用户写权限。部分代码以 sudo 运行；若别的账号能改动
+    某个文件，就成了通往 root 的捷径。只改动属于本人的内容。"""
     uid = os.getuid()
     for raiz, pastas, arquivos in os.walk(PACOTE):
         for nome in [*pastas, *arquivos]:
@@ -73,13 +69,12 @@ def proteger_codigo() -> None:
 
 
 def escrever(destino: Path, texto: str, modo: int | None = None) -> None:
-    """Grava inteiro ou nada: um corte no meio (queda de energia, Ctrl+C) nao
-    deixa o arquivo pela metade. Mantem a permissao do arquivo que existia.
+    """要么整个写入，要么不写：中途中断（断电、Ctrl+C）不会留下写了一半的文件。
+    保留原有文件的权限。
 
-    Link simbolico (um arquivo que aponta para um repositorio de dotfiles) e
-    seguido: grava no arquivo de verdade e o link continua link. Arquivo com
-    mais de um nome (link fisico) ou de outro dono e regravado no lugar, para
-    nao separar os nomes nem trocar o dono."""
+    符号链接（指向 dotfiles 仓库的文件）会被跟随：写入真正的文件，链接仍然是
+    链接。有多个名字的文件（硬链接）或属于其他所有者的文件就地重写，以免拆开
+    名字或改变所有者。"""
     import tempfile
     destino = Path(destino)
     if destino.is_symlink():
@@ -119,12 +114,11 @@ def escrever(destino: Path, texto: str, modo: int | None = None) -> None:
 
 
 class Ocupado(RuntimeError):
-    """Outra execucao (o painel ou a linha de comando) ja esta mexendo."""
+    """另一次运行（面板或命令行）已经在操作。"""
 
 
 def livre() -> bool:
-    """A trava esta livre agora? (para nao gravar opcoes de uma execucao que
-    seria recusada porque a linha de comando ja esta rodando)"""
+    """锁现在是空闲的吗？（以免保存一次会因命令行已在运行而被拒绝的执行的选项）"""
     try:
         with trava():
             return True
@@ -133,8 +127,7 @@ def livre() -> bool:
 
 
 class trava:
-    """Uma execucao por vez entre processos: o painel e a linha de comando
-    rodando juntos brigariam pelo apt e pelos mesmos arquivos."""
+    """跨进程一次只允许一个执行：面板和命令行同时运行会争抢 apt 和相同的文件。"""
 
     def __enter__(self):
         import fcntl
@@ -144,7 +137,7 @@ class trava:
             fcntl.flock(self._arquivo, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             self._arquivo.close()
-            raise Ocupado("outra execucao deste projeto ja esta rodando") from None
+            raise Ocupado("本项目的另一次执行已在运行") from None
         return self
 
     def __exit__(self, *_a) -> None:
@@ -152,6 +145,6 @@ class trava:
 
 
 def captura(nome: str) -> Path:
-    """Uma previa: a do usuario tem prioridade sobre a que vem no pacote."""
+    """一张预览：用户的预览优先于包内自带的。"""
     propria = CAPTURAS / f"{nome}.jpg"
     return propria if propria.is_file() else WEB / "capturas" / f"{nome}.jpg"

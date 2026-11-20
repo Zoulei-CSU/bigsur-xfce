@@ -1,12 +1,12 @@
 [modulo]
 id = "20"
 nome = "fontes"
-titulo = "Fontes de interface e monospace"
+titulo = "界面和等宽字体"
 requer = ["10"]
 afetada_por = []
 
 [[passo]]
 tipo = "comando"
-dizer = "reconstruindo o cache de fontes"
+dizer = "重建字体缓存"
 tolera_falha = true
 argumentos = ["fc-cache", "-f"]

@@ -1,10 +1,10 @@
 [modulo]
 id = "80"
 nome = "widget"
-titulo = "Widget de relogio e status na area de trabalho"
+titulo = "桌面上的时钟和状态小部件"
 afetada_por = ["widget", "destaque"]
 
-# widget: sim e o simples, aneis e o adaptado do MX-CoreBlue, nao desliga
+# widget：sim 是简单版，aneis 是改编自 MX-CoreBlue 的版本，不可关闭
 
 [[passo]]
 tipo = "processo"
@@ -23,7 +23,7 @@ tipo = "apt"
 se = "widget != nao"
 pacotes = ["conky-all"]
 
-# --- simples ---------------------------------------------------------------
+# --- 简单版 ----------------------------------------------------------------
 
 [[passo]]
 tipo = "arquivo"
@@ -35,7 +35,7 @@ modelo = "conky.conf"
 tipo = "autostart"
 se = "widget == sim"
 id = "conky"
-nome = "Widget da area de trabalho"
+nome = "桌面小部件"
 comando = "conky -c @@HOME@@/.config/conky/d3bian.conf"
 
 [[passo]]
@@ -45,7 +45,7 @@ nome = "conky"
 acao = "reiniciar"
 argumentos = ["conky", "-c", "@@HOME@@/.config/conky/d3bian.conf"]
 
-# --- aneis -----------------------------------------------------------------
+# --- 环形 ------------------------------------------------------------------
 
 [[passo]]
 tipo = "arquivo"
@@ -63,7 +63,7 @@ modelo = "conky-aneis.conf"
 tipo = "autostart"
 se = "widget == aneis"
 id = "conky"
-nome = "Widget da area de trabalho"
+nome = "桌面小部件"
 comando = "conky -c @@HOME@@/.config/conky/d3bian-aneis.conf"
 
 [[passo]]

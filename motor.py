@@ -1,11 +1,10 @@
-"""Executa os passos de uma receita.
+"""执行配方的步骤。
 
-Cada passo e um dicionario com um campo `tipo`. O motor sabe executar uns
-poucos tipos bem definidos, e `script` fica como valvula de escape para o que
-nao vale a pena descrever em dados.
+每个步骤都是一个带 `tipo` 字段的字典。引擎能执行少数几种明确定义的类型，
+`script` 作为逃生通道，用于不值得用数据描述的内容。
 
-Todo texto passa por substituicao com o contexto, entao a receita escreve
-`WhiteSur-@@gtk_variante@@` e o motor resolve.
+所有文本都会经过上下文替换，因此配方写 `WhiteSur-@@gtk_variante@@`，引擎会
+解析它。
 """
 
 from __future__ import annotations
@@ -26,19 +25,18 @@ Saida = Callable[[str], None]
 
 
 # --------------------------------------------------------------------------
-# contexto: os valores que as receitas podem interpolar
+# 上下文：配方可以插值的值
 # --------------------------------------------------------------------------
 
-# As preferencias tem nome em portugues, mas os instaladores de terceiros
-# esperam o nome em ingles. A traducao fica aqui, e nao dentro da receita, para
-# nao espalhar essa conversao por varios lugares.
+# 偏好使用葡萄牙语名称，但第三方安装器期望英文名称。翻译放在这里而不是配方里，
+# 以免把这种转换分散到各处。
 DESTAQUE_EXTERNO = {
     "padrao": "default", "azul": "blue", "roxo": "purple", "rosa": "pink",
     "vermelho": "red", "laranja": "orange", "amarelo": "yellow",
     "verde": "green", "cinza": "grey",
 }
 
-# as mesmas cores que a pagina usa no esquema; o widget de aneis pinta com elas
+# 与页面示意图相同的颜色；圆环组件用它们绘制
 DESTAQUE_COR = {
     "padrao": "0860f2", "azul": "2e7cf7", "roxo": "9a57a3", "rosa": "e55e9c",
     "vermelho": "ed5f5d", "laranja": "e9873a", "amarelo": "f3ba4b",
@@ -46,10 +44,9 @@ DESTAQUE_COR = {
 }
 
 
-# Dock baixado do GitHub com versao fixa e conferido pelo SHA-256 antes de o
-# apt instalar como root: um release trocado ou corrompido nao chega ao
-# sistema. Para atualizar, troque a versao e os hashes (o GitHub mostra o
-# sha256 de cada arquivo do release; ou baixe e rode sha256sum).
+# 从 GitHub 下载固定版本的 Dock，并在 apt 以 root 安装前用 SHA-256 校验：
+# 被替换或损坏的 release 无法进入系统。更新时更换版本和哈希
+# （GitHub 会显示 release 各文件的 sha256；或下载后运行 sha256sum）。
 PLANK_VERSAO = "0.11.174"
 PLANK_SHA256 = {
     "amd64": "4bbed4110e170789d22c5d11b7bf9970b8274436a9b8fb765dcc2c42210f3ab4",
@@ -62,37 +59,34 @@ def montar_contexto(cfg: dict[str, str]) -> dict[str, str]:
     escuro = cfg.get("tema") == "escuro"
     logo = cfg.get("logo", "debian")
 
-    # o desenho do logo e o oposto do fundo: painel escuro pede desenho claro
+    # 标志图与背景相反：深色面板需要浅色图案
     if logo.endswith("-cor"):
         arquivo_logo = f"{logo[:-4]}-cor.svg"
     else:
         arquivo_logo = f"{logo}-{'claro' if escuro else 'escuro'}.svg"
 
-    # O WhiteSur nomeia o tema com a cor no fim, como WhiteSur-Dark-red, e so
-    # a cor padrao fica sem sufixo. Sem isso o tema compilado com a cor
-    # escolhida existe no disco mas nunca chega a ser usado.
+    # WhiteSur 在主题名末尾加上颜色，如 WhiteSur-Dark-red，只有默认颜色不带后缀。
+    # 否则用所选颜色编译的主题虽在磁盘上存在，却永远不会被使用。
     destaque = DESTAQUE_EXTERNO.get(cfg.get("destaque", "padrao"), "default")
     sufixo = "" if destaque == "default" else f"-{destaque}"
     variante = "Dark" if escuro else "Light"
 
-    # A tela de login fica sempre sobre a variante escura: os campos sao de
-    # vidro claro sobre uma foto, e os menus do topo precisam de texto branco.
+    # 登录界面始终使用深色变体：输入框是照片上的浅色玻璃，顶部菜单需要白色文字。
     temas = Path("/usr/share/themes")
     login_tema = temas / f"WhiteSur-Dark{sufixo}" / "gtk-3.0/gtk.css"
     if not login_tema.is_file():
         login_tema = temas / "WhiteSur-Dark" / "gtk-3.0/gtk.css"
 
-    # o lightdm nao le a pasta pessoal, que no Debian e fechada; a foto vai
-    # para /usr/share na instalacao
+    # lightdm 不读取用户主目录（在 Debian 中是封闭的）；安装时照片会放到
+    # /usr/share
     face = Path.home() / ".face"
     avatar = face if face.is_file() else caminhos.ARQUIVOS / "logos" / "debian-claro.svg"
 
     minutos = cfg.get("bloqueio", "10")
 
-    # Em maquina virtual o video costuma ser simulado no processador, e o picom
-    # com glx e vsync deixa de redesenhar as janelas: o terminal recebe o que se
-    # digita, mas o texto so aparece quando o foco muda. O xrender e mais
-    # simples e funciona nesses casos.
+    # 虚拟机中视频通常由处理器模拟，使用 glx 和 vsync 的 picom 会停止重绘窗口：
+    # 终端能收到输入，但文字只在焦点变化时出现。xrender 更简单，在这些情况下
+    # 可用。
     try:
         virtual = " hypervisor" in Path("/proc/cpuinfo").read_text()
     except OSError:
@@ -107,17 +101,16 @@ def montar_contexto(cfg: dict[str, str]) -> dict[str, str]:
         "gtk_tema_base": f"WhiteSur-{variante}",
         "gtk_sufixo": sufixo,
         "gtk_escuro": "true" if escuro else "false",
-        # e o que os apps libadwaita e o portal consultam para escolher a cor
+        # 这是 libadwaita 应用和门户选择颜色时查询的值
         "gtk_esquema": "prefer-dark" if escuro else "default",
-        # os icones de acao do WhiteSur claro sao cinza escuro e somem nas
-        # barras do tema escuro, entao a variante acompanha o tema
+        # 浅色 WhiteSur 的操作图标是深灰色，在深色主题的栏中会消失，
+        # 因此变体跟随主题
         "icones": "WhiteSur-dark" if escuro else "WhiteSur",
         "cursores": "WhiteSur-cursors",
-        # as duas variantes ficam na mesma pasta Kvantum/WhiteSur
+        # 两个变体位于同一个 Kvantum/WhiteSur 目录
         "kvantum_tema": "WhiteSurDark" if escuro else "WhiteSur",
-        # o painel le o icone a cada sessao; apontar para dentro do pacote
-        # quebra quando ele roda de um pendrive, entao a receita copia o logo
-        # de logo_origem para logo_arquivo, que fica na maquina
+        # 面板每次会话都会读取图标；指向包内部在从 U 盘运行时失效，
+        # 因此配方把标志从 logo_origem 复制到本机上的 logo_arquivo
         "logo_origem": str(caminhos.ARQUIVOS / "logos" / arquivo_logo),
         "logo_arquivo": str(Path.home() / ".local/share/icons/d3bian-init" / arquivo_logo),
         "painel_fundo": "0.11 0.11 0.13 0.55" if escuro else "0.97 0.97 0.99 0.72",
@@ -127,11 +120,11 @@ def montar_contexto(cfg: dict[str, str]) -> dict[str, str]:
         "destaque_externo": destaque,
         "widget_cor": DESTAQUE_COR.get(cfg.get("destaque", "padrao"), DESTAQUE_COR["padrao"]),
         "papel_arquivo": str(papeis.escolhido(cfg) or ""),
-        # login_dir e onde os arquivos sao montados: uma pasta nova e fechada
-        # (0700, tempfile.mkdtemp) a cada execucao, que receitas.py cria e apaga
-        # (um nome fixo em /tmp poderia ser criado antes por outra conta);
-        # vazio aqui, a receita do login recusa rodar. login_raiz e onde o
-        # greeter os enxerga. A previa troca os dois e desliga login_instalar
+        # login_dir 是组装文件的位置：每次执行都新建并封闭
+        # （0700、tempfile.mkdtemp），由 receitas.py 创建和删除
+        # （/tmp 中的固定名称可能先被其他账户创建）；
+        # 这里为空时，登录配方拒绝运行。login_raiz 是 greeter 看到它们的位置。
+        # 预览会替换两者并关闭 login_instalar
         "login_dir": "",
         "login_raiz": "/usr/share/backgrounds/d3bian-init",
         "login_instalar": "sim",
@@ -147,19 +140,18 @@ def montar_contexto(cfg: dict[str, str]) -> dict[str, str]:
         "plank_sha256": PLANK_SHA256.get(ARQUITETURAS.get(platform.machine().lower(), ""), ""),
         "fontes": str(caminhos.FONTES),
         "arquivos": str(caminhos.ARQUIVOS),
-        # anotacoes para consulta ficam aqui, fora da pasta de backup
+        # 供查询的记录放在这里，备份目录之外
         "estado_dir": str(caminhos.ESTADO_DIR),
     })
     return ctx
 
 
-# @@chave@@ em vez de {chave}: as chaves colidiriam com a sintaxe do
-# conky, do CSS e do shell, que aparecem nos modelos
+# 用 @@chave@@ 而不是 {chave}：大括号会与模板中出现的 conky、CSS 和 shell 语法冲突
 _CHAVE = re.compile(r"@@([a-zA-Z_][a-zA-Z0-9_]*)@@")
 
 
 def resolver(valor, ctx: dict[str, str]):
-    """Troca @@chave@@ pelo valor do contexto, em textos e dentro de listas."""
+    """在文本和列表中把 @@chave@@ 替换为上下文的值。"""
     if isinstance(valor, str):
         return _CHAVE.sub(lambda m: str(ctx.get(m.group(1), m.group(0))), valor)
     if isinstance(valor, list):
@@ -170,7 +162,7 @@ def resolver(valor, ctx: dict[str, str]):
 
 
 def condicao_atende(expressao: str, ctx: dict[str, str]) -> bool:
-    """Avalia `chave == valor` ou `chave != valor`. Nada alem disso, de proposito."""
+    """计算 `chave == valor` 或 `chave != valor`。刻意不支持更多。"""
     for operador, esperado in ((" != ", False), (" == ", True)):
         if operador in expressao:
             chave, _, alvo = expressao.partition(operador)
@@ -183,21 +175,20 @@ def condicao_atende(expressao: str, ctx: dict[str, str]) -> bool:
 # motor
 # --------------------------------------------------------------------------
 
-# arquivo de configuracao mexido pelo usuario: fica o dele, sem perguntar
+# 用户改动过的配置文件：保留其版本，不询问
 APT_SEM_PERGUNTAS = ["-o", "Dpkg::Options::=--force-confdef",
                      "-o", "Dpkg::Options::=--force-confold"]
 
 
-# copia como root de uma pasta da pessoa ($1) para o sistema ($2): passa por
-# uma pasta nova do root, recusa link simbolico na raiz, tira link que aponte
-# para fora da arvore, fica root:root e sem escrita para grupo e outros
+# 以 root 将用户目录（$1）复制到系统（$2）：经过 root 的新目录，拒绝根部的
+# 符号链接，移除指向树外的链接，最终为 root:root 且组和其他用户不可写
 COPIA_ROOT = r'''
 set -eu
 r=$(mktemp -d)
 trap 'rm -rf "$r"' EXIT
-[ ! -L "$1" ] && [ -e "$1" ] || { echo "recusado: $1" >&2; exit 1; }
+[ ! -L "$1" ] && [ -e "$1" ] || { echo "已拒绝：$1" >&2; exit 1; }
 cp -R -P --no-preserve=all -- "$1" "$r/c"
-[ ! -L "$r/c" ] || { echo "recusado: $1" >&2; exit 1; }
+[ ! -L "$r/c" ] || { echo "已拒绝：$1" >&2; exit 1; }
 python3 -I -c "$3" "$r/c"
 chown -R root:root "$r/c"
 chmod -R u+rwX,go+rX,go-w "$r/c"
@@ -217,8 +208,7 @@ class Motor:
         self.ctx = ctx
         self.simular = simular
         self._saida = saida or (lambda t: None)
-        # o diario (diario.py) guarda o que mudou, para o desfazer; a simulacao
-        # e o proprio desfazer nao anotam
+        # 更改日志（diario.py）记录改动供撤销使用；模拟和撤销本身不记录
         self.receita = receita
         self.anotar = anotar and not simular
 
@@ -226,7 +216,7 @@ class Motor:
         if self.anotar:
             diario.anotar(tipo, receita=self.receita, **dados)
 
-    # ---- utilidades ------------------------------------------------------
+    # ---- 工具 ------------------------------------------------------
     def diz(self, texto: str) -> None:
         self._saida(texto)
         estado.registrar(texto)
@@ -234,22 +224,22 @@ class Motor:
     def _executa(self, argumentos: list[str], root: bool = False,
                  entrada: str | None = None) -> int:
         if root:
-            # o sudo limpa o ambiente: o DEBIAN_FRONTEND precisa ir por dentro,
-            # senao um pacote com pergunta (debconf) espera para sempre
+            # sudo 会清空环境：DEBIAN_FRONTEND 必须内置传入，
+            # 否则会提问的包（debconf）会一直等待
             argumentos = ["sudo", "-n", "env", "DEBIAN_FRONTEND=noninteractive", *argumentos]
         if self.simular:
-            self.diz("  [simulacao] " + " ".join(shlex.quote(a) for a in argumentos))
+            self.diz("  [模拟] " + " ".join(shlex.quote(a) for a in argumentos))
             return 0
         estado.registrar("+ " + " ".join(shlex.quote(a) for a in argumentos))
         try:
             proc = subprocess.run(
                 argumentos, input=entrada, capture_output=True, text=True,
-                # sem entrada, nada pode ficar esperando o teclado
+                # 无输入时，不能让任何程序一直等待键盘
                 stdin=subprocess.DEVNULL if entrada is None else None,
                 env={**os.environ, "DEBIAN_FRONTEND": "noninteractive", "TERM": "dumb"},
             )
         except OSError as erro:
-            raise ErroDePasso(f"nao consegui executar {argumentos[0]}: {erro}") from erro
+            raise ErroDePasso(f"无法执行 {argumentos[0]}：{erro}") from erro
         for linha in (proc.stdout or "").splitlines():
             estado.registrar("  " + linha)
         if proc.returncode != 0:
@@ -260,7 +250,7 @@ class Motor:
     def _caminho(self, bruto: str) -> Path:
         return Path(resolver(bruto, self.ctx)).expanduser()
 
-    # ---- passos ----------------------------------------------------------
+    # ---- 步骤 ----------------------------------------------------------
     def passo_apt(self, p: dict) -> None:
         pedidos = [x for x in resolver(p.get("pacotes", []), self.ctx) if x]
         faltam, inexistentes = [], []
@@ -271,27 +261,27 @@ class Motor:
                 continue
             (faltam if info.get("disponivel") else inexistentes).append(nome)
         if inexistentes:
-            self.diz(f"  nao existem no repositorio, ignorados: {', '.join(inexistentes)}")
+            self.diz(f"  仓库中不存在，已忽略：{', '.join(inexistentes)}")
         if not faltam:
-            self.diz("  pacotes ja presentes")
+            self.diz("  软件包已存在")
             return
-        self.diz(f"  instalando: {', '.join(faltam)}")
+        self.diz(f"  正在安装：{', '.join(faltam)}")
         antes = sistema.pacotes_instalados()
         codigo = self._executa(["apt-get", *APT_SEM_PERGUNTAS, "install", "-y",
                                 "--no-install-recommends", *faltam], root=True)
         if codigo != 0:
-            raise ErroDePasso(f"apt-get falhou ao instalar {', '.join(faltam)}")
-        # so os que faltavam: o que ja existia na maquina nunca entra no remover.
-        # As dependencias que vieram junto tambem ficam anotadas: o autoremove do
-        # Debian guarda as que outro pacote so sugere, e elas sobrariam
+            raise ErroDePasso(f"apt-get 安装 {', '.join(faltam)} 失败")
+        # 只记录原本缺少的：机器上已存在的从不进入移除列表。
+        # 一并带来的依赖也会记录：Debian 的 autoremove 会保留被其他包仅作为建议的
+        # 依赖，它们会残留下来
         vieram = sorted(sistema.pacotes_instalados() - antes - set(faltam)) if antes else []
         self._anotar("pacotes", nomes=faltam, dependencias=vieram)
 
     def passo_xfconf(self, p: dict) -> None:
         canal = resolver(p["canal"], self.ctx)
         chave = resolver(p["chave"], self.ctx)
-        # "tipo" ja e o tipo do passo; o tipo do valor do xfconf vem em
-        # "tipo_valor", senao um sobrescreve o outro
+        # "tipo" 已是步骤类型；xfconf 值的类型放在 "tipo_valor"，
+        # 否则会互相覆盖
         tipo = p.get("tipo_valor", "string")
         valor = resolver(p["valor"], self.ctx)
         if self.anotar:
@@ -304,10 +294,10 @@ class Motor:
         for v in valores:
             args += ["-s", v]
         if self._executa([*args, "-n"]) != 0 and self._executa(args) != 0:
-            # a propriedade pode existir com outro tipo; recria
+            # 属性可能以其他类型存在；重新创建
             self._executa(["xfconf-query", "-c", canal, "-p", chave, "-r"])
             if self._executa([*args, "-n"]) != 0:
-                self.diz(f"  nao consegui definir {canal}{chave}")
+                self.diz(f"  无法设置 {canal}{chave}")
 
     def passo_arquivo(self, p: dict) -> None:
         destino = self._caminho(p["destino"])
@@ -316,21 +306,21 @@ class Motor:
             try:
                 conteudo = origem.read_text()
             except OSError as erro:
-                raise ErroDePasso(f"modelo ausente: {origem}") from erro
+                raise ErroDePasso(f"模板缺失：{origem}") from erro
         else:
             conteudo = p.get("conteudo", "")
         conteudo = resolver(conteudo, self.ctx)
         if self.simular:
-            self.diz(f"  [simulacao] escreveria {destino}")
+            self.diz(f"  [模拟] 将写入 {destino}")
             return
         existia = destino.exists()
         estado.copia_de_seguranca(destino)
         caminhos.escrever(destino, conteudo, int(str(p["modo"]), 8) if p.get("modo") else None)
         self._anotar("alterado" if existia else "criado", caminho=str(destino))
-        self.diz(f"  escrito {destino}")
+        self.diz(f"  已写入 {destino}")
 
     def passo_bloco(self, p: dict) -> None:
-        """Insere ou troca um trecho marcado dentro de um arquivo existente."""
+        """在现有文件中插入或替换一段带标记的片段。"""
         destino = self._caminho(p["destino"])
         marca = resolver(p.get("marca", "d3bian-init"), self.ctx)
         conteudo = resolver(p.get("conteudo", ""), self.ctx)
@@ -338,89 +328,86 @@ class Motor:
         if p.get("comentario") == "#":
             abre, fecha = f"# {marca}", f"# fim {marca}"
         if self.simular:
-            self.diz(f"  [simulacao] bloco '{marca}' em {destino}")
+            self.diz(f"  [模拟] 在 {destino} 中的块 '{marca}'")
             return
         existia = destino.exists()
         estado.copia_de_seguranca(destino)
         destino.parent.mkdir(parents=True, exist_ok=True)
         texto = destino.read_text() if existia else ""
-        # so marcas em linha propria: um texto da pessoa que cite a marca no
-        # meio de uma linha nao vira inicio de bloco
+        # 只用独占行的标记：用户文本在行中间引用标记不会成为块的开头
         texto = re.sub(r"^" + re.escape(abre) + r"$.*?^" + re.escape(fecha) + r"$", "", texto,
                        flags=re.S | re.M)
         texto = texto.rstrip() + f"\n\n{abre}\n{conteudo.strip()}\n{fecha}\n"
         caminhos.escrever(destino, texto)
-        # so o bloco sai no desfazer; o que a pessoa escreveu no arquivo depois fica
+        # 撤销时只移除该块；用户此后在文件中写的内容保留
         self._anotar("bloco", caminho=str(destino), marca=marca,
                      comentario=p.get("comentario", ""), arquivo_novo=not existia)
-        self.diz(f"  bloco '{marca}' em {destino}")
+        self.diz(f"  块 '{marca}' 已写入 {destino}")
 
     def passo_git(self, p: dict) -> None:
-        """Clona ou atualiza um repositorio num commit exato (40 hex), conferido.
+        """将仓库克隆或更新到经过校验的精确提交（40 位十六进制）。
 
-        So commit fixo: um ramo (main, master, HEAD) mudaria por baixo do
-        projeto. O git roda sem os hooks do clone (que ficam numa pasta do
-        usuario) e o resultado tem de ser exatamente o commit pedido, com a
-        arvore limpa; senao o passo falha em vez de seguir com o que estava la."""
+        只使用固定提交：分支（main、master、HEAD）会在项目下方发生变化。git
+        运行时禁用克隆的钩子（它们位于用户目录），结果必须恰好是请求的提交且
+        工作树干净；否则步骤失败，而不是沿用原有内容。"""
         destino = self._caminho(p["destino"])
         url = resolver(p["url"], self.ctx)
         ref = resolver(p.get("ref", ""), self.ctx)
         if not re.fullmatch(r"[0-9a-f]{40}", ref):
-            raise ErroDePasso(f"repositorio sem commit fixo (ref = {ref or 'vazio'}): {url}")
+            raise ErroDePasso(f"仓库没有固定提交（ref = {ref or '空'}）：{url}")
         if self.simular:
-            self.diz(f"  [simulacao] buscaria {url} no commit {ref[:12]} em {destino}")
+            self.diz(f"  [模拟] 将获取 {url} 的提交 {ref[:12]} 到 {destino}")
             return
         git = ["git", "-c", "core.hooksPath=/dev/null", "-C", str(destino)]
         if (destino / ".git").is_dir():
-            self.diz(f"  atualizando {destino.name}")
+            self.diz(f"  正在更新 {destino.name}")
             self._executa([*git, "remote", "set-url", "origin", url])
         else:
-            self.diz(f"  clonando {destino.name}")
+            self.diz(f"  正在克隆 {destino.name}")
             nova = not destino.exists()
             destino.mkdir(parents=True, exist_ok=True)
             if (self._executa([*git, "init", "-q"]) != 0
                     or self._executa([*git, "remote", "add", "origin", url]) != 0):
                 if nova:
                     shutil.rmtree(destino, ignore_errors=True)
-                raise ErroDePasso(f"nao consegui clonar {url}")
+                raise ErroDePasso(f"无法克隆 {url}")
             self._anotar("criado", caminho=str(destino))
         if self._executa([*git, "fetch", "-q", "--depth", "1", "origin", ref]) != 0:
-            raise ErroDePasso(f"nao consegui buscar {url} no commit {ref[:12]}")
+            raise ErroDePasso(f"无法获取 {url} 的提交 {ref[:12]}")
         if self._executa([*git, "checkout", "-q", "-f", "--detach", "FETCH_HEAD"]) != 0:
-            raise ErroDePasso(f"nao consegui usar o commit {ref[:12]} de {url}")
+            raise ErroDePasso(f"无法使用 {url} 的提交 {ref[:12]}")
         self._executa([*git, "clean", "-q", "-ffdx"])
         atual = subprocess.run([*git, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
         sujo = subprocess.run([*git, "status", "--porcelain", "--ignored"], capture_output=True,
                               text=True).stdout.strip()
         if atual != ref or sujo:
-            raise ErroDePasso(f"{destino.name} nao ficou no commit {ref[:12]} com a arvore limpa")
+            raise ErroDePasso(f"{destino.name} 未停留在提交 {ref[:12]} 且工作树不干净")
 
     def passo_comando(self, p: dict) -> None:
         argumentos = [str(x) for x in resolver(p["argumentos"], self.ctx)]
         codigo = self._executa(argumentos, root=bool(p.get("root")))
         if codigo != 0 and not p.get("tolera_falha"):
-            raise ErroDePasso(f"comando falhou ({codigo}): {' '.join(argumentos)}")
+            raise ErroDePasso(f"命令失败（{codigo}）：{' '.join(argumentos)}")
 
     def passo_script(self, p: dict) -> None:
-        """Trecho de shell. Usado onde descrever em dados custaria mais que ajudar."""
+        """shell 片段。用于用数据描述比直接写更费劲的地方。"""
         corpo = resolver(p["corpo"], self.ctx)
         if self.simular:
-            self.diz("  [simulacao] rodaria um trecho de shell")
+            self.diz("  [模拟] 将运行一段 shell 片段")
             return
-        # sem TERM, instaladores que mexem no terminal (setterm, tput) param com
-        # erro; e o que acontece com o painel aberto pelo menu, fora de um terminal
+        # 没有 TERM 时，操作终端的安装器（setterm、tput）会出错退出；
+        # 从菜单打开面板、不在终端中时就会这样
         ambiente = {**os.environ, "DEBIAN_FRONTEND": "noninteractive",
                     "TERM": os.environ.get("TERM") or "dumb"}
         for chave, valor in self.ctx.items():
             if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", chave):
                 ambiente[f"D3_{chave.upper()}"] = str(valor)
-        # as funcoes d3_antes, d3_xfconf... que anotam no diario (ver diario.py)
+        # 写入更改日志的 d3_antes、d3_xfconf…… 函数（见 diario.py）
         ambiente.update(diario.ambiente_shell(self.receita, self.anotar))
-        # so o trecho que chama o sudo ele mesmo usa a senha ja confirmada (que
-        # vale para este terminal); os outros rodam fora dele, numa sessao nova,
-        # entao um instalador de terceiros que tente "sudo" por conta propria falha
-        # (as funcoes d3_raiz_* do diario tambem chamam o sudo). Por isso codigo
-        # de terceiros (install.sh) nunca fica no mesmo trecho que o sudo
+        # 只有自身调用 sudo 的片段才使用已确认的密码（它仅对本终端有效）；
+        # 其他片段在新会话中于其外运行，因此自行尝试 "sudo" 的第三方安装器会失败
+        # （日志的 d3_raiz_* 函数也会调用 sudo）。所以第三方代码（install.sh）
+        # 绝不与 sudo 放在同一片段中
         usa_sudo = re.search(r"\bsudo\b|\bd3_raiz_", corpo) is not None
         if not usa_sudo:
             ambiente["SUDO_ASKPASS"] = "/bin/false"
@@ -434,34 +421,33 @@ class Motor:
             for linha in (proc.stderr or "").splitlines()[-10:]:
                 self.diz("  " + linha)
             if not p.get("tolera_falha"):
-                raise ErroDePasso(f"o trecho de shell falhou ({proc.returncode})")
+                raise ErroDePasso(f"shell 片段失败（{proc.returncode}）")
 
     def passo_copiar(self, p: dict) -> None:
         origem = self._caminho(p["origem"])
         destino = self._caminho(p["destino"])
         if not origem.exists():
-            # na simulacao o passo git nao clona, entao a origem pode so faltar ainda
+            # 模拟时 git 步骤不会克隆，因此源可能只是尚不存在
             if self.simular:
-                self.diz(f"  [simulacao] copiaria {origem} para {destino} (origem ainda nao existe)")
+                self.diz(f"  [模拟] 将把 {origem} 复制到 {destino}（源尚不存在）")
                 return
             if p.get("tolera_falha"):
-                self.diz(f"  origem ausente, ignorando: {origem}")
+                self.diz(f"  源缺失，已忽略：{origem}")
                 return
-            raise ErroDePasso(f"origem nao existe: {origem}")
+            raise ErroDePasso(f"源不存在：{origem}")
         if self.simular:
-            self.diz(f"  [simulacao] copiaria {origem} para {destino}")
+            self.diz(f"  [模拟] 将把 {origem} 复制到 {destino}")
             return
-        # a copia apaga o destino antes; sem esta copia de seguranca o que ja
-        # estava ali se perdia
+        # 复制会先删除目标；没有这次备份，原本在那里的内容就会丢失
         existia = destino.exists()
         if existia:
             estado.copia_de_seguranca(destino)
         if p.get("root"):
-            # a origem e da pessoa: o root copia primeiro para uma pasta nova
-            # dele (sem seguir link e sem herdar o dono), e so dali instala
+            # 源属于用户：root 先复制到自己的新目录（不跟随链接、不继承所有者），
+            # 只从那里安装
             if self._executa(["sh", "-c", COPIA_ROOT, "sh", str(origem), str(destino),
                               diario.LINKS_PY], root=True) != 0:
-                raise ErroDePasso(f"nao consegui copiar para {destino}")
+                raise ErroDePasso(f"无法复制到 {destino}")
         else:
             destino.parent.mkdir(parents=True, exist_ok=True)
             if destino.exists() and destino.is_dir():
@@ -471,7 +457,7 @@ class Motor:
             else:
                 shutil.copy2(origem, destino)
         self._anotar("alterado" if existia else "criado", caminho=str(destino))
-        self.diz(f"  copiado para {destino}")
+        self.diz(f"  已复制到 {destino}")
 
     def passo_autostart(self, p: dict) -> None:
         ident = resolver(p["id"], self.ctx)
@@ -481,7 +467,7 @@ class Motor:
                 estado.copia_de_seguranca(arquivo)
                 arquivo.unlink()
                 self._anotar("alterado", caminho=str(arquivo))
-            self.diz(f"  inicializacao automatica removida: {ident}")
+            self.diz(f"  已移除自启动：{ident}")
             return
         conteudo = (
             "[Desktop Entry]\nType=Application\n"
@@ -491,28 +477,27 @@ class Motor:
             f"X-GNOME-Autostart-Delay={p.get('atraso', 3)}\n"
         )
         if self.simular:
-            self.diz(f"  [simulacao] inicializacao automatica: {ident}")
+            self.diz(f"  [模拟] 自启动：{ident}")
             return
         existia = arquivo.exists()
         estado.copia_de_seguranca(arquivo)
         caminhos.escrever(arquivo, conteudo)
         self._anotar("alterado" if existia else "criado", caminho=str(arquivo))
-        self.diz(f"  inicializacao automatica: {ident}")
+        self.diz(f"  自启动：{ident}")
 
     def passo_processo(self, p: dict) -> None:
-        """Para, inicia ou reinicia um programa da sessao grafica."""
+        """停止、启动或重启一个图形会话中的程序。"""
         nome = resolver(p["nome"], self.ctx)
         acao = p.get("acao", "reiniciar")
         if self.simular:
-            self.diz(f"  [simulacao] {acao} {nome}")
+            self.diz(f"  [模拟] {acao} {nome}")
             return
         if self.anotar:
             diario.antes_do_processo(nome, self.receita)
         if acao in ("parar", "reiniciar"):
             subprocess.run(["pkill", "-x", nome], capture_output=True)
-            # espera o antigo sair: o plank (e outros de instancia unica) que
-            # sobe antes disso nao consegue o nome no D-Bus e sai, e o
-            # antigo morre logo depois, ficando nenhum
+            # 等待旧的退出：在此之前启动的 plank（以及其他单实例程序）
+            # 拿不到 D-Bus 名称而退出，旧的随后也结束，最终一个都不剩
             for _ in range(50):
                 if subprocess.run(["pgrep", "-x", "-u", str(os.getuid()), nome],
                                   capture_output=True).returncode != 0:
@@ -525,19 +510,19 @@ class Motor:
                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                                  stdin=subprocess.DEVNULL, start_new_session=True)
             except OSError as erro:
-                self.diz(f"  nao consegui iniciar {nome}: {erro}")
+                self.diz(f"  无法启动 {nome}：{erro}")
                 return
-        self.diz(f"  {acao}: {nome}")
+        self.diz(f"  {acao}：{nome}")
 
     def passo_backup(self, p: dict) -> None:
         for bruto in resolver(p.get("caminhos", []), self.ctx):
             if self.simular:
-                self.diz(f"  [simulacao] guardaria {bruto}")
+                self.diz(f"  [模拟] 将保存 {bruto}")
                 continue
             if estado.copia_de_seguranca(Path(bruto).expanduser()):
-                self.diz(f"  guardado: {bruto}")
+                self.diz(f"  已保存：{bruto}")
 
-    # ---- despacho --------------------------------------------------------
+    # ---- 分发 --------------------------------------------------------
     TIPOS = {
         "apt": passo_apt, "xfconf": passo_xfconf, "arquivo": passo_arquivo,
         "bloco": passo_bloco, "git": passo_git, "comando": passo_comando,
@@ -551,7 +536,7 @@ class Motor:
             tipo = passo.get("tipo")
             funcao = self.TIPOS.get(tipo)
             if funcao is None:
-                raise ErroDePasso(f"tipo de passo desconhecido: {tipo}")
+                raise ErroDePasso(f"未知的步骤类型：{tipo}")
             condicao = passo.get("se")
             if condicao and not condicao_atende(str(condicao), self.ctx):
                 continue

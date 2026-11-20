@@ -1,7 +1,7 @@
-"""Uma tarefa longa de cada vez, com as linhas disponiveis para a pagina web.
+"""一次一个长任务，行内容可供网页读取。
 
-O que roda aqui pode ser uma funcao Python (aplicar receitas) ou um processo
-externo (apt). Nos dois casos a pagina acompanha pelo mesmo endereco.
+这里可以运行 Python 函数（应用配方）或外部进程（apt）。两种情况下页面都通过
+相同地址跟踪。
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ class Tarefa:
         self.rotulo = ""
         self.inicio: float | None = None
 
-    # ---- leitura ---------------------------------------------------------
+    # ---- 读取 ---------------------------------------------------------
     def ocupada(self) -> bool:
         with self._trava:
             return self.rodando
@@ -42,11 +42,11 @@ class Tarefa:
             return {"linhas": self._linhas[desde:], "total": len(self._linhas),
                     "rodando": self.rodando, "codigo": self.codigo,
                     "rotulo": self.rotulo,
-                    # a pagina recarregada precisa do inicio para o relogio; o
-                    # "agora" do servidor desconta a diferenca entre os relogios
+                    # 重新加载的页面需要开始时间来计算时钟；
+                    # 服务器的“现在”会扣除两端时钟差
                     "inicio": self.inicio, "agora": time.time()}
 
-    # ---- escrita ---------------------------------------------------------
+    # ---- 写入 ---------------------------------------------------------
     def diz(self, texto: str) -> None:
         with self._trava:
             for linha in str(texto).splitlines() or [""]:
@@ -68,18 +68,18 @@ class Tarefa:
             self.codigo = codigo
             self.rodando = False
 
-    # ---- formas de rodar -------------------------------------------------
+    # ---- 运行方式 -------------------------------------------------
     def funcao(self, rotulo: str, alvo: Callable[[Callable[[str], None]], int]) -> bool:
-        """Roda uma funcao Python que recebe o `diz` e devolve um codigo."""
+        """运行一个接收 `diz` 并返回代码的 Python 函数。"""
         if not self._abrir(rotulo):
             return False
 
         def envolver() -> None:
             try:
                 codigo = int(alvo(self.diz) or 0)
-            except Exception as erro:                  # a pagina precisa ver o motivo
-                self.diz(f"erro inesperado: {erro}")
-                estado.registrar(f"tarefa '{rotulo}' quebrou: {erro!r}")
+            except Exception as erro:                  # 页面需要看到原因
+                self.diz(f"意外错误：{erro}")
+                estado.registrar(f"任务 '{rotulo}' 出错：{erro!r}")
                 codigo = 1
             self._fechar(codigo)
 
@@ -87,7 +87,7 @@ class Tarefa:
         return True
 
     def processo(self, rotulo: str, argumentos: list[str], root: bool = False) -> bool:
-        """Roda um comando externo, repassando a saida linha a linha."""
+        """运行外部命令，逐行转发输出。"""
         if root:
             argumentos = ["sudo", "-n", *argumentos]
         if not self._abrir(rotulo):
@@ -107,7 +107,7 @@ class Tarefa:
                 proc.wait()
                 codigo = proc.returncode
             except OSError as erro:
-                self.diz(f"nao consegui executar: {erro}")
+                self.diz(f"无法执行：{erro}")
                 codigo = 1
             self._fechar(codigo)
 

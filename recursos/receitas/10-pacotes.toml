@@ -1,37 +1,37 @@
 [modulo]
 id = "10"
 nome = "pacotes"
-titulo = "Pacotes do repositorio Debian"
+titulo = "Debian 仓库中的软件包"
 afetada_por = []
 
 [[passo]]
 tipo = "comando"
-dizer = "atualizando o indice do apt"
+dizer = "更新 apt 索引"
 root = true
 tolera_falha = true
 argumentos = ["apt-get", "update"]
 
 [[passo]]
 tipo = "apt"
-dizer = "ferramentas para montar os temas"
+dizer = "用于构建主题的工具"
 pacotes = ["git", "curl", "wget", "gpg", "jq", "unzip", "sassc", "libglib2.0-dev-bin",
            "libxml2-utils", "imagemagick", "optipng", "dialog", "x11-utils"]
 
 [[passo]]
 tipo = "apt"
-dizer = "motores graficos que o tema precisa"
+dizer = "主题所需的图形引擎"
 pacotes = ["gtk2-engines-murrine", "gnome-themes-extra", "libglib2.0-bin"]
 
-# o xfce4-panel-profiles do Debian nao puxa o python3-gi, sem o qual ele nem abre
+# Debian 的 xfce4-panel-profiles 不会拉取 python3-gi，缺了它连打开都不行
 [[passo]]
 tipo = "apt"
-dizer = "componentes do desktop"
+dizer = "桌面组件"
 pacotes = ["rofi", "picom", "conky-all", "xfce4-panel-profiles", "python3-gi",
            "xfce4-whiskermenu-plugin", "xfce4-screenshooter"]
 
-# o convert so le o logo em svg (a foto da tela de login) pelo rsvg-convert:
-# instalado sem os recomendados, o imagemagick nao traz quem leia svg
+# convert 只通过 rsvg-convert 读取 svg 标志（登录界面的照片）：
+# 在未安装推荐包的情况下，imagemagick 不会带上能读取 svg 的组件
 [[passo]]
 tipo = "apt"
-dizer = "tela de login e fontes"
+dizer = "登录界面和字体"
 pacotes = ["lightdm-gtk-greeter", "librsvg2-bin", "light-locker", "fonts-inter", "fonts-firacode", "fonts-noto-color-emoji"]

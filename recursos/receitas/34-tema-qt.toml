@@ -1,47 +1,47 @@
 [modulo]
 id = "34"
 nome = "tema-qt"
-titulo = "Tema WhiteSur nos programas Qt"
+titulo = "Qt 程序中的 WhiteSur 主题"
 requer = ["10"]
 afetada_por = ["tema"]
 
-# kvantum desenha os controles; o platformtheme gtk3 traz do GTK os icones, as
-# fontes e o seletor de arquivos, e assim acompanha a troca de tema sozinho
+# kvantum 绘制控件；gtk3 platformtheme 从 GTK 带来图标、
+# 字体和文件选择器，因此会自行跟随主题切换
 [[passo]]
 tipo = "apt"
-dizer = "instalando o Kvantum"
+dizer = "安装 Kvantum"
 pacotes = ["qt-style-kvantum", "qt5-gtk-platformtheme", "qt6-gtk-platformtheme"]
 
-# commit fixo (o master de 2026-10-06): o que roda e o que foi conferido. Para
-# atualizar: git ls-remote https://github.com/vinceliuice/WhiteSur-kde.git master
+# 固定提交（2026-10-06 的 master）：实际运行且已核对过的版本。要
+# 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-kde.git master
 [[passo]]
 tipo = "git"
 url = "https://github.com/vinceliuice/WhiteSur-kde.git"
 ref = "cf4df59ce91004f7ea39358b1b8ff917d5c329f7"
 destino = "@@fontes@@/WhiteSur-kde"
 
-# o install.sh do WhiteSur-kde instala tambem coisas do Plasma; aqui so
-# interessa a pasta do Kvantum
+# WhiteSur-kde 的 install.sh 还会安装 Plasma 的东西；这里只
+# 关心 Kvantum 文件夹
 [[passo]]
 tipo = "copiar"
-dizer = "copiando o tema do Kvantum"
+dizer = "复制 Kvantum 主题"
 origem = "@@fontes@@/WhiteSur-kde/Kvantum/WhiteSur"
 destino = "~/.config/Kvantum/WhiteSur"
 
 [[passo]]
 tipo = "arquivo"
-dizer = "usando a variante @@kvantum_tema@@"
+dizer = "使用变体 @@kvantum_tema@@"
 destino = "~/.config/Kvantum/kvantum.kvconfig"
 conteudo = '''
 [General]
 theme=@@kvantum_tema@@
 '''
 
-# o Xsession do Debian le o ~/.xsessionrc; o ~/.xprofile e o environment.d
-# nao chegam a sessao do XFCE
+# Debian 的 Xsession 读取 ~/.xsessionrc；~/.xprofile 和 environment.d
+# 不会进入 XFCE 会话
 [[passo]]
 tipo = "bloco"
-dizer = "fazendo os programas Qt usarem o Kvantum"
+dizer = "让 Qt 程序使用 Kvantum"
 destino = "~/.xsessionrc"
 marca = "d3bian-init: tema qt"
 comentario = "#"

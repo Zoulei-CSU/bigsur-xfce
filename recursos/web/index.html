@@ -2,11 +2,11 @@
 <link rel="stylesheet" href="estilo.css">
 <script src="comum.js"></script>
 
-<div class="estado"><span class="viva"></span><span id="ePronto">verificando</span><span>host: <b id="eDistro">…</b></span><span>ambiente: <b id="eDesktop">…</b></span><span class="dir"><span>d3bian-init-bigsur-xfce <b>v0.1.0</b></span><span>ativo: <b id="eTempo">00:00:00</b></span><span id="eSit">[ verificando ]</span></span></div>
+<div class="estado"><span class="viva"></span><span id="ePronto">检查中</span><span>主机：<b id="eDistro">…</b></span><span>环境：<b id="eDesktop">…</b></span><span class="dir"><span>d3bian-init-bigsur-xfce <b>v0.1.0</b></span><span>已运行：<b id="eTempo">00:00:00</b></span><span id="eSit">[ 检查中 ]</span></span></div>
 
 <h1>d3bian-init-bigsur-xfce</h1>
 <p class="caminho">/</p>
-<p class="sub">Painel local para preparar e ajustar este Debian. Escolha por onde começar.</p>
+<p class="sub">用于准备并调整这台 Debian 的本地面板。请选择从哪里开始。</p>
 
 <div class="faixa" id="situacao" hidden>
   <span class="pt"></span><span id="situacaoTexto"></span>
@@ -15,48 +15,48 @@
 <div class="cartoes">
   <a class="porta" href="aparencia.html">
     <div class="ico">🎨</div>
-    <h3>Aparência do desktop</h3>
-    <p>Tema claro ou escuro, barra de menus no topo, dock, widget na área de trabalho,
-       encaixe de janelas e efeitos. Com prévia da sua própria tela.</p>
-    <div class="seta">Abrir &rarr;</div>
+    <h3>桌面外观</h3>
+    <p>浅色或深色主题、顶部菜单栏、Dock、桌面组件、
+       窗口平铺和效果。带有你自己屏幕的预览。</p>
+    <div class="seta">打开 &rarr;</div>
   </a>
 
   <a class="porta" href="programas.html">
     <div class="ico">📦</div>
-    <h3>Programas úteis</h3>
-    <p>Uma lista pronta de programas bons, separados por categoria, só do repositório
-       oficial do Debian. Marque e instale de uma vez.</p>
-    <div class="seta">Abrir &rarr;</div>
+    <h3>实用程序</h3>
+    <p>按类别分好的优质程序列表，仅来自 Debian
+       官方仓库。勾选后一次安装。</p>
+    <div class="seta">打开 &rarr;</div>
   </a>
 </div>
 
 <p class="rodape">
-  Esta página roda no seu computador, em <code>127.0.0.1</code>, e não fica acessível pela
-  rede. Tudo que ela faz também dá pelo terminal, com <code>d3bian-init-bigsur-xfce --help</code>.
-  A senha de administrador é digitada no terminal que abriu o painel, nunca aqui.
+  此页面在你的电脑上于 <code>127.0.0.1</code> 运行，不通过网络访问。
+  它做的一切也可通过终端完成，使用 <code>d3bian-init-bigsur-xfce --help</code>。
+  管理员密码在打开面板的终端中输入，绝不在这里输入。
 </p>
 
 <div class="rodape creditos">
-  <p><b>Créditos.</b> O visual é inspirado no macOS Big Sur e montado com trabalho de outras
-     pessoas. O d3bian-init-bigsur-xfce só baixa, instala e ajusta.</p>
+  <p><b>致谢。</b> 外观灵感来自 macOS Big Sur，由他人的工作搭建。
+     d3bian-init-bigsur-xfce 只负责下载、安装和调整。</p>
   <ul>
-    <li>Temas <a href="https://github.com/vinceliuice/WhiteSur-gtk-theme" target="_blank" rel="noopener">WhiteSur</a>
-        (GTK, ícones, cursores, papéis de parede, KDE/Kvantum e Firefox), de vinceliuice</li>
-    <li>Temas do lançador <a href="https://github.com/adi1090x/rofi" target="_blank" rel="noopener">rofi</a>, de adi1090x</li>
-    <li>Dock <a href="https://github.com/zquestz/plank-reloaded" target="_blank" rel="noopener">Plank Reloaded</a>, de zquestz</li>
-    <li>Widget de anéis adaptado do <a href="https://github.com/MX-Linux/mx-conky-data/tree/master/MX-CoreBlue" target="_blank" rel="noopener">MX-CoreBlue</a>
-        (MX Linux), visto no <a href="https://www.opencode.net/lsteam/xfce-big-sur-setup-file" target="_blank" rel="noopener">setup Xfce Big Sur</a> do lsteam</li>
-    <li>XFCE, LightDM, picom, Conky e os demais pacotes vêm do repositório oficial do Debian</li>
+    <li>主题 <a href="https://github.com/vinceliuice/WhiteSur-gtk-theme" target="_blank" rel="noopener">WhiteSur</a>
+        （GTK、图标、光标、壁纸、KDE/Kvantum 和 Firefox），作者 vinceliuice</li>
+    <li>启动器主题 <a href="https://github.com/adi1090x/rofi" target="_blank" rel="noopener">rofi</a>，作者 adi1090x</li>
+    <li>Dock <a href="https://github.com/zquestz/plank-reloaded" target="_blank" rel="noopener">Plank Reloaded</a>，作者 zquestz</li>
+    <li>圆环组件改编自 <a href="https://github.com/MX-Linux/mx-conky-data/tree/master/MX-CoreBlue" target="_blank" rel="noopener">MX-CoreBlue</a>
+        （MX Linux），见于 lsteam 的 <a href="https://www.opencode.net/lsteam/xfce-big-sur-setup-file" target="_blank" rel="noopener">Xfce Big Sur 设置</a></li>
+    <li>XFCE、LightDM、picom、Conky 及其他软件包来自 Debian 官方仓库</li>
   </ul>
-  <p>Não tem relação com a Apple. macOS e Big Sur são marcas da Apple Inc.; Debian é marca
-     da Software in the Public Interest; Mr. Robot é marca da NBCUniversal.</p>
+  <p>与 Apple 无关。macOS 和 Big Sur 是 Apple Inc. 的商标；Debian 是
+     Software in the Public Interest 的商标；Mr. Robot 是 NBCUniversal 的商标。</p>
 </div>
 
 <div class="acoes">
-  <button class="bt sec" id="btSair">Encerrar o painel</button>
+  <button class="bt sec" id="btSair">关闭面板</button>
 </div>
 
-<!-- easter egg: so a frase, digitando. Enfeite, entao fica fora do leitor de tela -->
+<!-- 彩蛋：只有句子，打字效果。装饰性质，因此对屏幕阅读器隐藏 -->
 <div class="amigo" aria-hidden="true">
   <span class="amigo-texto" id="amigo" lang="en">Hello, friend.</span>
 </div>
@@ -70,22 +70,22 @@ fetch("/api/estado").then(r => r.json()).then(d => {
   const faltam = (d.receitas || []).filter(r => !r.aplicada).length;
   if (d.instalado === false){
     faixa.className = "faixa atencao";
-    txt.textContent = "Esta máquina ainda não foi preparada. Comece por Aparência do "
-                    + "desktop, que é onde fica a instalação completa.";
+    txt.textContent = "这台机器尚未准备。请从“桌面外观”开始，"
+                    + "完整安装就在那里。";
   } else if (faltam > 0){
     faixa.className = "faixa atencao";
-    txt.textContent = `Desktop preparado, com ${faltam} de ${total} etapas ainda pendentes.`;
+    txt.textContent = `桌面已准备，但 ${total} 个步骤中仍有 ${faltam} 个待处理。`;
   } else {
     faixa.className = "faixa";
-    txt.textContent = `Desktop preparado, todas as ${total} etapas aplicadas.`;
+    txt.textContent = `桌面已准备，全部 ${total} 个步骤均已应用。`;
   }
   faixa.hidden = false;
 }).catch(() => {});
 
-// Hello, friend. Digita, espera, apaga e troca de lingua
+// Hello, friend. 输入、等待、删除并切换语言
 (() => {
   const alvo = $("#amigo");
-  const frases = [["Hello, friend.", "en"], ["Olá, amigo.", "pt-BR"]];
+  const frases = [["Hello, friend.", "en"], ["你好，朋友。", "zh-CN"]];
   const calmo = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const esperar = ms => new Promise(r => setTimeout(r, ms));
   (async () => {
@@ -110,15 +110,15 @@ fetch("/api/estado").then(r => r.json()).then(d => {
 $("#btSair").addEventListener("click", async () => {
   const r = await fetch("/api/sair", {method: "POST", headers: {"Content-Type": "application/json"}, body: "{}"}).catch(() => null);
   if (r && r.status === 409) {
-    alert("Ainda há uma tarefa em andamento. Espere terminar para fechar o painel.");
+    alert("还有任务正在进行。请等待完成后再关闭面板。");
     return;
   }
   document.body.textContent = "";
   const cx = document.createElement("div");
   cx.style.cssText = "text-align:center;padding:90px 20px";
-  const h = document.createElement("h1"); h.textContent = "Painel encerrado";
+  const h = document.createElement("h1"); h.textContent = "面板已关闭";
   const p = document.createElement("p"); p.className = "sub";
-  p.textContent = "Pode fechar esta aba. Para abrir de novo, rode d3bian-init-bigsur-xfce no terminal.";
+  p.textContent = "可以关闭此标签页。要重新打开，请在终端中运行 d3bian-init-bigsur-xfce。";
   cx.appendChild(h); cx.appendChild(p); document.body.appendChild(cx);
 });
 </script>

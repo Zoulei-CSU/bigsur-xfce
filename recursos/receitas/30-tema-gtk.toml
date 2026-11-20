@@ -1,12 +1,12 @@
 [modulo]
 id = "30"
 nome = "tema-gtk"
-titulo = "Tema WhiteSur das janelas"
+titulo = "窗口的 WhiteSur 主题"
 requer = ["10"]
 afetada_por = ["destaque"]
 
-# commit fixo (o master de 2026-10-06): o que roda e o que foi conferido. Para
-# atualizar: git ls-remote https://github.com/vinceliuice/WhiteSur-gtk-theme.git master
+# 固定提交（2026-10-06 的 master）：实际运行且已核对过的版本。要
+# 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-gtk-theme.git master
 [[passo]]
 tipo = "git"
 url = "https://github.com/vinceliuice/WhiteSur-gtk-theme.git"
@@ -15,46 +15,46 @@ destino = "@@fontes@@/WhiteSur-gtk-theme"
 
 [[passo]]
 tipo = "script"
-dizer = "compilando e instalando, a parte mais demorada"
+dizer = "编译并安装，这是最耗时的部分"
 corpo = '''
 cd "$D3_FONTES/WhiteSur-gtk-theme"
-# antes de anotar qualquer tema la dentro: o desfazer anda de tras para frente
+# 在记录其中任何主题之前：撤销是倒序进行的
 d3_pasta "$HOME/.themes"
-# anotado antes de instalar, para o desfazer saber o que e do projeto
+# 在安装前记录，以便撤销知道哪些属于该项目
 for v in Light Dark; do
   d3_antes "$HOME/.themes/WhiteSur-$v" "$HOME/.themes/WhiteSur-$v$D3_GTK_SUFIXO"
 done
-# o instalador ajusta a opacidade do menu nos .rc do whiskermenu
+# 安装程序会调整 whiskermenu 的 .rc 里的菜单不透明度
 for f in "$HOME"/.config/xfce4/panel/whiskermenu*.rc; do
   if [ -e "$f" ]; then d3_antes "$f"; fi
 done
-# ele tambem instala o gnome-theme-switcher e as variantes -hdpi e -xhdpi
+# 它还会安装 gnome-theme-switcher 以及 -hdpi 和 -xhdpi 变体
 extras=("$HOME/.themes/WhiteSur-*hdpi" "$HOME/.local/bin/gnome-theme-switcher"
         "$HOME/.local/share/applications/org.gnome.GTK4ThemeSwitcher.desktop")
 d3_antes_de "${extras[@]}"
-# --silent-mode exige root, entao nao entra aqui
+# --silent-mode 需要 root，所以这里不用
 bash ./install.sh -c light -c dark -t "$D3_DESTAQUE_EXTERNO" -o normal -a normal --round
 d3_depois_de "${extras[@]}"
 '''
 
 [[passo]]
 tipo = "script"
-dizer = "copiando para /usr/share/themes, que a tela de login precisa"
+dizer = "复制到 /usr/share/themes，登录界面需要它"
 tolera_falha = true
 corpo = '''
-# leva tambem a variante com a cor escolhida, que e a que sera usada
+# 也带上所选颜色的变体，因为那才是将要使用的
 for t in "$HOME/.themes/WhiteSur-Light$D3_GTK_SUFIXO" \
          "$HOME/.themes/WhiteSur-Dark$D3_GTK_SUFIXO" \
          "$HOME/.themes/WhiteSur-Light" "$HOME/.themes/WhiteSur-Dark"; do
   [ -d "$t" ] || continue
   d3_antes "/usr/share/themes/$(basename "$t")"
-  # root:root e sem escrita para outros; passa por uma pasta nova do root
-  # (diario.py, d3_raiz_instalar), e nao herda o dono de ~/.themes
+  # root:root 且其他人不可写；经过一个新建的 root 文件夹
+  # （diario.py，d3_raiz_instalar），不继承 ~/.themes 的所有者
   d3_raiz_instalar "$t" "/usr/share/themes/$(basename "$t")"
 done
 if [ ! -d "$HOME/.themes/$D3_GTK_TEMA" ]; then
-  echo "atencao: esperava o tema $D3_GTK_TEMA e ele nao foi gerado"
+  echo "atencao: 期望的主题 $D3_GTK_TEMA 没有被生成"
   exit 1
 fi
-echo "tema em uso: $D3_GTK_TEMA"
+echo "正在使用的主题：$D3_GTK_TEMA"
 '''
