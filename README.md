@@ -17,7 +17,8 @@
 > 只用 Python 标准库——不需要 pip。
 
 ```sh
-git clone https://github.com/diego-luz/bigsur-xfce.git d3bian_init_bigsur_xfce
+# 原版地址是：https://github.com/diego-luz/bigsur-xfce，当前仓库为中文汉化版
+git clone https://github.com/Zoulei-CSU/bigsur-xfce.git d3bian_init_bigsur_xfce
 python3 -m d3bian_init_bigsur_xfce        # 只询问一次密码，然后打开面板
 ```
 
@@ -44,7 +45,7 @@ and lock screen.
 - **Python standard library only**: no pip, nothing to build.
 
 ```sh
-git clone https://github.com/diego-luz/bigsur-xfce.git d3bian_init_bigsur_xfce
+git clone https://github.com/Zoulei-CSU/bigsur-xfce.git d3bian_init_bigsur_xfce
 python3 -m d3bian_init_bigsur_xfce        # asks for your password once, opens the panel
 ```
 
