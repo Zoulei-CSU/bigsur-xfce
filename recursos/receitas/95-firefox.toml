@@ -8,7 +8,7 @@ requer = ["10"]
 # 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-firefox-theme.git main
 [[passo]]
 tipo = "git"
-url = "https://github.com/vinceliuice/WhiteSur-firefox-theme.git"
+url = "@@github@@/vinceliuice/WhiteSur-firefox-theme.git"
 ref = "ecc6465e2d30278a0f76604e622e3df8ac08ae1c"
 destino = "@@fontes@@/WhiteSur-firefox-theme"
 

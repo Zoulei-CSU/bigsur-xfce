@@ -13,6 +13,7 @@
 | 00 | backup（备份当前已有的内容） | |
 | 10 | Debian 仓库软件包 | |
 | 20 | 界面和等宽字体 |  |
+| 21 | 小米 MiSans 字体（默认界面字体） | |
 | 30 | WhiteSur 窗口主题 | `destaque` |
 | 31 | WhiteSur 图标 | |
 | 32 | WhiteSur 光标 | |
@@ -32,6 +33,10 @@
 | 95 | Firefox 中的 WhiteSur 主题 | |
 | 97 | 登录和锁屏界面 | `destaque`、`papel_de_parede`、`login_fundo`、`login_desfoque`、`login_usuarios` |
 | 98 | 屏幕锁定 | `bloqueio` |
+
+配方里的 GitHub 地址写成 `@@github@@/owner/repo`；`motor.py` 用
+`D3_GITHUB_MIRROR`（或 `GITHUB_MIRROR`）把它换成镜像前缀，未设置时是
+`https://github.com`。shell 步骤里可用 `$D3_GITHUB`。
 
 选项和接受的值在 `config.py` 中；配方使用的上下文在 `motor.py` 中组装。
 

@@ -15,6 +15,22 @@ python3 -m d3bian_init_bigsur_xfce --help   # 终端子命令
 
 面板会在 `http://127.0.0.1:8730` 打开。
 
+## 在中国大陆使用（GitHub 镜像）
+
+主题、图标、壁纸和启动器主题都从 GitHub 的固定提交下载。网络受限时，可把
+前缀型 GitHub 镜像地址放进环境变量再运行：
+
+```sh
+export D3_GITHUB_MIRROR=https://ghfast.top
+python3 -m d3bian_init_bigsur_xfce
+```
+
+地址会加在完整的 GitHub 地址之前（上例会访问
+`https://ghfast.top/https://github.com/...`）；也接受 `GITHUB_MIRROR` 变量名和
+不带 `https://` 的写法。不设置时直接使用 `https://github.com`。Plank Reloaded
+的发布文件下载同样经过该镜像；MiSans 字体来自小米站点，不经过镜像。克隆本项目
+本身也可以直接加镜像前缀。
+
 ## 通过面板安装
 
 ![通过页面安装的整个过程，从开始到结果](imagens/instalacao.gif)

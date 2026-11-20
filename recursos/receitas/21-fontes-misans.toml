@@ -1,0 +1,45 @@
+[modulo]
+id = "21"
+nome = "fontes-misans"
+titulo = "小米 MiSans 字体（默认界面字体）"
+requer = ["10"]
+
+# 只装 TTF：压缩包里的 woff/woff2 是给网页用的，桌面字体匹配用不上。
+# 字体同时装到用户目录和 /usr/share：登录界面的 greeter 以 lightdm 用户运行，
+# 看不到主目录里的字体。
+[[passo]]
+tipo = "script"
+dizer = "下载并安装小米 MiSans 字体"
+corpo = '''
+url="https://hyperos.mi.com/font-download/MiSans.zip"
+zip="$D3_FONTES/MiSans.zip"
+if [ ! -s "$zip" ]; then
+  echo "下载 MiSans（约 220 MB）"
+  mkdir -p "$D3_FONTES"
+  rm -f "$zip.part"
+  curl -fL --retry 2 --connect-timeout 20 -o "$zip.part" "$url" \
+    || { echo "下载 MiSans 失败"; rm -f "$zip.part"; exit 1; }
+  mv "$zip.part" "$zip"
+fi
+unzip -tq "$zip" >/dev/null 2>&1 \
+  || { echo "MiSans 压缩包损坏；删除后可重试：$zip"; exit 1; }
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+unzip -q "$zip" 'MiSans/ttf/*' 'MiSans/可变字体/*' -d "$tmp"
+origem="$tmp/MiSans"
+[ -d "$origem" ] || { echo "压缩包里没有字体"; exit 1; }
+
+destino="$HOME/.local/share/fonts/MiSans"
+d3_antes "$destino" /usr/share/fonts/truetype/misans
+rm -rf "$destino"
+mkdir -p "$destino"
+find "$origem/ttf" -type f -name '*.ttf' -exec cp -f {} "$destino/" \;
+[ -f "$origem/可变字体/MiSansVF.ttf" ] && cp -f "$origem/可变字体/MiSansVF.ttf" "$destino/"
+[ -n "$(find "$destino" -name '*.ttf' -print -quit)" ] \
+  || { echo "没有可安装的 TTF"; exit 1; }
+fc-cache -f "$destino" >/dev/null 2>&1 || true
+# root:root，不继承主目录里的属主；通过 root 的临时目录安装
+d3_raiz_instalar "$destino" /usr/share/fonts/truetype/misans
+fc-cache -f >/dev/null 2>&1 || true
+echo "MiSans 已安装，并设为界面默认字体"
+'''

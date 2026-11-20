@@ -54,6 +54,25 @@ PLANK_SHA256 = {
 }
 ARQUITETURAS = {"x86_64": "amd64", "amd64": "amd64", "aarch64": "arm64", "arm64": "arm64"}
 
+# 中国大陆访问 GitHub 常被阻断。设置 D3_GITHUB_MIRROR（或 GITHUB_MIRROR）为
+# 前缀型镜像地址后，所有 GitHub 下载都会经过它；未设置时仍用 github.com。
+GITHUB = "https://github.com"
+
+
+def _github_base() -> str:
+    """GitHub 前缀，后面直接接 /owner/repo 或 /owner/repo/releases/...。
+
+    镜像按前缀使用（如 https://ghfast.top/https://github.com）；未设置时返回
+    原始地址。也接受不带协议的写法，会自动补上 https://。
+    """
+    bruto = (os.environ.get("D3_GITHUB_MIRROR")
+             or os.environ.get("GITHUB_MIRROR") or "").strip()
+    if not bruto:
+        return GITHUB
+    if not re.match(r"https?://", bruto):
+        bruto = "https://" + bruto
+    return bruto.rstrip("/") + "/" + GITHUB
+
 
 def montar_contexto(cfg: dict[str, str]) -> dict[str, str]:
     escuro = cfg.get("tema") == "escuro"
@@ -115,7 +134,8 @@ def montar_contexto(cfg: dict[str, str]) -> dict[str, str]:
         "logo_arquivo": str(Path.home() / ".local/share/icons/d3bian-init" / arquivo_logo),
         "painel_fundo": "0.11 0.11 0.13 0.55" if escuro else "0.97 0.97 0.99 0.72",
         "painel_texto": "#f2f2f7" if escuro else "#1d1d1f",
-        "fonte_ui": "Inter",
+        # 小米 MiSans（配方 21）；Inter 仍随配方 10 安装，作为回退
+        "fonte_ui": "MiSans",
         "fonte_mono": "Fira Code",
         "destaque_externo": destaque,
         "widget_cor": DESTAQUE_COR.get(cfg.get("destaque", "padrao"), DESTAQUE_COR["padrao"]),
@@ -140,6 +160,7 @@ def montar_contexto(cfg: dict[str, str]) -> dict[str, str]:
         "plank_sha256": PLANK_SHA256.get(ARQUITETURAS.get(platform.machine().lower(), ""), ""),
         "fontes": str(caminhos.FONTES),
         "arquivos": str(caminhos.ARQUIVOS),
+        "github": _github_base(),
         # 供查询的记录放在这里，备份目录之外
         "estado_dir": str(caminhos.ESTADO_DIR),
     })

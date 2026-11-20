@@ -8,7 +8,7 @@ requer = ["10"]
 # 更新：git ls-remote https://github.com/adi1090x/rofi.git master
 [[passo]]
 tipo = "git"
-url = "https://github.com/adi1090x/rofi.git"
+url = "@@github@@/adi1090x/rofi.git"
 ref = "512a585fff6da5b2a90e5948059b062516ddb2e7"
 destino = "@@fontes@@/rofi-temas"
 

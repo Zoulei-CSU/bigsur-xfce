@@ -8,7 +8,7 @@ requer = ["10"]
 # 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-icon-theme.git master
 [[passo]]
 tipo = "git"
-url = "https://github.com/vinceliuice/WhiteSur-icon-theme.git"
+url = "@@github@@/vinceliuice/WhiteSur-icon-theme.git"
 ref = "73d8040da51a9ed74e47c7366e7e9ff437601a5c"
 destino = "@@fontes@@/WhiteSur-icon-theme"
 

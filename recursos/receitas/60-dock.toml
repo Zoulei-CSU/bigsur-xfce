@@ -41,7 +41,7 @@ else
   # （motor.py，PLANK_VERSAO 和 PLANK_SHA256）；此架构没有哈希时，
   # 保留 Debian 的 plank
   if [ -n "$D3_PLANK_SHA256" ]; then
-    url="https://github.com/zquestz/plank-reloaded/releases/download/$D3_PLANK_VERSAO/plank-reloaded-debian_${D3_PLANK_VERSAO}-1_$D3_PLANK_ARQUITETURA.deb"
+    url="$D3_GITHUB/zquestz/plank-reloaded/releases/download/$D3_PLANK_VERSAO/plank-reloaded-debian_${D3_PLANK_VERSAO}-1_$D3_PLANK_ARQUITETURA.deb"
     deb="$D3_FONTES/$(basename "$url")"
     [ -s "$deb" ] || curl -fsSL -o "$deb" "$url" || true
     if [ -s "$deb" ] && ! echo "$D3_PLANK_SHA256  $deb" | sha256sum -c --quiet - >/dev/null 2>&1; then

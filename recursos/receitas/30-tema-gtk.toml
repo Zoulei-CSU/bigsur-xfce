@@ -9,7 +9,7 @@ afetada_por = ["destaque"]
 # 更新：git ls-remote https://github.com/vinceliuice/WhiteSur-gtk-theme.git master
 [[passo]]
 tipo = "git"
-url = "https://github.com/vinceliuice/WhiteSur-gtk-theme.git"
+url = "@@github@@/vinceliuice/WhiteSur-gtk-theme.git"
 ref = "d5782652d412137e26fb8ff55b55a5572e4c6995"
 destino = "@@fontes@@/WhiteSur-gtk-theme"
 

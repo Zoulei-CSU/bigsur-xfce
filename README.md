@@ -27,25 +27,31 @@ python3 -m d3bian_init_bigsur_xfce        # 只询问一次密码，然后打开
 </div>
 
 <details>
-<summary><b>英文原文（已译为中文）</b></summary>
+<summary><b>In English</b></summary>
 
-一个在浏览器中打开的本地控制面板，为 Debian 上的 Xfce 带来
-**macOS Big Sur 的外观**：WhiteSur 主题、图标、光标和壁纸（GTK 和
-Qt/Kvantum）、带全局菜单的顶栏、带缩放效果的 Dock（Plank Reloaded）、
-Spotlight 风格的启动器（rofi）、桌面小组件、带阴影的圆角窗口、
-窗口吸附与布局，以及配套的登录和锁屏界面。
+A local control panel, opened in your browser, that gives Xfce on Debian the
+**macOS Big Sur look**: WhiteSur theme, icons, cursors and wallpapers (GTK and
+Qt/Kvantum), a top bar with a global menu, a zooming dock (Plank Reloaded), a
+Spotlight-style launcher (rofi), the MiSans font by default, a desktop widget,
+rounded windows with shadows, window snapping and layouts, and a matching login
+and lock screen.
 
-- **来自 Debian 官方仓库的软件包**；Debian 未打包的 WhiteSur 来自其上游 Git
-  仓库的固定提交，Plank Reloaded 则来自其官方发布版并校验 SHA-256。
-- **可以放心尝试**：每一项改动都有备份和日志；*还原*会把桌面恢复到原来的样子。
-- **只用 Python 标准库**：无需 pip，无需构建。
+- **Packages from the official Debian repository**; WhiteSur, which Debian does not
+  package, comes from its upstream Git repositories at a fixed commit, and Plank
+  Reloaded from its official release with the SHA-256 checked.
+- **Safe to try**: every change is backed up and journaled; *Restore* puts your
+  desktop back the way it was.
+- **Python standard library only**: no pip, nothing to build.
 
 ```sh
 git clone https://github.com/diego-luz/bigsur-xfce.git d3bian_init_bigsur_xfce
-python3 -m d3bian_init_bigsur_xfce        # 只询问一次密码，然后打开面板
+python3 -m d3bian_init_bigsur_xfce        # asks for your password once, opens the panel
 ```
 
-界面和文档已译为简体中文（原文为巴西葡萄牙语）。
+On restricted networks, set `D3_GITHUB_MIRROR` to a prefix-style GitHub mirror
+(for example `https://ghfast.top`) before running; see the section below.
+The interface and the documentation are in Simplified Chinese, translated from
+Brazilian Portuguese.
 
 </details>
 
@@ -57,6 +63,7 @@ python3 -m d3bian_init_bigsur_xfce        # 只询问一次密码，然后打开
 - WhiteSur 的**图标、光标和壁纸**，带壁纸画廊可供挑选
 - macOS 风格的**顶栏**，角落有标志，并带当前程序的**全局菜单**
 - 带缩放的底部 **Dock**（Plank Reloaded）和 Spotlight 风格的**启动器**（rofi）
+- 默认使用**小米 MiSans** 字体，界面和登录界面观感统一
 - 桌面**小组件**：时钟和进度条，或者圆环
 - **窗口**：阴影和圆角、更宽的边框、Super+Z 下的吸附和布局
 - 配套的**登录和锁屏界面**，带模糊背景；Firefox 也有主题
@@ -81,6 +88,23 @@ python3 -m d3bian_init_bigsur_xfce        # 只询问一次密码，然后打开
 
 </details>
 <!-- fim imagens -->
+
+## 在中国大陆使用（GitHub 镜像）
+
+主题、图标、壁纸和启动器主题都从 GitHub 的固定提交下载。网络受限时，可把
+前缀型 GitHub 镜像地址放进环境变量：
+
+```sh
+export D3_GITHUB_MIRROR=https://ghfast.top
+python3 -m d3bian_init_bigsur_xfce
+```
+
+脚本会把该地址加在完整的 GitHub 地址之前（上例会下载
+`https://ghfast.top/https://github.com/...`），也接受 `GITHUB_MIRROR` 变量名和
+不带 `https://` 的写法。不设置时直接使用 `https://github.com`。该设置对
+Plank Reloaded 的发布文件下载同样有效；MiSans 字体来自小米站点，不经过
+GitHub 镜像。克隆本项目本身也可以直接使用镜像前缀，如
+`git clone https://ghfast.top/https://github.com/Zoulei-CSU/bigsur-xfce.git`。
 
 ## 文档
 
@@ -117,6 +141,7 @@ d3bian-init-bigsur-xfce 不创建主题：它下载、安装并调整他人的�
 | 启动器主题 | [rofi](https://github.com/adi1090x/rofi) | adi1090x | GPL-3.0 |
 | Dock | [plank-reloaded](https://github.com/zquestz/plank-reloaded) | zquestz | GPL-3.0 |
 | Inter 字体 | Debian 的 `fonts-inter` 包 | Rasmus Andersson | OFL-1.1 |
+| MiSans 字体 | [小米字体下载](https://hyperos.mi.com/font-download/MiSans.zip) | 小米 | 免费商用（见官网） |
 | 圆环小组件 | [MX-CoreBlue](https://github.com/MX-Linux/mx-conky-data/tree/master/MX-CoreBlue)，基于 Clock Rings | MX Linux；londonali1010、despot77 和 Altin | GPL-3.0（此处的 `conky-aneis.lua` 和 `conky-aneis.conf` 文件同样如此） |
 | 圆环小组件的构想 | [Xfce Big Sur setup](https://www.opencode.net/lsteam/xfce-big-sur-setup-file) | lsteam | |
 
