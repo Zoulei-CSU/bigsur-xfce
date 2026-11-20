@@ -110,7 +110,8 @@ def arrastaria(pacotes: list[str]) -> list[str]:
     """模拟移除，并返回 apt 未请求也会一并移除的内容。"""
     try:
         simulacao = subprocess.run(["apt-get", "-s", "remove", *pacotes],
-                                   capture_output=True, text=True, timeout=60)
+                                   capture_output=True, text=True, timeout=60,
+                                   env={**os.environ, "LC_ALL": "C"})
     except (OSError, subprocess.TimeoutExpired):
         return []
     saindo = {

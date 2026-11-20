@@ -2,7 +2,7 @@
 id = "97"
 nome = "login"
 titulo = "登录和锁屏界面"
-requer = ["30"]
+requer = ["10", "30"]
 afetada_por = ["destaque", "papel_de_parede",
                "login_fundo", "login_desfoque", "login_escurecer", "login_usuarios"]
 
@@ -15,6 +15,13 @@ afetada_por = ["destaque", "papel_de_parede",
 tipo = "apt"
 se = "login_instalar == sim"
 pacotes = ["lightdm-gtk-greeter"]
+
+# convert 用来生成模糊/变暗的背景和圆形头像，rsvg-convert 用来读 SVG 标志。
+# 预览也会用到，所以不限于真正安装。
+[[passo]]
+tipo = "apt"
+dizer = "确保 imagemagick 和 SVG 读取器可用"
+pacotes = ["imagemagick", "librsvg2-bin"]
 
 # 组装文件夹必须是本次执行的：新建、属于用户、私有且不是链接。
 # 开始时为空（文件夹保留；/tmp 中的空闲名称可能被其他账户占用）
@@ -58,6 +65,8 @@ user-session=xfce
 tipo = "script"
 dizer = "准备背景和照片"
 corpo = '''
+command -v convert >/dev/null || { echo "convert 缺失：没有安装 imagemagick" >&2; exit 1; }
+command -v rsvg-convert >/dev/null || echo "atencao: 缺少 rsvg-convert，SVG 标志可能无法读取"
 d="$D3_LOGIN_DIR"
 rm -f "$d/fundo.jpg" "$d/avatar.png"
 

@@ -14,7 +14,9 @@ from pathlib import Path
 
 
 def _roda(*argumentos: str, tempo: int = 10) -> subprocess.CompletedProcess:
-    return subprocess.run(argumentos, capture_output=True, text=True, timeout=tempo)
+    # 输出由代码解析（apt/dpkg 会按语言翻译），统一用 C 语言环境
+    return subprocess.run(argumentos, capture_output=True, text=True, timeout=tempo,
+                          env={**os.environ, "LC_ALL": "C"})
 
 
 def tem(programa: str) -> bool:
